@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>ThinkTalk Mobile v2.3</title>
+<title>ThinkTalk Mobile v2.4</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -15,10 +15,7 @@
     --nav-h: 65px; 
 }
 
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; 
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body { 
     margin: 0; padding: 0; 
@@ -43,43 +40,31 @@ html, body {
     position: relative;
 }
 
-.page-title { 
-    font-size: 13px; 
-    text-transform: uppercase; 
-    font-weight: 600; 
-    letter-spacing: 2px; 
-    opacity: 0.7; 
-}
-
-.section-header { 
-    font-size: 50px; 
-    font-weight: 100; 
-    margin-bottom: 20px; 
-    color: var(--accent); 
-}
+.page-title { font-size: 13px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; opacity: 0.7; }
+.section-header { font-size: 50px; font-weight: 100; margin-bottom: 20px; color: var(--accent); }
 
 .scroll-area { 
     flex: 1; 
     overflow-y: auto; 
-    padding-bottom: 120px; 
+    padding-bottom: 140px; 
 }
 
-/* BARRE DE CHAT FIXE ET RESPONSIVE */
-.chat-input-container {
+/* BARRE DE CHAT — FIXE EN DEHORS DU PANORAMA */
+#chat-bar {
     position: fixed;
     bottom: var(--nav-h);
     left: 0;
     width: 100%;
     padding: 8px;
     background: #111;
-    display: flex;
+    display: none; /* masqué par défaut */
     align-items: center;
     gap: 8px;
     z-index: 95;
     border-top: 1px solid #222;
 }
 
-.chat-input-container input {
+#chat-bar input {
     flex: 1;
     min-width: 0;
     height: 42px;
@@ -92,7 +77,7 @@ html, body {
     outline: none;
 }
 
-.chat-input-container button {
+#chat-bar button {
     height: 42px;
     padding: 0 18px;
     background: var(--accent);
@@ -111,69 +96,19 @@ html, body {
     border-top: 1px solid #333; z-index: 100;
 }
 
-.nav-item { 
-    font-size: 11px; 
-    text-transform: uppercase; 
-    color: #666; 
-    font-weight: bold; 
-}
-
-.nav-item.active { 
-    color: #fff; 
-    border-bottom: 2px solid var(--accent); 
-}
+.nav-item { font-size: 11px; text-transform: uppercase; color: #666; font-weight: bold; }
+.nav-item.active { color: #fff; border-bottom: 2px solid var(--accent); }
 
 /* UI Metro */
-.tiles-container { 
-    display: grid; 
-    grid-template-columns: repeat(2, 1fr); 
-    gap: 10px; 
-}
-
-.tile { 
-    background: var(--accent); 
-    aspect-ratio: 1/1; 
-    padding: 15px; 
-    display: flex; 
-    align-items: flex-end; 
-    font-size: 18px; 
-    font-weight: 600; 
-}
-
-.list-item { 
-    padding: 15px 10px; 
-    border-bottom: 1px solid #222; 
-    font-size: 22px; 
-    font-weight: 300; 
-}
-
-.msg-bubble { 
-    margin-bottom: 15px; 
-    border-left: 3px solid var(--accent); 
-    padding-left: 12px; 
-}
-
-.msg-pseudo { 
-    color: var(--accent); 
-    font-size: 12px; 
-    font-weight: bold; 
-}
-
-.msg-text { 
-    font-size: 19px; 
-    font-weight: 300; 
-    word-wrap: break-word; 
-}
+.tiles-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tile { background: var(--accent); aspect-ratio: 1/1; padding: 15px; display: flex; align-items: flex-end; font-size: 18px; font-weight: 600; }
+.list-item { padding: 15px 10px; border-bottom: 1px solid #222; font-size: 22px; font-weight: 300; }
+.msg-bubble { margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; }
+.msg-pseudo { color: var(--accent); font-size: 12px; font-weight: bold; }
+.msg-text { font-size: 19px; font-weight: 300; word-wrap: break-word; }
 
 /* Auth */
-#auth { 
-    position: fixed; 
-    inset: 0; 
-    background: #000; 
-    z-index: 1000; 
-    padding: 40px 20px; 
-}
-
+#auth { position: fixed; inset: 0; background: #000; z-index: 1000; padding: 40px 20px; }
 .hidden { display: none !important; }
 </style>
 </head>
@@ -209,11 +144,6 @@ html, body {
         <div class="page-title">DISCUTER</div>
         <h1 class="section-header" id="chat-title">salon</h1>
         <div id="message-container" class="scroll-area"></div>
-
-        <div class="chat-input-container" id="chat-bar" style="display:none;">
-            <input id="msgInput" type="text" placeholder="répondre...">
-            <button onclick="send()">OK</button>
-        </div>
     </section>
 
     <!-- CONTACTS -->
@@ -224,6 +154,12 @@ html, body {
         <button onclick="addContactPrompt()" style="width:100%; padding:15px; background:none; border:2px solid #fff; color:#fff;">+ AJOUTER</button>
     </section>
 
+</div>
+
+<!-- BARRE DE CHAT (EN DEHORS DU PANORAMA) -->
+<div id="chat-bar">
+    <input id="msgInput" type="text" placeholder="répondre...">
+    <button onclick="send()">OK</button>
 </div>
 
 <!-- NAVIGATION -->
@@ -254,6 +190,8 @@ let currentCtx = { id: 'general', type: 'room' };
 function goTo(index) {
     document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
     document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === index));
+
+    // Affichage de la barre de chat uniquement sur l’onglet chat
     document.getElementById('chat-bar').style.display = (index === 1) ? 'flex' : 'none';
 }
 
@@ -351,14 +289,8 @@ async function addContactPrompt() {
     loadContacts();
 }
 
-function getConvId(a, b) { 
-    return [a, b].sort().join("__"); 
-}
-
-function logout() { 
-    localStorage.clear(); 
-    location.reload(); 
-}
+function getConvId(a, b) { return [a, b].sort().join("__"); }
+function logout() { localStorage.clear(); location.reload(); }
 
 /* Auto-login */
 window.onload = () => {
