@@ -5,37 +5,165 @@
 <title>ThinkTalk — Mobile</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<!-- 🔥 Firebase (OBLIGATOIRE et DOIT être dans le head) -->
+<!-- 🔥 Firebase (OBLIGATOIRE dans le head) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <style>
-/* Ton design mobile (inchangé) */
+/* --- DESIGN MOBILE --- */
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,Arial;background:#000;color:#d0e7ff;display:flex;justify-content:center;height:100vh;overflow:hidden}
-#app{width:100%;max-width:480px;height:100%;background:radial-gradient(circle at top left,rgba(0,153,255,.1),#000);border-left:1px solid #0084ff55;border-right:1px solid #0084ff55;display:flex;flex-direction:column;position:relative}
+body{
+  font-family:system-ui,Arial;
+  background:#000;
+  color:#d0e7ff;
+  display:flex;
+  justify-content:center;
+  height:100vh;
+  overflow:hidden;
+}
+#app{
+  width:100%;
+  max-width:480px;
+  height:100%;
+  background:radial-gradient(circle at top left,rgba(0,153,255,.1),#000);
+  border-left:1px solid #0084ff55;
+  border-right:1px solid #0084ff55;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
 
-header{height:52px;border-bottom:1px solid #0084ff55;display:flex;align-items:center;padding:0 15px;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:10}
-#main{flex:1;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;scrollbar-width:none}
+/* HEADER */
+header{
+  height:52px;
+  border-bottom:1px solid #0084ff55;
+  display:flex;
+  align-items:center;
+  padding:0 15px;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(10px);
+}
+#viewTitle{font-size:18px;color:#7fc4ff}
 
-.msg{padding:8px 12px;border-radius:12px;background:rgba(0,132,255,0.1);border-left:3px solid #0084ff;max-width:85%;animation:fadeIn 0.2s}
-.msg.me{align-self:flex-end;border-left:none;border-right:3px solid #0084ff;background:rgba(0,204,255,0.05)}
-.pseudo{font-size:12px;font-weight:bold;color:#7fc4ff;display:block;margin-bottom:4px}
-.text{font-size:14px;line-height:1.4;white-space:pre-wrap}
+/* MAIN CHAT */
+#main{
+  flex:1;
+  overflow-y:auto;
+  padding:15px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  scrollbar-width:none;
+}
 
-#inputBar{padding:10px;background:rgba(0,0,0,0.9);border-top:1px solid #0084ff55;display:flex;gap:8px}
-input{flex:1;background:#111;border:1px solid #0084ff88;border-radius:20px;padding:8px 15px;color:#fff;outline:none}
-button{background:#0084ff;color:#fff;border:none;border-radius:20px;padding:0 15px;cursor:pointer;font-weight:bold}
+/* MESSAGES */
+.msg{
+  padding:8px 12px;
+  border-radius:12px;
+  background:rgba(0,132,255,0.1);
+  border-left:3px solid #0084ff;
+  max-width:85%;
+  animation:fadeIn .2s;
+}
+.msg.me{
+  align-self:flex-end;
+  border-left:none;
+  border-right:3px solid #00c8ff;
+  background:rgba(0,204,255,0.05);
+}
+.pseudo{
+  font-size:12px;
+  font-weight:bold;
+  color:#7fc4ff;
+  margin-bottom:4px;
+}
+.text{
+  font-size:14px;
+  white-space:pre-wrap;
+}
 
-#bottomBar{height:60px;border-top:1px solid #0084ff55;display:flex;justify-content:space-around;align-items:center;background:#000}
-.navBtn{text-align:center;font-size:11px;color:#666;cursor:pointer}
-.navBtn.active{color:#0084ff;text-shadow:0 0 10px #0084ff}
+/* INPUT BAR */
+#inputBar{
+  padding:10px;
+  background:rgba(0,0,0,0.9);
+  border-top:1px solid #0084ff55;
+  display:flex;
+  gap:8px;
+}
+#messageInput{
+  flex:1;
+  background:#111;
+  border:1px solid #0084ff88;
+  border-radius:20px;
+  padding:8px 15px;
+  color:#fff;
+}
+button{
+  background:#0084ff;
+  color:#fff;
+  border:none;
+  border-radius:20px;
+  padding:0 15px;
+  cursor:pointer;
+  font-weight:bold;
+}
 
-#authOverlay{position:fixed;inset:0;background:#000;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
-.authBox{width:100%;max-width:300px;display:flex;flex-direction:column;gap:10px}
+/* BOTTOM NAV */
+#bottomBar{
+  height:60px;
+  border-top:1px solid #0084ff55;
+  display:flex;
+  justify-content:space-around;
+  align-items:center;
+  background:#000;
+}
+.navBtn{
+  text-align:center;
+  font-size:11px;
+  color:#666;
+  cursor:pointer;
+}
+.navBtn.active{
+  color:#0084ff;
+  text-shadow:0 0 10px #0084ff;
+}
 
-@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+/* AUTH OVERLAY */
+#authOverlay{
+  position:fixed;
+  inset:0;
+  background:#000;
+  z-index:100;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.authBox{
+  width:100%;
+  max-width:300px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.authBox input{
+  background:#111;
+  border:1px solid #0084ff88;
+  border-radius:20px;
+  padding:8px 15px;
+  color:#fff;
+}
+.authBox button{
+  padding:10px;
+  border-radius:20px;
+}
+
+/* ANIM */
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(5px)}
+  to{opacity:1;transform:translateY(0)}
+}
 </style>
 </head>
 
@@ -43,30 +171,30 @@ button{background:#0084ff;color:#fff;border:none;border-radius:20px;padding:0 15
 
 <!-- 🔐 AUTH -->
 <div id="authOverlay">
-    <div class="authBox">
-        <h2 style="text-align:center">THINKTALK</h2>
-        <input id="authPseudo" placeholder="Pseudo">
-        <input id="authCode" placeholder="Code secret (4-8 chiffres)" type="password">
-        <button onclick="handleAuth(true)">Créer un compte</button>
-        <button onclick="handleAuth(false)" style="background:none;border:1px solid #0084ff">Se connecter</button>
-    </div>
+  <div class="authBox">
+    <h2 style="text-align:center;color:#7fc4ff">THINKTALK</h2>
+    <input id="authPseudo" placeholder="Pseudo">
+    <input id="authCode" placeholder="Code secret (4-8 chiffres)" type="password">
+    <button onclick="handleAuth(true)">Créer un compte</button>
+    <button onclick="handleAuth(false)" style="background:none;border:1px solid #0084ff">Se connecter</button>
+  </div>
 </div>
 
-<!-- 📱 APP MOBILE -->
+<!-- 📱 APP -->
 <div id="app">
-    <header><h1 id="viewTitle" style="font-size:18px">ThinkTalk</h1></header>
-    <div id="main"></div>
+  <header><h1 id="viewTitle">ThinkTalk</h1></header>
+  <div id="main"></div>
 
-    <div id="inputBar">
-        <input id="messageInput" placeholder="Message...">
-        <button onclick="sendMessage()">Envoyer</button>
-    </div>
+  <div id="inputBar">
+    <input id="messageInput" placeholder="Message...">
+    <button onclick="sendMessage()">Envoyer</button>
+  </div>
 
-    <div id="bottomBar">
-        <div class="navBtn active" onclick="showHome()">🏠<br>Home</div>
-        <div class="navBtn" onclick="showRooms()">💬<br>Salons</div>
-        <div class="navBtn" onclick="showContacts()">👤<br>Contacts</div>
-    </div>
+  <div id="bottomBar">
+    <div class="navBtn active" onclick="showHome()">🏠<br>Home</div>
+    <div class="navBtn" onclick="showRooms()">💬<br>Salons</div>
+    <div class="navBtn" onclick="showContacts()">👤<br>Contacts</div>
+  </div>
 </div>
 
 <!-- 🔥 SCRIPT MOBILE ENTIER -->
