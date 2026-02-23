@@ -1,219 +1,38 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<title>ThinkTalk Mobile Final</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
-<style>
-:root { --accent: #00a2e8; --bg: #000; --nav-h: 65px; }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-body, html { 
-    margin: 0; padding: 0; background: var(--bg); color: #fff; 
-    font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100dvh; 
-}
-
-#panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.4s ease-out; }
-.view { width: 100vw; height: 100%; display: flex; flex-direction: column; padding: 20px; position: relative; }
-
-.section-header { font-size: 45px; font-weight: 100; margin-bottom: 20px; color: var(--accent); }
-
-/* ZONE MESSAGES */
-.scroll-area { 
-    flex: 1; overflow-y: auto; padding-bottom: 150px; 
-}
-
-/* BARRE DE CHAT ULTRA-COMPATIBLE */
+/* BARRE DE CHAT FIXE ET RESPONSIVE */
 .chat-input-container {
     position: fixed;
     bottom: var(--nav-h);
-    left: 0; 
+    left: 0;
     width: 100%;
-    height: 60px;
+    padding: 8px;
     background: #111;
-    display: none; /* Piloté par JS */
-    padding: 10px;
-    z-index: 999;
-    border-top: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 95;
+    border-top: 1px solid #222;
 }
 
-#msgInput {
-    width: 70%; /* Largeur fixe pour éviter le débordement */
-    height: 40px;
-    background: #ffffff !important;
-    color: #000000 !important; /* Lettres forcées en noir */
-    border: none;
-    padding: 0 10px;
+.chat-input-container input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 0 12px;
     font-size: 16px;
-    float: left;
-}
-
-#sendBtn {
-    width: 25%;
-    height: 40px;
-    background: var(--accent);
-    color: white;
     border: none;
+    border-radius: 6px;
+    background: #fff;
+    color: #000;
+    outline: none;
+}
+
+.chat-input-container button {
+    height: 42px;
+    padding: 0 18px;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
     font-weight: bold;
-    float: right;
+    flex-shrink: 0;
 }
-
-/* NAV */
-.nav-bottom { 
-    position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); 
-    background: #000; display: flex; justify-content: space-around; 
-    align-items: center; border-top: 1px solid #333; z-index: 1000;
-}
-.nav-item { font-size: 11px; text-transform: uppercase; color: #666; }
-.nav-item.active { color: #fff; border-bottom: 2px solid var(--accent); }
-
-/* AUTRES */
-.tile { background: var(--accent); aspect-ratio: 1/1; padding: 15px; display: flex; align-items: flex-end; font-size: 18px; margin-bottom: 10px;}
-.msg-bubble { margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; }
-#auth { position: fixed; inset: 0; background: #000; z-index: 2000; padding: 40px 20px; }
-.hidden { display: none !important; }
-</style>
-</head>
-<body>
-
-<div id="auth">
-    <h1 class="section-header">identification</h1>
-    <input id="pseudo" type="text" placeholder="pseudo" style="width:100%; padding:15px; margin-bottom:10px;">
-    <input id="code" type="password" placeholder="code" style="width:100%; padding:15px; margin-bottom:20px;">
-    <button onclick="handleAuth('login')" style="width:100%; padding:15px; background:var(--accent); color:#fff; border:none;">CONNEXION</button>
-</div>
-
-<div id="panorama">
-    <section class="view">
-        <h1 class="section-header">accueil</h1>
-        <div onclick="openRoom('general', 'room')" class="tile">#general</div>
-        <div onclick="goTo(2)" style="background:#333" class="tile">contacts</div>
-    </section>
-
-    <section class="view">
-        <h1 class="section-header" id="chat-title">salon</h1>
-        <div id="message-container" class="scroll-area"></div>
-        <div class="chat-input-container" id="chat-bar">
-            <input id="msgInput" type="text" placeholder="Message...">
-            <button id="sendBtn">OK</button>
-        </div>
-    </section>
-
-    <section class="view">
-        <h1 class="section-header">contacts</h1>
-        <div id="contacts-list"></div>
-        <button onclick="addContactPrompt()" style="width:100%; padding:15px; background:none; border:1px solid #fff; color:#fff;">+ AJOUTER</button>
-    </section>
-</div>
-
-<nav class="nav-bottom">
-    <div class="nav-item active" onclick="goTo(0)">accueil</div>
-    <div class="nav-item" onclick="goTo(1)">chat</div>
-    <div class="nav-item" onclick="goTo(2)">contacts</div>
-</nav>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
-  authDomain: "chat-github-6abb5.firebaseapp.com",
-  databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "chat-github-6abb5",
-  storageBucket: "chat-github-6abb5.firebasestorage.app",
-  messagingSenderId: "1038562300660",
-  appId: "1:1038562300660:web:b57b74a7539466e16384a1"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let user = localStorage.getItem('tt_user');
-let currentCtx = { id: 'general', type: 'room' };
-
-function goTo(index) {
-    document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
-    const navs = document.querySelectorAll('.nav-item');
-    navs.forEach((n, i) => n.classList.toggle('active', i === index));
-    document.getElementById('chat-bar').style.display = (index === 1) ? 'block' : 'none';
-}
-
-async function handleAuth(type) {
-    const p = document.getElementById('pseudo').value.trim();
-    const c = document.getElementById('code').value.trim();
-    const userRef = db.ref('users/' + p);
-    const snap = await userRef.get();
-    if(snap.exists() && snap.val().code === c) {
-        user = p;
-        localStorage.setItem('tt_user', p);
-        document.getElementById('auth').classList.add('hidden');
-        loadContacts();
-        openRoom('general', 'room');
-    } else { alert("Erreur"); }
-}
-
-function openRoom(id, type) {
-    currentCtx = { id: id, type: type };
-    document.getElementById('chat-title').textContent = id;
-    listenMessages();
-    goTo(1);
-}
-
-function listenMessages() {
-    let path = currentCtx.type === 'room' ? `messages/public/${currentCtx.id}` : `messages/dm/${getConvId(user, currentCtx.id)}`;
-    db.ref(path).off();
-    const container = document.getElementById('message-container');
-    container.innerHTML = "";
-    db.ref(path).limitToLast(20).on('child_added', snap => {
-        const m = snap.val();
-        container.innerHTML += `<div class="msg-bubble"><div style="color:var(--accent);font-size:12px;">${m.pseudo}</div><div>${m.text}</div></div>`;
-        container.scrollTop = container.scrollHeight;
-    });
-}
-
-function sendAction() {
-    const input = document.getElementById('msgInput');
-    const txt = input.value.trim();
-    if(!txt) return;
-    let path = currentCtx.type === 'room' ? `messages/public/${currentCtx.id}` : `messages/dm/${getConvId(user, currentCtx.id)}`;
-    db.ref(path).push({ pseudo: user, text: txt, timestamp: Date.now() });
-    input.value = "";
-    input.focus();
-}
-
-// Double sécurité pour le bouton
-document.getElementById('sendBtn').addEventListener('click', sendAction);
-document.getElementById('sendBtn').addEventListener('touchstart', (e) => { e.preventDefault(); sendAction(); });
-
-async function loadContacts() {
-    const snap = await db.ref('contacts/' + user).get();
-    const list = document.getElementById('contacts-list');
-    list.innerHTML = "";
-    if(snap.exists()) {
-        Object.keys(snap.val()).forEach(name => {
-            list.innerHTML += `<div onclick="openRoom('${name}', 'dm')" style="padding:15px; border-bottom:1px solid #222;">${name}</div>`;
-        });
-    }
-}
-
-async function addContactPrompt() {
-    const target = prompt("Pseudo :");
-    if(!target) return;
-    await db.ref(`contacts/${user}/${target}`).set(true);
-    await db.ref(`contacts/${target}/${user}`).set(true);
-    loadContacts();
-}
-
-function getConvId(a, b) { return [a, b].sort().join("__"); }
-
-window.onload = () => {
-    if(user) {
-        document.getElementById('auth').classList.add('hidden');
-        loadContacts();
-        goTo(0);
-    }
-};
-</script>
-</body>
-</html>
