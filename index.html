@@ -2,47 +2,86 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>ThinkTalk Mobile v2.1</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ThinkTalk Mobile v2.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
 <style>
-:root { --accent: #00a2e8; --bg: #000; }
+:root { --accent: #00a2e8; --bg: #000; --nav-h: 65px; --input-h: 60px; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body, html { margin: 0; padding: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; overflow: hidden; height: 100%; }
 
-#panorama { display: flex; width: 300vw; height: 100vh; transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
-.view { width: 100vw; height: 100vh; padding: 25px 20px 80px 20px; display: flex; flex-direction: column; position: relative; }
+body, html { 
+    margin: 0; padding: 0; 
+    background: var(--bg); color: #fff; 
+    font-family: 'Segoe UI', sans-serif; 
+    overflow: hidden; height: 100vh; height: 100dvh; 
+}
 
-.page-title { font-size: 13px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; margin-bottom: 5px; opacity: 0.7; }
-.section-header { font-size: 55px; font-weight: 100; margin-bottom: 25px; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
 
-.tiles-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-.tile { background: var(--accent); aspect-ratio: 1/1; padding: 12px; display: flex; align-items: flex-end; font-size: 18px; font-weight: 600; cursor: pointer; border: none; color: white; text-align: left; }
-.tile:active { transform: scale(0.95); opacity: 0.8; }
+.view { 
+    width: 100vw; height: 100%; 
+    display: flex; flex-direction: column; 
+    padding: 20px 20px 0 20px;
+    position: relative;
+}
 
-.scroll-area { flex: 1; overflow-y: auto; padding-bottom: 20px; -webkit-overflow-scrolling: touch; }
-.list-item { padding: 15px 10px; border-bottom: 1px solid #222; font-size: 22px; font-weight: 300; }
-.list-item:active { background: #111; color: var(--accent); }
+.page-title { font-size: 13px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; opacity: 0.7; }
+.section-header { font-size: 50px; font-weight: 100; margin-bottom: 20px; color: var(--accent); }
 
-.msg-bubble { margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; animation: slideIn 0.2s ease-out; }
-@keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
-.msg-pseudo { color: var(--accent); font-size: 12px; font-weight: bold; margin-bottom: 2px; }
-.msg-text { font-size: 20px; line-height: 1.2; font-weight: 300; word-wrap: break-word; }
+/* Zone des messages : on s'assure qu'elle ne cache pas l'input */
+.scroll-area { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding-bottom: 20px;
+    margin-bottom: calc(var(--nav-h) + var(--input-h) + 10px); 
+}
 
-.input-bar { position: absolute; bottom: 15px; left: 15px; right: 15px; display: flex; gap: 8px; background: #000; padding: 5px 0; }
-input { background: #fff; border: 2px solid #fff; padding: 12px; font-size: 16px; flex: 1; outline: none; color: #000; }
-input:focus { border: 2px solid var(--accent); }
-.btn-send { background: var(--accent); border: none; color: white; padding: 0 20px; font-weight: bold; font-size: 16px; cursor: pointer; }
-.btn-send:active { transform: scale(0.9); }
+/* LA BARRE DE CHAT - Positionnée au dessus de la nav */
+.chat-input-container {
+    position: fixed;
+    bottom: var(--nav-h); /* Juste au dessus de la barre noire */
+    left: 0; width: 100%;
+    height: var(--input-h);
+    background: #111;
+    display: flex;
+    padding: 10px;
+    gap: 10px;
+    z-index: 90;
+    border-top: 1px solid #222;
+}
 
-.nav-bottom { position: fixed; bottom: 0; width: 100%; height: 60px; background: #111; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #333; z-index: 100; }
-.nav-item { font-size: 11px; text-transform: uppercase; color: #666; padding: 10px; }
-.nav-item.active { color: #fff; font-weight: bold; }
+.chat-input-container input {
+    flex: 1; background: #fff; border: none; padding: 0 15px; font-size: 16px; color: #000; outline: none;
+}
 
-#auth { position: fixed; inset: 0; background: #000; z-index: 1000; padding: 40px 20px; display: flex; flex-direction: column; }
+.chat-input-container button {
+    background: var(--accent); border: none; color: #fff; padding: 0 20px; font-weight: bold;
+}
+
+/* Navigation Basse */
+.nav-bottom { 
+    position: fixed; bottom: 0; left: 0; width: 100%; 
+    height: var(--nav-h); background: #000; 
+    display: flex; justify-content: space-around; align-items: center; 
+    border-top: 1px solid #333; z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.nav-item { font-size: 11px; text-transform: uppercase; color: #666; font-weight: bold; }
+.nav-item.active { color: #fff; border-bottom: 2px solid var(--accent); }
+
+/* Tuiles */
+.tiles-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.tile { background: var(--accent); aspect-ratio: 1/1; padding: 15px; display: flex; align-items: flex-end; font-size: 18px; font-weight: 600; }
+
+.msg-bubble { margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; }
+.msg-pseudo { color: var(--accent); font-size: 12px; font-weight: bold; }
+.msg-text { font-size: 19px; font-weight: 300; }
+
+#auth { position: fixed; inset: 0; background: #000; z-index: 1000; padding: 40px 20px; }
 .hidden { display: none !important; }
 </style>
 </head>
@@ -51,14 +90,14 @@ input:focus { border: 2px solid var(--accent); }
 <div id="auth">
     <div class="page-title">THINKTALK</div>
     <h1 class="section-header">identification</h1>
-    <input id="pseudo" type="text" placeholder="pseudo" autocorrect="off" autocapitalize="off">
-    <input id="code" type="password" placeholder="code (4-8 chiffres)" style="margin-top:10px;">
-    <button onclick="handleAuth('login')" style="margin-top:20px; padding:15px; background:var(--accent); color:white; border:none; font-weight:bold;">SE CONNECTER</button>
-    <button onclick="handleAuth('register')" style="margin-top:10px; padding:15px; background:#222; color:white; border:none;">CRÉER UN COMPTE</button>
+    <input id="pseudo" type="text" placeholder="pseudo" style="width:100%; padding:15px; margin-bottom:10px;">
+    <input id="code" type="password" placeholder="code" style="width:100%; padding:15px; margin-bottom:20px;">
+    <button onclick="handleAuth('login')" style="width:100%; padding:15px; background:var(--accent); color:#fff; border:none; font-weight:bold;">CONNEXION</button>
+    <button onclick="handleAuth('register')" style="width:100%; padding:10px; background:none; color:#888; border:none; margin-top:10px;">créer un compte</button>
 </div>
 
 <div id="panorama">
-    <div class="view" id="view-hub">
+    <section class="view">
         <div class="page-title">THINKTALK</div>
         <h1 class="section-header">accueil</h1>
         <div class="tiles-container">
@@ -67,34 +106,35 @@ input:focus { border: 2px solid var(--accent); }
             <div class="tile" style="background:#333" onclick="goTo(2)">contacts</div>
             <div class="tile" style="background:#e81123" onclick="logout()">quitter</div>
         </div>
-    </div>
+    </section>
 
-    <div class="view" id="view-chat">
+    <section class="view">
         <div class="page-title">DISCUTER</div>
         <h1 class="section-header" id="chat-title">salon</h1>
         <div id="message-container" class="scroll-area"></div>
-        <div class="input-bar">
+        
+        <div class="chat-input-container" id="chat-bar">
             <input id="msgInput" type="text" placeholder="répondre...">
-            <button class="btn-send" id="btnSend">ENVOYER</button>
+            <button onclick="send()">OK</button>
         </div>
-    </div>
+    </section>
 
-    <div class="view" id="view-contacts">
+    <section class="view">
         <div class="page-title">PERSONNES</div>
         <h1 class="section-header">contacts</h1>
         <div id="contacts-list" class="scroll-area"></div>
-        <button onclick="addContactPrompt()" style="padding:15px; background:none; border:2px solid white; color:white; font-weight:bold; width:100%;">+ AJOUTER UN CONTACT</button>
-    </div>
+        <button onclick="addContactPrompt()" style="width:100%; padding:15px; background:none; border:2px solid #fff; color:#fff;">+ AJOUTER</button>
+    </section>
 </div>
 
-<div class="nav-bottom">
+<nav class="nav-bottom">
     <div class="nav-item active" onclick="goTo(0)">accueil</div>
     <div class="nav-item" onclick="goTo(1)">chat</div>
     <div class="nav-item" onclick="goTo(2)">contacts</div>
-</div>
+</nav>
 
 <script>
-// --- FIREBASE CONFIG ---
+// --- CONFIG FIREBASE ---
 const firebaseConfig = {
   apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
   authDomain: "chat-github-6abb5.firebaseapp.com",
@@ -110,28 +150,27 @@ const db = firebase.database();
 let user = localStorage.getItem('tt_user');
 let currentCtx = { id: 'general', type: 'room' };
 
-// --- NAVIGATION ---
 function goTo(index) {
     document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
     const navs = document.querySelectorAll('.nav-item');
     navs.forEach((n, i) => n.classList.toggle('active', i === index));
+    // Cacher la barre de chat si on n'est pas sur la page chat
+    document.getElementById('chat-bar').style.display = (index === 1) ? 'flex' : 'none';
 }
 
-// --- AUTH ---
 async function handleAuth(type) {
     const p = document.getElementById('pseudo').value.trim();
     const c = document.getElementById('code').value.trim();
-    if(!p || c.length < 4) return alert("Pseudo requis et code 4+ chiffres");
-
+    if(!p || c.length < 4) return alert("Pseudo et code requis");
     const userRef = db.ref('users/' + p);
     const snap = await userRef.get();
 
     if(type === 'register') {
-        if(snap.exists()) return alert("Ce pseudo est déjà utilisé !");
+        if(snap.exists()) return alert("Déjà utilisé");
         await userRef.set({ code: c });
-        alert("Compte créé ! Connectez-vous.");
+        alert("Compte créé");
     } else {
-        if(!snap.exists() || snap.val().code !== c) return alert("Identifiants incorrects");
+        if(!snap.exists() || snap.val().code !== c) return alert("Erreur");
         user = p;
         localStorage.setItem('tt_user', p);
         document.getElementById('auth').classList.add('hidden');
@@ -140,7 +179,6 @@ async function handleAuth(type) {
     }
 }
 
-// --- LOGIQUE CHAT ---
 function openRoom(id, type) {
     currentCtx = { id: id, type: type };
     document.getElementById('chat-title').textContent = (type === 'room' ? '#' : '') + id;
@@ -149,15 +187,12 @@ function openRoom(id, type) {
 }
 
 function listenMessages() {
-    // Correction du chemin : on utilise la structure exacte de ta version PC
     let path = currentCtx.type === 'room' ? `messages/public/${currentCtx.id}` : `messages/dm/${getConvId(user, currentCtx.id)}`;
     const ref = db.ref(path);
     const container = document.getElementById('message-container');
-    
     ref.off();
     container.innerHTML = "";
-    
-    ref.limitToLast(30).on('child_added', snap => {
+    ref.limitToLast(20).on('child_added', snap => {
         const m = snap.val();
         const div = document.createElement('div');
         div.className = 'msg-bubble';
@@ -170,32 +205,15 @@ function listenMessages() {
 function send() {
     const input = document.getElementById('msgInput');
     const txt = input.value.trim();
-    if(!txt || !user) return;
-
-    // Correction de l'envoi : on définit bien le chemin ici aussi
+    if(!txt) return;
     let path = currentCtx.type === 'room' ? `messages/public/${currentCtx.id}` : `messages/dm/${getConvId(user, currentCtx.id)}`;
-    
-    db.ref(path).push({
-        pseudo: user,
-        text: txt,
-        timestamp: Date.now(),
-        edited: false
-    }).then(() => {
-        input.value = "";
-        input.focus();
-    }).catch(err => alert("Erreur d'envoi : " + err.message));
+    db.ref(path).push({ pseudo: user, text: txt, timestamp: Date.now() });
+    input.value = "";
 }
 
-// Gestion touche Entrée
-document.getElementById('msgInput').onkeydown = e => { if(e.key === "Enter") send(); };
-document.getElementById('btnSend').onclick = send;
-
-// --- CONTACTS ---
 async function loadContacts() {
     const list = document.getElementById('contacts-list');
-    list.innerHTML = "<p style='padding:20px; color:#444'>Chargement...</p>";
     const snap = await db.ref('contacts/' + user).get();
-    
     list.innerHTML = "";
     if(snap.exists()) {
         Object.keys(snap.val()).forEach(name => {
@@ -205,32 +223,28 @@ async function loadContacts() {
             div.onclick = () => openRoom(name, 'dm');
             list.appendChild(div);
         });
-    } else {
-        list.innerHTML = "<p style='padding:20px; color:#666'>Aucun contact.</p>";
     }
 }
 
 async function addContactPrompt() {
-    const target = prompt("Pseudo du contact :");
+    const target = prompt("Pseudo :");
     if(!target || target === user) return;
-
     const check = await db.ref('users/' + target).get();
-    if(!check.exists()) return alert("Cet utilisateur n'existe pas.");
-
+    if(!check.exists()) return alert("Inconnu");
     await db.ref(`contacts/${user}/${target}`).set(true);
     await db.ref(`contacts/${target}/${user}`).set(true);
     loadContacts();
-    alert("Contact ajouté !");
 }
 
 function getConvId(a, b) { return [a, b].sort().join("__"); }
 function logout() { localStorage.clear(); location.reload(); }
 
-// Init
 if(user) { 
     document.getElementById('auth').classList.add('hidden');
     loadContacts();
-    openRoom('general', 'room');
+    goTo(0);
+} else {
+    goTo(0);
 }
 </script>
 </body>
