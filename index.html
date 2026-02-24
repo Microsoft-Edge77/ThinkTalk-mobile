@@ -32,7 +32,6 @@
         .pc-tab.active { color: #fff; border-bottom: 2px solid var(--accent); }
         .search-box { width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid #333; color: #fff; margin-bottom: 10px; font-size: 14px; outline: none; }
         
-        /* Boutons d'action salons */
         .room-actions { display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px; }
         .btn-action-metro { padding: 10px; font-size: 11px; background: #111; color: #fff; border: 1px solid #333; cursor: pointer; text-align: left; text-transform: uppercase; transition: 0.2s; }
         .btn-action-metro:hover { border-color: var(--accent); background: #222; }
@@ -40,7 +39,7 @@
         .pc-item { padding: 10px; cursor: pointer; border-left: 3px solid transparent; }
         .pc-item:hover { background: rgba(0,162,232,0.15); border-left-color: var(--accent); }
 
-        /* Mobile Layout & 3D Panorama */
+        /* Mobile & 3D Panorama */
         #mobile-layout { display: none; height: 100vh; position: relative; padding-top: 60px; }
         #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.6s cubic-bezier(0.1, 0.7, 0.1, 1); perspective: 1500px; }
         .view { width: 100vw; height: 100%; padding: 15px 15px 180px 15px; display: flex; flex-direction: column; overflow-y: auto; }
@@ -48,23 +47,22 @@
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #444; }
         .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
 
-        /* Animation d'Explosion Turnstile */
+        /* Animation Turnstile */
         .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; }
         .tile { 
             background: var(--accent); padding: 15px; height: 110px; display: flex; align-items: flex-end; font-weight: bold; 
             cursor: pointer; position: relative; transition: transform 0.6s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.5s; 
         }
+        .tile.private { background: #333; border: 1px solid var(--accent); }
         .view-exit .tile { opacity: 0; pointer-events: none; }
         .view-exit .tile:nth-child(4n+1) { transform: translate3d(-200px, -200px, 800px) rotate(-20deg); }
         .view-exit .tile:nth-child(4n+2) { transform: translate3d(200px, -200px, 800px) rotate(20deg); }
         .view-exit .tile:nth-child(4n+3) { transform: translate3d(-200px, 200px, 800px) rotate(15deg); }
         .view-exit .tile:nth-child(4n+4) { transform: translate3d(200px, 200px, 800px) rotate(-15deg); }
 
-        /* Messages */
         .msg { background: rgba(30,30,30,0.7); padding: 12px; border-left: 4px solid #333; max-width: 85%; align-self: flex-start; word-wrap: break-word; margin-bottom: 4px;}
         .msg.mine { border-left-color: var(--accent); align-self: flex-end;}
 
-        /* Footer Input */
         .input-area { display: flex; align-items: center; gap: 8px; padding: 10px; border-top: 1px solid #222; width: 100%; }
         .input-area input[type="text"] { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
         .btn-send { min-width: 70px; background: var(--accent); border: none; color: #fff; font-weight: bold; cursor: pointer; padding: 12px; }
@@ -92,12 +90,10 @@
             </div>
             <div style="flex:1; overflow-y:auto;">
                 <input type="text" class="search-box" id="pc-search" placeholder="Chercher..." oninput="filterPcList(this.value)">
-                
                 <div class="room-actions" id="pc-room-actions">
                     <button class="btn-action-metro" onclick="uiCreateRoom()">+ CRÉER UN SALON</button>
                     <button class="btn-action-metro" onclick="uiJoinPrivate()">🔑 REJOINDRE UN SALON PRIVÉ</button>
                 </div>
-
                 <div id="pc-content-list"></div>
             </div>
             <button onclick="logout()" style="color:#ff5050; border:none; background:none; cursor:pointer; font-weight:bold; padding:10px 0; text-align: left;">DÉCONNEXION</button>
@@ -154,16 +150,26 @@
         let current = { id: 'general', type: 'room' };
         let activePcTab = 'rooms'; 
 
+        // Fonction pour gérer les salons privés mémorisés
+        function savePrivateRoom(id) {
+            let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
+            if (!saved.includes(id)) {
+                saved.push(id);
+                localStorage.setItem("thinktalk_private_rooms", JSON.stringify(saved));
+            }
+        }
+
         function getPath() { return current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; }
 
-        // --- SALONS PRIVÉS ---
         function uiCreateRoom() {
             openModal("Créer un salon", `<input id="nr-name" class="metro-input" placeholder="Nom du salon"><input id="nr-code" class="metro-input" placeholder="Code (vide = public)">`, async () => {
                 const name = document.getElementById('nr-name').value.trim().toLowerCase();
                 const code = document.getElementById('nr-code').value.trim();
                 if(!name) return;
                 await db.ref('rooms/'+name).set({ code: code || null });
+                if(code) savePrivateRoom(name); // On l'ajoute direct si on le crée
                 closeModal();
+                loadLists();
             });
         }
 
@@ -172,7 +178,12 @@
                 const name = document.getElementById('jr-name').value.trim().toLowerCase();
                 const code = document.getElementById('jr-code').value.trim();
                 const s = await db.ref('rooms/'+name).get();
-                if(s.exists() && s.val().code === code) { enterChatMobile(name, 'room'); closeModal(); }
+                if(s.exists() && s.val().code === code) { 
+                    savePrivateRoom(name); 
+                    enterChatMobile(name, 'room'); 
+                    closeModal();
+                    loadLists(); // Refresh pour voir la tuile apparaître
+                }
                 else alert("Accès refusé");
             });
         }
@@ -180,10 +191,19 @@
         async function tryEnterRoom(id) {
             const s = await db.ref('rooms/'+id).get();
             if(s.exists() && s.val().code) {
-                openModal("Salon Privé", `<input id="lock-code" class="metro-input" type="password" placeholder="Code pour #${id}">`, () => {
-                    if(document.getElementById('lock-code').value === s.val().code) { enterChatMobile(id, 'room'); closeModal(); }
-                    else alert("Code erroné");
-                });
+                // On vérifie si on le connaît déjà pour éviter de redemander le code à chaque clic
+                let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
+                if(saved.includes(id)) {
+                    enterChatMobile(id, 'room');
+                } else {
+                    openModal("Salon Privé", `<input id="lock-code" class="metro-input" type="password" placeholder="Code pour #${id}">`, () => {
+                        if(document.getElementById('lock-code').value === s.val().code) { 
+                            savePrivateRoom(id);
+                            enterChatMobile(id, 'room'); 
+                            closeModal();
+                        } else alert("Code erroné");
+                    });
+                }
             } else enterChatMobile(id, 'room');
         }
 
@@ -217,12 +237,21 @@
             db.ref("rooms").on('value', s => {
                 const mb = document.getElementById('mob-rooms'), pc = document.getElementById('pc-content-list');
                 if(!mb || !pc) return;
+                
+                let savedPrivate = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
+                
                 mb.innerHTML = `<div class="tile" onclick="tryEnterRoom('general')">#general</div>`;
                 if(activePcTab==='rooms') pc.innerHTML = `<div class="pc-item" onclick="tryEnterRoom('general')">#general</div>`;
+                
                 s.forEach(r => {
-                    if(r.key !== 'general' && !r.val().code) {
-                        mb.innerHTML += `<div class="tile" data-name="${r.key}" onclick="tryEnterRoom('${r.key}')">#${r.key}</div>`;
-                        if(activePcTab==='rooms') pc.innerHTML += `<div class="pc-item" onclick="tryEnterRoom('${r.key}')">#${r.key}</div>`;
+                    const isPrivate = r.val().code !== null;
+                    const isKnown = savedPrivate.includes(r.key);
+
+                    // Affiche si Public OU si c'est un salon privé que l'utilisateur a déjà rejoint
+                    if(r.key !== 'general' && (!isPrivate || isKnown)) {
+                        let classList = isPrivate ? "tile private" : "tile";
+                        mb.innerHTML += `<div class="${classList}" data-name="${r.key}" onclick="tryEnterRoom('${r.key}')">${isPrivate ? '🔑 ' : ''}#${r.key}</div>`;
+                        if(activePcTab==='rooms') pc.innerHTML += `<div class="pc-item" onclick="tryEnterRoom('${r.key}')">${isPrivate ? '🔑 ' : ''}#${r.key}</div>`;
                     }
                 });
             });
