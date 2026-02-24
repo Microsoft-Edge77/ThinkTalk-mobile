@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ThinkTalk</title>
+    <title>ThinkTalk OS - Infinity</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -15,21 +15,10 @@
             background-image: var(--bg-img); background-size: cover; background-position: center;
         }
 
-        /* --- ANIMATIONS "METRO" COMPLEXES --- */
-        @keyframes pageTurn { 
-            from { transform: rotateY(-90deg); opacity: 0; } 
-            to { transform: rotateY(0deg); opacity: 1; } 
-        }
-        @keyframes slideInUp { 
-            from { transform: translateY(100px) rotateX(-30deg); opacity: 0; } 
-            to { transform: translateY(0) rotateX(0); opacity: 1; } 
-        }
-        @keyframes bounceTile { 
-            0% { transform: scale(1); } 
-            50% { transform: scale(0.95); } 
-            100% { transform: scale(1); } 
-        }
-
+        /* --- ANIMATIONS "METRO" --- */
+        @keyframes pageTurn { from { transform: rotateY(-90deg); opacity: 0; } to { transform: rotateY(0deg); opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(100px) rotateX(-30deg); opacity: 0; } to { transform: translateY(0) rotateX(0); opacity: 1; } }
+        
         .animate-turnstile { animation: pageTurn 0.6s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; transform-origin: left; }
         .animate-msg { animation: slideInUp 0.4s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; }
 
@@ -40,17 +29,14 @@
             cursor: pointer; transition: 0.3s; overflow: hidden; display: flex; align-items: flex-end;
             transform-style: preserve-3d;
         }
-        .tile:hover { transform: translateY(-5px) translateZ(20px); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .tile:active { animation: bounceTile 0.2s ease-in-out; }
-        .live-preview { position: absolute; top: 12px; left: 12px; font-size: 11px; opacity: 0.8; font-weight: 300; transition: 0.5s; }
+        .live-preview { position: absolute; top: 12px; left: 12px; font-size: 11px; opacity: 0.8; font-weight: 300; }
 
-        /* --- MESSAGES & ALIGNEMENT --- */
+        /* --- MESSAGES : ALIGNÉS À GAUCHE --- */
         .msg-list { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         .msg { 
-            background: #1a1a1a; padding: 12px 18px; border-left: 4px solid #444; 
+            background: #1a1a1a; padding: 12px 18px; border-left: 4px solid var(--accent); 
             align-self: flex-start; max-width: 85%; position: relative;
         }
-        .msg.mine { align-self: flex-end; border-left: none; border-right: 4px solid var(--accent); background: #222; }
         .msg-author { font-size: 10px; color: var(--accent); font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
 
         /* --- NAVIGATION --- */
@@ -58,33 +44,35 @@
             position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.9); 
             backdrop-filter: blur(10px); border-top: 1px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
-        .nav-item { font-size: 11px; font-weight: bold; color: #555; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
-        .nav-item.active { color: #fff; transform: scale(1.1); text-shadow: 0 0 10px var(--accent); }
+        .nav-item { font-size: 11px; font-weight: bold; color: #555; cursor: pointer; text-transform: uppercase; }
+        .nav-item.active { color: #fff; text-shadow: 0 0 10px var(--accent); }
 
-        /* --- PC SIDEBAR --- */
+        /* --- PC SIDEBAR FIX --- */
         #pc-layout { display: none; height: 100vh; }
-        #sidebar { width: 340px; background: rgba(0,0,0,0.95); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px; z-index: 50; }
+        #sidebar { width: 340px; background: rgba(0,0,0,0.95); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 30px; z-index: 50; height: 100vh; }
+        .pc-scroll-area { overflow-y: auto; flex: 1; margin-bottom: 20px; }
         .pc-item { padding: 12px 18px; background: rgba(255,255,255,0.03); margin-bottom: 6px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .pc-item:hover { background: var(--accent); transform: translateX(10px); border-color: rgba(255,255,255,0.2); }
+        .pc-item:hover { background: var(--accent); }
 
         /* --- INPUT AREA --- */
         .input-area { display: flex; background: #000; padding: 18px; gap: 15px; border-top: 1px solid #222; align-items: center; }
-        .input-area input { flex: 1; background: #111; border: 2px solid #333; color: #fff; padding: 12px; outline: none; font-size: 15px; transition: 0.3s; }
-        .input-area input:focus { border-color: var(--accent); background: #000; }
+        .input-area input { flex: 1; background: #111; border: 2px solid #333; color: #fff; padding: 12px; outline: none; }
 
-        /* --- MODALS & SETTINGS --- */
+        /* --- MODALS --- */
         #settings-panel { 
             position: fixed; top: 0; left: -100%; width: 320px; height: 100%; 
-            background: #000; z-index: 1000; transition: 0.6s cubic-bezier(0.1, 0.9, 0.2, 1); padding: 40px; border-right: 4px solid var(--accent);
+            background: #000; z-index: 1000; transition: 0.5s; padding: 40px; border-right: 4px solid var(--accent);
         }
-        #settings-panel.open { left: 0; box-shadow: 0 0 100px rgba(0,0,0,1); }
+        #settings-panel.open { left: 0; }
         #metro-dialog { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .dialog-box { background: #000; border: 2px solid var(--accent); width: 90%; max-width: 420px; padding: 40px; animation: pageTurn 0.4s ease-out; }
-
-        .color-dot { width: 35px; height: 35px; cursor: pointer; display: inline-block; margin: 6px; border-radius: 2px; }
+        .dialog-box { background: #000; border: 2px solid var(--accent); width: 90%; max-width: 420px; padding: 40px; }
+        .color-dot { width: 35px; height: 35px; cursor: pointer; display: inline-block; margin: 6px; }
 
         @media (min-width: 851px) { #pc-layout { display: flex; } }
         @media (max-width: 850px) { #mobile-layout { display: block; } }
+        
+        /* --- MOBILE VIEW FIX --- */
+        .view { width: 100vw; height: 100vh; background: #000; flex-shrink: 0; overflow-y: auto; }
     </style>
 </head>
 <body>
@@ -92,11 +80,10 @@
     <audio id="notif-sound" src="https://actions.google.com/sounds/v1/foley/drawbridge_clink.ogg"></audio>
 
     <div id="settings-panel">
-        <h2 style="font-weight:100; font-size:50px; margin-bottom:40px; letter-spacing:-2px;">paramètres</h2>
-        <p style="margin-bottom:15px; color:#666; font-size:12px; text-transform:uppercase;">Accentuation</p>
+        <h2 style="font-weight:100; font-size:50px; margin-bottom:40px;">paramètres</h2>
         <div id="color-picker"></div>
-        <button onclick="changeBg()" style="width:100%; padding:15px; margin-top:30px; background:#111; color:white; border:1px solid #333; cursor:pointer; text-transform:uppercase; font-size:11px;">Changer fond d'écran</button>
-        <button onclick="logout()" style="width:100%; padding:15px; margin-top:10px; background:#e51400; color:white; border:none; cursor:pointer; font-weight:bold; text-transform:uppercase;">Déconnexion</button>
+        <button onclick="changeBg()" style="width:100%; padding:15px; margin-top:30px; background:#111; color:white; border:1px solid #333; cursor:pointer;">Changer fond d'écran</button>
+        <button onclick="logout()" style="width:100%; padding:15px; margin-top:10px; background:#e51400; color:white; border:none; cursor:pointer; font-weight:bold;">Déconnexion</button>
         <button onclick="toggleMenu()" style="margin-top:60px; background:none; border:1px solid #fff; color:white; padding:12px 30px; cursor:pointer; width:100%;">RETOUR</button>
     </div>
 
@@ -113,26 +100,24 @@
 
     <div id="pc-layout">
         <aside id="sidebar">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:50px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
                 <h1 style="font-weight:100; font-size:38px; letter-spacing:-2px;">ThinkTalk</h1>
                 <span onclick="toggleMenu()" style="cursor:pointer; font-size:32px; padding:10px;">≡</span>
             </div>
-            <div style="display:flex; gap:10px; margin-bottom:30px;">
-                <button onclick="openCreateRoom()" style="flex:1; padding:14px; background:var(--accent); border:none; color:white; cursor:pointer; font-weight:bold;">+ SALON</button>
-                <button onclick="joinPrivateRoom()" style="flex:1; padding:14px; background:#111; color:var(--accent); border:1px solid var(--accent); cursor:pointer;">🔑 PRIVÉ</button>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button onclick="openCreateRoom()" style="flex:1; padding:10px; background:var(--accent); border:none; color:white; font-weight:bold;">+ SALON</button>
+                <button onclick="joinPrivateRoom()" style="flex:1; padding:10px; background:#111; color:var(--accent); border:1px solid var(--accent);">🔑 PRIVÉ</button>
             </div>
-            <p style="color:var(--accent); font-size:11px; font-weight:bold; margin-bottom:15px; letter-spacing:2px;">SALONS</p>
-            <div id="pc-rooms" style="margin-bottom:30px; overflow-y:auto; flex:1;"></div>
-            <p style="color:var(--accent); font-size:11px; font-weight:bold; margin-bottom:15px; letter-spacing:2px;">CONTACTS</p>
-            <div id="pc-contacts" style="overflow-y:auto; flex:1;"></div>
+            <p style="color:var(--accent); font-size:11px; font-weight:bold; margin-bottom:10px;">SALONS</p>
+            <div id="pc-rooms" class="pc-scroll-area"></div>
+            <p style="color:var(--accent); font-size:11px; font-weight:bold; margin-bottom:10px;">CONTACTS</p>
+            <div id="pc-contacts" class="pc-scroll-area"></div>
         </aside>
         <main style="flex:1; display:flex; flex-direction:column; background: rgba(0,0,0,0.6);">
             <div id="msg-pc" class="msg-list"></div>
             <div class="input-area">
                 <input type="file" id="file-pc" hidden onchange="handleFile(this)">
-                <div class="btn-attach" onclick="document.getElementById('file-pc').click()" style="cursor:pointer; width:50px; height:50px; border:2px solid var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                    <svg viewBox="0 0 24 24" width="22" fill="var(--accent)"><path d="M16.5,6V17.5A4,4 0 0,1 12.5,21.5A4,4 0 0,1 8.5,17.5V5A2.5,2.5 0 0,1 11,2.5A2.5,2.5 0 0,1 13.5,5V15.5A1,1 0 0,1 12.5,16.5A1,1 0 0,1 11.5,15.5V6H10V15.5A2.5,2.5 0 0,0 12.5,18A2.5,2.5 0 0,0 15,15.5V5A4,4 0 0,0 11,1A4,4 0 0,0 7,5V17.5A5.5,5.5 0 0,0 12.5,23A5.5,5.5 0 0,0 18,17.5V6H16.5Z"/></svg>
-                </div>
+                <span onclick="document.getElementById('file-pc').click()" style="cursor:pointer; font-size:28px; color:var(--accent);">📎</span>
                 <input type="text" id="in-pc" placeholder="Message..." onkeypress="if(event.key==='Enter') send('pc')">
                 <button onclick="send('pc')" style="background:var(--accent); border:none; padding:15px 30px; color:white; font-weight:bold; cursor:pointer;">ENVOYER</button>
             </div>
@@ -140,27 +125,27 @@
     </div>
 
     <div id="mobile-layout" style="display:none;">
-        <div style="padding:25px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="position:absolute; top:0; width:100%; padding:20px; display:flex; justify-content:space-between; align-items:center; z-index:10; background:black;">
             <span style="font-weight:100; letter-spacing:4px; font-size:12px;">THINKTALK</span>
-            <span onclick="toggleMenu()" style="font-size:35px;">≡</span>
+            <span onclick="toggleMenu()" style="font-size:30px;">≡</span>
         </div>
         <div id="panorama" style="display:flex; width:300vw; transition:0.7s cubic-bezier(0.1, 0.9, 0.1, 1);">
-            <section class="view" style="width:100vw; padding-bottom:100px;">
-                <h1 class="animate-turnstile" style="font-size:65px; font-weight:100; margin:20px;">salons</h1>
+            <section class="view">
+                <h1 style="font-size:55px; font-weight:100; margin:80px 20px 20px;">salons</h1>
                 <div id="mob-rooms" class="tiles-grid"></div>
             </section>
-            <section class="view" style="width:100vw; display:flex; flex-direction:column; height:calc(100vh - 140px);">
-                <h1 id="mob-title" class="animate-turnstile" style="font-size:40px; font-weight:100; margin:10px 25px;">#accueil</h1>
-                <div id="msg-mob" class="msg-list"></div>
+            <section class="view" style="display:flex; flex-direction:column;">
+                <h1 id="mob-title" style="font-size:35px; font-weight:100; margin:80px 25px 10px;">#accueil</h1>
+                <div id="msg-mob" class="msg-list" style="margin-bottom:140px;"></div>
                 <div class="input-area" id="mob-input-bar" style="display:none; position:fixed; bottom:70px; width:100%;">
                     <input type="file" id="file-mob" hidden onchange="handleFile(this)">
-                    <span onclick="document.getElementById('file-mob').click()" style="font-size:28px; color:var(--accent); padding:0 15px;">📎</span>
+                    <span onclick="document.getElementById('file-mob').click()" style="font-size:24px; color:var(--accent); padding:0 15px;">📎</span>
                     <input type="text" id="in-mob" placeholder="Répondre..." onkeypress="if(event.key==='Enter') send('mob')">
                     <button onclick="send('mob')" style="background:var(--accent); border:none; color:white; padding:12px 20px; font-weight:bold;">OK</button>
                 </div>
             </section>
-            <section class="view" style="width:100vw; padding-bottom:100px;">
-                <h1 class="animate-turnstile" style="font-size:65px; font-weight:100; margin:20px;">contacts</h1>
+            <section class="view">
+                <h1 style="font-size:55px; font-weight:100; margin:80px 20px 20px;">contacts</h1>
                 <div id="mob-contacts" class="tiles-grid"></div>
             </section>
         </div>
@@ -177,7 +162,6 @@
         const db = firebase.database();
         let user = localStorage.getItem("tt_user"), current = { id: 'general', type: 'room' };
 
-        // --- UTILS ---
         function toggleMenu() { document.getElementById('settings-panel').classList.toggle('open'); }
         function closeDialog() { document.getElementById('metro-dialog').style.display = 'none'; }
         function openDialog(title, body, confirm) {
@@ -187,19 +171,18 @@
             document.getElementById('dialog-confirm').onclick = () => { confirm(); closeDialog(); };
         }
 
-        // --- CORE CHAT ---
         function setChat(id, type) {
             current = { id, type };
             const path = type === 'room' ? `messages/public/${id}` : `messages/dm/${[user,id].sort().join("__")}`;
             db.ref(path).off();
             db.ref(path).on('value', s => {
                 const pc = document.getElementById('msg-pc'), mb = document.getElementById('msg-mob');
-                pc.innerHTML = ""; mb.innerHTML = "";
+                pc.innerHTML = mb.innerHTML = "";
                 s.forEach(snap => {
-                    const m = snap.val(), isMine = m.pseudo === user;
-                    const html = `<div class="msg animate-msg ${isMine?'mine':''}" oncontextmenu="event.preventDefault(); showOptions('${snap.key}','${m.text.replace(/'/g,"\\'")}')" onclick="if(window.innerWidth<850) showOptions('${snap.key}','${m.text.replace(/'/g,"\\'")}')">
+                    const m = snap.val();
+                    const html = `<div class="msg animate-msg">
                         <div class="msg-author">${m.pseudo}</div>
-                        <div>${m.text.startsWith('[img]') ? `<img src="${m.text.replace('[img]','')}" style="max-width:100%; border-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">` : m.text}</div>
+                        <div>${m.text.startsWith('[img]') ? `<img src="${m.text.replace('[img]','')}" style="max-width:100%; border-radius:4px;">` : m.text}</div>
                     </div>`;
                     pc.insertAdjacentHTML('beforeend', html); mb.insertAdjacentHTML('beforeend', html);
                 });
@@ -209,21 +192,6 @@
             document.getElementById('mob-title').textContent = (type==='room'?'# ':'@ ')+id;
         }
 
-        function showOptions(key, text) {
-            openDialog(text.startsWith('[img]') ? "Image" : "Message", "Actions disponibles", null);
-            let btns = `<button onclick="deleteMsg('${key}')" style="width:100%; padding:15px; background:#e51400; border:none; color:white; font-weight:bold;">SUPPRIMER</button>`;
-            if(!text.startsWith('[img]')) btns = `<button onclick="editMsg('${key}','${text}')" style="width:100%; padding:15px; margin-bottom:10px; background:#333; color:white; border:none;">MODIFIER</button>` + btns;
-            document.getElementById('dialog-body').innerHTML = btns;
-        }
-
-        function deleteMsg(k) { const p = current.type==='room'?`messages/public/${current.id}/${k}`:`messages/dm/${[user,current.id].sort().join("__")}/${k}`; db.ref(p).remove(); closeDialog(); }
-        function editMsg(k, o) { 
-            const n = prompt("Modifier :", o);
-            if(n) { const p = current.type==='room'?`messages/public/${current.id}/${k}`:`messages/dm/${[user,current.id].sort().join("__")}/${k}`; db.ref(p).update({text: n}); }
-            closeDialog();
-        }
-
-        // --- COMPRESSION & CLEAN ---
         function handleFile(input) {
             const reader = new FileReader();
             reader.onload = e => {
@@ -242,37 +210,26 @@
             reader.readAsDataURL(input.files[0]);
         }
 
-        function runAutoClean() {
-            const limit = Date.now() - (48 * 60 * 60 * 1000);
-            const clean = (path) => db.ref(path).once('value', s => s.forEach(c => c.forEach(m => { if(m.val().timestamp && m.val().timestamp < limit) m.ref.remove(); })));
-            clean("messages/public"); clean("messages/dm");
-        }
-
-        // --- DATA LOAD ---
         function loadData() {
             db.ref("rooms").on('value', s => {
                 const pr = document.getElementById('pc-rooms'), mr = document.getElementById('mob-rooms');
-                pr.innerHTML = ""; mr.innerHTML = "";
+                pr.innerHTML = mr.innerHTML = "";
                 const saved = JSON.parse(localStorage.getItem("tt_priv") || "[]");
                 const render = (id) => {
-                    pr.innerHTML += `<div class="pc-item animate-turnstile" onclick="setChat('${id}','room')"># ${id}</div>`;
-                    mr.innerHTML += `<div class="tile animate-turnstile" onclick="setChat('${id}','room');goTo(1)">
+                    pr.innerHTML += `<div class="pc-item" onclick="setChat('${id}','room')"># ${id}</div>`;
+                    mr.innerHTML += `<div class="tile" onclick="setChat('${id}','room');goTo(1)">
                         <div class="live-preview" id="live-${id}">...</div>${id}</div>`;
-                    db.ref(`messages/public/${id}`).limitToLast(1).on('child_added', snap => {
-                        const el = document.getElementById(`live-${id}`);
-                        if(el) el.textContent = snap.val().pseudo + ": " + snap.val().text.substring(0,25);
-                    });
                 };
                 render('general');
                 s.forEach(r => { if(r.key!=='general' && (!r.val().code || saved.includes(r.key))) render(r.key); });
             });
             db.ref("users").on('value', s => {
                 const pc = document.getElementById('pc-contacts'), mc = document.getElementById('mob-contacts');
-                pc.innerHTML = ""; mc.innerHTML = "";
+                pc.innerHTML = mc.innerHTML = "";
                 s.forEach(u => {
                     if(u.key === user) return;
-                    pc.innerHTML += `<div class="pc-item animate-turnstile" onclick="setChat('${u.key}','dm')">@ ${u.key}</div>`;
-                    mc.innerHTML += `<div class="tile animate-turnstile" style="background:#1a1a1a; border:1px solid #333;" onclick="setChat('${u.key}','dm');goTo(1)">${u.key}</div>`;
+                    pc.innerHTML += `<div class="pc-item" onclick="setChat('${u.key}','dm')">@ ${u.key}</div>`;
+                    mc.innerHTML += `<div class="tile" style="background:#1a1a1a; border:1px solid #333;" onclick="setChat('${u.key}','dm');goTo(1)">${u.key}</div>`;
                 });
             });
         }
@@ -285,26 +242,6 @@
             i.value = "";
         }
 
-        function openCreateRoom() {
-            openDialog("Nouveau Salon", `<input id="rn" placeholder="Nom du salon"><input id="rc" placeholder="Code (Optionnel)" style="margin-top:15px;">`, () => {
-                const n=document.getElementById('rn').value.trim(), c=document.getElementById('rc').value.trim();
-                if(n) db.ref('rooms/'+n).set({code: c||null});
-            });
-        }
-
-        function joinPrivateRoom() {
-            openDialog("Rejoindre", `<input id="jn" placeholder="Nom"><input id="jc" placeholder="Code" style="margin-top:15px;">`, () => {
-                const n=document.getElementById('jn').value.trim(), c=document.getElementById('jc').value.trim();
-                db.ref('rooms/'+n).once('value', s => {
-                    if(s.exists() && s.val().code === c) {
-                        let p = JSON.parse(localStorage.getItem("tt_priv") || "[]");
-                        if(!p.includes(n)) p.push(n);
-                        localStorage.setItem("tt_priv", JSON.stringify(p)); loadData();
-                    } else alert("Code erroné");
-                });
-            });
-        }
-
         function goTo(x) {
             document.getElementById('panorama').style.transform = `translateX(-${x*100}vw)`;
             document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active', i===x));
@@ -312,7 +249,7 @@
         }
 
         function initTheme() {
-            const colors = ["#00a2e8", "#a200ff", "#008a00", "#e51400", "#ff0097", "#f0a30a", "#1ba1e2", "#d80073"];
+            const colors = ["#00a2e8", "#a200ff", "#008a00", "#e51400", "#ff0097"];
             const cp = document.getElementById('color-picker');
             colors.forEach(c => {
                 const d = document.createElement('div'); d.className="color-dot"; d.style.background=c;
@@ -323,18 +260,17 @@
             const bg = localStorage.getItem("tt_bg"); if(bg) document.documentElement.style.setProperty('--bg-img',`url(${bg})`);
         }
 
-        function changeBg() { const u=prompt("Lien URL de l'image :"); if(u){ document.documentElement.style.setProperty('--bg-img',`url(${u})`); localStorage.setItem("tt_bg",u); } }
         function logout() { localStorage.clear(); location.reload(); }
+        function changeBg() { const u=prompt("Lien Image :"); if(u){ document.documentElement.style.setProperty('--bg-img',`url(${u})`); localStorage.setItem("tt_bg",u); } }
 
         window.onload = () => {
             if(!user) {
-                openDialog("Bienvenue", `<p style='font-size:12px; margin-bottom:15px; color:#666;'>ENTREZ VOTRE PSEUDO :</p><input id="up" placeholder="PSEUDO">`, () => {
+                openDialog("Bienvenue", `<input id="up" placeholder="PSEUDO" style="width:100%; padding:10px; background:#111; color:white; border:1px solid #333;">`, () => {
                     user = document.getElementById('up').value.trim();
                     if(user) { localStorage.setItem("tt_user", user); db.ref('users/'+user).set(true); location.reload(); }
                 });
             } else {
                 db.ref('users/'+user).set(true); initTheme(); loadData(); setChat('general', 'room');
-                runAutoClean(); setInterval(runAutoClean, 12 * 60 * 60 * 1000);
             }
         };
     </script>
