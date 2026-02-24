@@ -128,17 +128,18 @@
 
         function getPath() { return current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; }
 
-        function deleteMsg(mid) { if(confirm("Supprimer ?")) db.ref(getPath()+"/"+mid).remove(); closeModal(); }
-        function editMsg(mid, txt) {
+        function deleteMsg(mid, path) { if(confirm("Supprimer ?")) db.ref(path+"/"+mid).remove(); closeModal(); }
+        
+        function editMsg(mid, txt, path) {
             openModal("Éditer", `<input id="ed-in" class="metro-input" value="${txt.replace(/"/g, '&quot;')}">`, () => {
                 const nt = document.getElementById('ed-in').value.trim();
-                if(nt) db.ref(getPath()+"/"+mid).update({ text: nt, edited: true, timestamp: Date.now() });
+                if(nt) db.ref(path+"/"+mid).update({ text: nt, edited: true, timestamp: Date.now() });
                 closeModal();
             });
         }
-        function handleLongPress(mid, txt) {
+        function handleLongPress(mid, txt, path) {
             pressTimer = setTimeout(() => {
-                openModal("Actions", `<div class="wp-menu"><div class="wp-item" onclick="editMsg('${mid}','${txt.replace(/'/g, "\\'")}')">modifier</div><div class="wp-item" onclick="deleteMsg('${mid}')" style="color:#ff5050">supprimer</div></div>`, null);
+                openModal("Actions", `<div class="wp-menu"><div class="wp-item" onclick="editMsg('${mid}','${txt.replace(/'/g, "\\'")}', '${path}')">modifier</div><div class="wp-item" onclick="deleteMsg('${mid}', '${path}')" style="color:#ff5050">supprimer</div></div>`, null);
                 document.getElementById('modal-confirm').style.display = 'none';
             }, 600);
         }
@@ -153,10 +154,11 @@
 
         function setChat(id, type) {
             current = { id, type };
+            const currentPath = getPath(); // Fixe le chemin pour cette instance de chat
             document.getElementById('chat-title-pc').textContent = (type==='room'?'#':'@')+id;
             document.getElementById('chat-title-mob').textContent = (type==='room'?'#':'@')+id;
-            db.ref(getPath()).off();
-            db.ref(getPath()).limitToLast(30).on('value', s => {
+            db.ref(currentPath).off();
+            db.ref(currentPath).limitToLast(30).on('value', s => {
                 const pc = document.getElementById('msg-pc'), mb = document.getElementById('msg-mob');
                 pc.innerHTML = ""; mb.innerHTML = "";
                 s.forEach(c => {
@@ -171,9 +173,19 @@
                                 <span style="opacity:0.4; font-size:9px;">${timeStr}</span>
                              </div>`;
                     h += m.type==='image' ? `<img src="${m.url}" class="media-content">` : `<div>${m.text}${m.edited?'<small style="opacity:0.5"> (modifié)</small>':''}</div>`;
-                    if(isMine && m.type!=='image') h += `<div class="msg-actions-pc"><button class="btn-mini" onclick="editMsg('${mid}','${m.text}')">éditer</button><button class="btn-mini" onclick="deleteMsg('${mid}')">suppr.</button></div>`;
+                    
+                    if(isMine && m.type!=='image') {
+                        h += `<div class="msg-actions-pc">
+                                <button class="btn-mini" onclick="editMsg('${mid}','${m.text.replace(/'/g, "\\'")}', '${currentPath}')">éditer</button>
+                                <button class="btn-mini" onclick="deleteMsg('${mid}', '${currentPath}')">suppr.</button>
+                              </div>`;
+                    }
+                    
                     div.innerHTML = h;
-                    if(isMine && m.type!=='image') { div.ontouchstart = () => handleLongPress(mid, m.text); div.ontouchend = cancelLongPress; }
+                    if(isMine && m.type!=='image') { 
+                        div.ontouchstart = () => handleLongPress(mid, m.text, currentPath); 
+                        div.ontouchend = cancelLongPress; 
+                    }
                     mb.appendChild(div); pc.appendChild(div.cloneNode(true));
                 });
                 pc.scrollTop = pc.scrollHeight; mb.scrollTop = mb.scrollHeight;
