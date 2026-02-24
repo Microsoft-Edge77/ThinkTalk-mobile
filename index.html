@@ -2,8 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ThinkTalk</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ThinkTalk Metro Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -13,44 +13,71 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
 
-        /* --- MODALES --- */
+        /* --- MODALES & RECHERCHE --- */
         #metro-modal-overlay, #msg-context-menu { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
-            z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;
+            z-index: 10000; display: none; align-items: center; justify-content: center; padding: 15px;
         }
-        .metro-modal { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 380px; padding: 25px; }
-        .metro-input { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 15px; outline: none; }
+        .metro-modal { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 380px; padding: 20px; }
+        .metro-input { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 10px; outline: none; }
         .metro-btn { padding: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; margin-top: 10px; }
         .btn-blue { background: var(--accent); color: #fff; }
         .btn-gray { background: #333; color: #fff; }
-        .search-box { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 10px; font-size: 12px; }
+        .search-box { width: 100%; padding: 8px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 8px; font-size: 13px; }
 
         /* --- LAYOUTS --- */
         #pc-layout { display: none; height: 100vh; }
         #mobile-layout { display: none; height: 100vh; position: relative; }
 
         /* --- SIDEBAR PC --- */
-        #sidebar { width: 300px; border-right: 1px solid #222; padding: 20px; display: flex; flex-direction: column; }
-        .pc-item { padding: 10px; background: #0a0a0a; margin-bottom: 4px; cursor: pointer; border-left: 0 solid var(--accent); transition: 0.1s; }
+        #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .pc-item { padding: 10px; background: #0a0a0a; margin-bottom: 4px; cursor: pointer; border-left: 0 solid var(--accent); }
         .pc-item:hover { background: #111; border-left-width: 4px; }
 
         /* --- MESSAGES --- */
-        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
-        .msg { background: #111; padding: 12px; border-left: 4px solid #333; max-width: 85%; align-self: flex-start; transition: 0.2s; cursor: pointer; }
+        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; }
+        .msg { background: #111; padding: 10px; border-left: 4px solid #333; max-width: 90%; align-self: flex-start; cursor: pointer; word-wrap: break-word; }
         .msg.mine { border-left-color: var(--accent); }
         .msg-u { color: var(--accent); font-size: 11px; font-weight: bold; display: block; margin-bottom: 4px; }
-        .media-content { max-width: 100%; max-height: 250px; margin-top: 8px; border: 1px solid #222; }
+        .media-content { max-width: 100%; max-height: 250px; margin-top: 5px; }
 
         /* --- PANORAMA MOBILE --- */
         #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        .view { width: 100vw; height: 100%; padding: 20px 20px 140px 20px; display: flex; flex-direction: column; }
-        .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; }
-        .tile { background: var(--accent); padding: 15px; height: 100px; display: flex; align-items: flex-end; font-weight: bold; }
+        .view { width: 100vw; height: 100%; padding: 15px 15px 145px 15px; display: flex; flex-direction: column; }
+        .tiles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow-y: auto; }
+        .tile { background: var(--accent); padding: 12px; height: 90px; display: flex; align-items: flex-end; font-weight: bold; }
 
-        /* --- BARS --- */
-        .input-area { display: flex; gap: 8px; background: #000; padding: 10px; border-top: 1px solid #222; }
-        .input-area input[type="text"] { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
-        .nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); background: #000; border-top: 1px solid #222; display: flex; }
+        /* --- BARRE DE CHAT ULTRA-ADAPTATIVE --- */
+        .input-area { 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+            background: #000; 
+            padding: 8px; 
+            border-top: 1px solid #222;
+            width: 100%;
+        }
+        .input-area input[type="text"] { 
+            flex: 1; 
+            min-width: 50px; /* Permet au champ de rétrécir sans pousser le reste */
+            padding: 12px; 
+            background: #111; 
+            border: 1px solid #333; 
+            color: #fff; 
+            outline: none; 
+        }
+        .btn-action { 
+            flex-shrink: 0; /* Empêche les boutons de s'écraser */
+            padding: 12px; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+        .btn-file { width: 45px; background: #222; color: #fff; }
+        .btn-send { min-width: 60px; background: var(--accent); color: #fff; }
+
+        /* --- NAV MOBILE --- */
+        .nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); background: #000; border-top: 1px solid #222; display: flex; z-index: 1000; }
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #444; }
         .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
 
@@ -64,7 +91,7 @@
 
     <div id="msg-context-menu" onclick="closeCtx()">
         <div class="metro-modal" onclick="event.stopPropagation()">
-            <h3 style="font-weight:100; margin-bottom:20px;">Options Message</h3>
+            <h3 style="font-weight:100; margin-bottom:15px;">Options</h3>
             <button class="metro-btn btn-blue" id="ctx-edit">MODIFIER</button>
             <button class="metro-btn btn-gray" id="ctx-delete" style="color:#ff5050;">SUPPRIMER</button>
             <button class="metro-btn btn-gray" onclick="closeCtx()">ANNULER</button>
@@ -73,7 +100,7 @@
 
     <div id="metro-modal-overlay">
         <div class="metro-modal">
-            <h3 id="modal-title" style="font-weight:100; margin-bottom:15px;">titre</h3>
+            <h3 id="modal-title" style="font-weight:100; margin-bottom:10px;">titre</h3>
             <div id="modal-content"></div>
             <button class="metro-btn btn-blue" id="modal-confirm">Valider</button>
             <button class="metro-btn btn-gray" onclick="closeModal()">Annuler</button>
@@ -82,26 +109,25 @@
 
     <div id="pc-layout">
         <aside id="sidebar">
-            <h1 style="font-weight:100; color:var(--accent); margin-bottom:20px;">thinktalk</h1>
+            <h1 style="font-weight:100; color:var(--accent); margin-bottom:15px;">thinktalk</h1>
             <div style="flex:1; overflow-y:auto;">
-                <p style="font-size:10px; color:#555; margin-bottom:5px;">SALONS</p>
                 <input type="text" class="search-box" placeholder="Chercher salon..." oninput="filterList('pc-rooms', this.value)">
-                <button class="metro-btn btn-blue" onclick="uiCreateRoom()" style="margin-bottom:15px; font-size: 11px;">+ NOUVEAU SALON</button>
+                <button class="metro-btn btn-blue" onclick="uiCreateRoom()" style="margin-bottom:15px; font-size:11px;">+ NOUVEAU SALON</button>
                 <div id="pc-rooms"></div>
-                <p style="font-size:10px; color:#555; margin:20px 0 5px 0;">CONTACTS</p>
+                <div style="height:20px;"></div>
                 <input type="text" class="search-box" placeholder="Chercher ami..." oninput="filterList('pc-contacts', this.value)">
-                <button class="metro-btn btn-gray" onclick="uiAddContact()" style="margin-bottom:15px; font-size: 11px;">+ AJOUTER AMI</button>
+                <button class="metro-btn btn-gray" onclick="uiAddContact()" style="margin-bottom:15px; font-size:11px;">+ AJOUTER AMI</button>
                 <div id="pc-contacts"></div>
             </div>
-            <button onclick="logout()" style="color:#ff5050; border:none; background:none; cursor:pointer; text-align:left; font-weight: bold;">DÉCONNEXION</button>
+            <button onclick="logout()" style="color:#ff5050; border:none; background:none; cursor:pointer; text-align:left; padding-top:10px;">DÉCONNEXION</button>
         </aside>
         <main style="flex:1; display:flex; flex-direction:column;">
-            <div style="padding:20px; border-bottom:1px solid #111;"><h2 id="chat-title-pc" style="font-weight:100; font-size:32px;">#accueil</h2></div>
+            <div style="padding:15px; border-bottom:1px solid #111;"><h2 id="chat-title-pc" style="font-weight:100; font-size:28px;">#accueil</h2></div>
             <div id="msg-pc" class="msg-list"></div>
             <div class="input-area">
-                <button class="metro-btn btn-gray" onclick="triggerFile()" style="width:50px; flex:none; margin-top:0;">📁</button>
-                <input type="text" id="in-pc" placeholder="Écrire un message..." onkeypress="if(event.key==='Enter') send('pc')">
-                <button class="metro-btn btn-blue" onclick="send('pc')" style="width:100px; flex:none; margin-top:0;">Envoyer</button>
+                <button class="btn-action btn-file" onclick="triggerFile()">📁</button>
+                <input type="text" id="in-pc" placeholder="Écrire..." onkeypress="if(event.key==='Enter') send('pc')">
+                <button class="btn-action btn-send" onclick="send('pc')">ENVOYER</button>
             </div>
         </main>
     </div>
@@ -109,26 +135,26 @@
     <div id="mobile-layout">
         <div id="panorama">
             <section class="view">
-                <h1 style="font-weight:100; font-size:42px; color:var(--accent); margin-bottom:10px;">salons</h1>
+                <h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">salons</h1>
                 <input type="text" class="search-box" placeholder="Rechercher..." oninput="filterTiles('mob-rooms', this.value)">
-                <button class="metro-btn btn-blue" onclick="uiCreateRoom()" style="margin-bottom:15px;">+ SALON</button>
+                <button class="metro-btn btn-blue" onclick="uiCreateRoom()" style="margin-bottom:10px;">+ SALON</button>
                 <div id="mob-rooms" class="tiles-grid"></div>
             </section>
             <section class="view">
-                <h1 id="chat-title-mob" style="font-weight:100; font-size:32px; margin-bottom:10px;">Chat</h1>
+                <h1 id="chat-title-mob" style="font-weight:100; font-size:28px; margin-bottom:10px;">Chat</h1>
                 <div id="msg-mob" class="msg-list"></div>
             </section>
             <section class="view">
-                <h1 style="font-weight:100; font-size:42px; color:var(--accent); margin-bottom:10px;">contacts</h1>
+                <h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">contacts</h1>
                 <input type="text" class="search-box" placeholder="Rechercher..." oninput="filterTiles('mob-contacts', this.value)">
-                <button class="metro-btn btn-gray" onclick="uiAddContact()" style="margin-bottom:15px;">+ AMI</button>
+                <button class="metro-btn btn-gray" onclick="uiAddContact()" style="margin-bottom:10px;">+ AMI</button>
                 <div id="mob-contacts" class="tiles-grid"></div>
             </section>
         </div>
-        <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; width:100%;">
-            <button class="metro-btn btn-gray" onclick="triggerFile()" style="width:50px; flex:none; margin-top:0;">📁</button>
+        <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; left:0;">
+            <button class="btn-action btn-file" onclick="triggerFile()">📁</button>
             <input type="text" id="in-mob" placeholder="Message..." onkeypress="if(event.key==='Enter') send('mob')">
-            <button class="metro-btn btn-blue" onclick="send('mob')" style="width:70px; flex:none; margin-top:0;">OK</button>
+            <button class="btn-action btn-send" onclick="send('mob')">OK</button>
         </div>
         <nav class="nav-bottom">
             <div class="nav-btn active" onclick="goTo(0)">ACCUEIL</div>
@@ -138,6 +164,7 @@
     </div>
 
     <script>
+        // --- CONFIG & FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
             authDomain: "chat-github-6abb5.firebaseapp.com",
@@ -151,36 +178,22 @@
         let current = { id: 'general', type: 'room' };
         let holdTimer;
 
-        // --- GESTION DES FICHIERS ---
+        // --- FICHIERS ---
         function triggerFile() { document.getElementById('fileInput').click(); }
-
         function handleFileUpload(input) {
             const file = input.files[0];
             if (!file) return;
-            
-            // Limite à 1Mo pour ne pas saturer la Database gratuite
-            if (file.size > 1024 * 1024) { alert("Fichier trop lourd (max 1Mo)"); return; }
-
+            if (file.size > 1024 * 1024) { alert("Max 1Mo"); return; }
             const reader = new FileReader();
             reader.onload = function(e) {
-                const base64Data = e.target.result;
-                let type = 'file';
-                if (file.type.startsWith('image/')) type = 'image';
-                if (file.type.startsWith('video/')) type = 'video';
-
+                const type = file.type.startsWith('image/') ? 'image' : (file.type.startsWith('video/') ? 'video' : 'file');
                 const path = current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`;
-                db.ref(path).push({
-                    pseudo: user,
-                    url: base64Data,
-                    text: file.name,
-                    type: type,
-                    timestamp: Date.now()
-                });
+                db.ref(path).push({ pseudo: user, url: e.target.result, text: file.name, type: type, timestamp: Date.now() });
             };
             reader.readAsDataURL(file);
         }
 
-        // --- UI CORE ---
+        // --- UI ---
         function openModal(title, html, confirmFn) {
             document.getElementById('modal-title').textContent = title;
             document.getElementById('modal-content').innerHTML = html;
@@ -208,14 +221,12 @@
         function createMsgElement(id, m, path) {
             const div = document.createElement('div');
             div.className = 'msg' + (m.pseudo === user ? ' mine' : '');
-            
             let body = `<div>${m.text || ''}</div>`;
             if(m.type === 'image') body = `<img src="${m.url}" class="media-content">`;
             if(m.type === 'video') body = `<video src="${m.url}" class="media-content" controls></video>`;
-            
             div.innerHTML = `<span class="msg-u">${m.pseudo}</span>${body}`;
 
-            const openOptions = (e) => {
+            const action = (e) => {
                 e.preventDefault();
                 if(m.pseudo !== user) return;
                 document.getElementById('msg-context-menu').style.display = 'flex';
@@ -228,10 +239,9 @@
                     });
                 };
             };
-
-            div.onclick = openOptions;
-            div.oncontextmenu = openOptions;
-            div.ontouchstart = () => holdTimer = setTimeout(() => openOptions({preventDefault:()=>{}}), 500);
+            div.onclick = action;
+            div.oncontextmenu = action;
+            div.ontouchstart = () => holdTimer = setTimeout(() => action({preventDefault:()=>{}}), 500);
             div.ontouchend = () => clearTimeout(holdTimer);
             return div;
         }
@@ -242,15 +252,13 @@
             const title = (type === 'room' ? '#' : '@') + id;
             document.getElementById('chat-title-pc').textContent = title;
             document.getElementById('chat-title-mob').textContent = title;
-
             db.ref(path).off();
             db.ref(path).on('value', snap => {
-                const pc = document.getElementById('msg-pc');
-                const mob = document.getElementById('msg-mob');
+                const pc = document.getElementById('msg-pc'); const mob = document.getElementById('msg-mob');
                 pc.innerHTML = ""; mob.innerHTML = "";
-                snap.forEach(child => {
-                    pc.appendChild(createMsgElement(child.key, child.val(), path));
-                    mob.appendChild(createMsgElement(child.key, child.val(), path));
+                snap.forEach(c => {
+                    pc.appendChild(createMsgElement(c.key, c.val(), path));
+                    mob.appendChild(createMsgElement(c.key, c.val(), path));
                 });
                 pc.scrollTop = pc.scrollHeight; mob.scrollTop = mob.scrollHeight;
             });
@@ -268,17 +276,15 @@
             db.ref("rooms").on('value', s => {
                 document.getElementById('pc-rooms').innerHTML = ""; document.getElementById('mob-rooms').innerHTML = "";
                 s.forEach(r => {
-                    const d = `<div class="pc-item" onclick="setChat('${r.key}','room')">#${r.key}</div>`;
-                    const t = `<div class="tile" onclick="setChat('${r.key}','room'); goTo(1);">#${r.key}</div>`;
-                    document.getElementById('pc-rooms').innerHTML += d; document.getElementById('mob-rooms').innerHTML += t;
+                    document.getElementById('pc-rooms').innerHTML += `<div class="pc-item" onclick="setChat('${r.key}','room')">#${r.key}</div>`;
+                    document.getElementById('mob-rooms').innerHTML += `<div class="tile" onclick="setChat('${r.key}','room'); goTo(1);">#${r.key}</div>`;
                 });
             });
             db.ref("contacts/"+user).on('value', s => {
                 document.getElementById('pc-contacts').innerHTML = ""; document.getElementById('mob-contacts').innerHTML = "";
                 s.forEach(c => {
-                    const d = `<div class="pc-item" onclick="setChat('${c.key}','dm')">@${c.key}</div>`;
-                    const t = `<div class="tile" style="background:#222" onclick="setChat('${c.key}','dm'); goTo(1);">@${c.key}</div>`;
-                    document.getElementById('pc-contacts').innerHTML += d; document.getElementById('mob-contacts').innerHTML += t;
+                    document.getElementById('pc-contacts').innerHTML += `<div class="pc-item" onclick="setChat('${c.key}','dm')">@${c.key}</div>`;
+                    document.getElementById('mob-contacts').innerHTML += `<div class="tile" style="background:#222" onclick="setChat('${c.key}','dm'); goTo(1);">@${c.key}</div>`;
                 });
             });
             setChat('general', 'room');
