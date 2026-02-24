@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
         :root { --accent: #00a2e8; --bg: #000; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; transition: all 0.2s ease; }
         body { 
             background: var(--bg); 
             background-size: cover; 
@@ -17,7 +17,21 @@
             color: #fff; height: 100vh; overflow: hidden; 
         }
         
-        /* SIDE MENU (HAMBURGER) */
+        /* EFFETS DE RÉACTION (HOVER) */
+        .tile:hover, .btn-action-metro:hover, .nav-btn:hover, .pc-tab:hover, .btn-attach:hover {
+            cursor: pointer;
+            filter: brightness(1.2);
+            transform: scale(1.02);
+        }
+        .tile:active, .btn-action-metro:active, .btn-attach:active {
+            transform: scale(0.95);
+        }
+        .msg:hover {
+            background: rgba(255,255,255,0.15);
+            border-left-width: 8px;
+        }
+
+        /* SIDE MENU */
         #menu-overlay { position: fixed; display: none; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
         #side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #111; z-index: 1000; transition: 0.3s; padding: 20px; border-right: 1px solid var(--accent); }
         #side-menu.open { left: 0; }
@@ -38,7 +52,8 @@
         .pc-tab { font-size: 12px; font-weight: bold; cursor: pointer; opacity: 0.5; text-transform: uppercase; }
         .pc-tab.active { opacity: 1; border-bottom: 2px solid var(--accent); }
         .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .tile { background: var(--accent); opacity: 0.8; padding: 12px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; font-weight: bold; cursor: pointer; position: relative; overflow: hidden; }
+        .tile { background: var(--accent); opacity: 0.8; padding: 12px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; font-weight: bold; position: relative; overflow: hidden; box-shadow: 0 0 0 rgba(255,255,255,0); }
+        .tile:hover { box-shadow: 0 0 15px var(--accent); z-index: 2; }
         .tile .live-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 10px; background: inherit; display: flex; flex-direction: column; font-size: 11px; font-weight: normal; }
 
         /* MESSAGES */
@@ -52,15 +67,19 @@
         .btn-attach { 
             width: 42px; height: 42px; border-radius: 50%; background: var(--accent); 
             border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         .btn-attach svg { width: 20px; height: 20px; fill: white; }
-        .input-area input[type="text"] { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
+        .input-area input[type="text"] { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; border-radius: 0; }
+        .input-area input[type="text"]:focus { border-color: var(--accent); background: #181818; }
         
         .btn-action-metro { padding: 10px; font-size: 11px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #333; cursor: pointer; width: 100%; margin-bottom: 5px; text-align: left; text-transform: uppercase; }
-        .color-dot { width: 28px; height: 28px; cursor: pointer; border: 1px solid #fff; margin: 4px; }
+        .color-dot { width: 28px; height: 28px; cursor: pointer; border: 2px solid transparent; margin: 4px; }
+        .color-dot:hover { border-color: #fff; transform: scale(1.1); }
+        
         .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; }
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #555; font-weight: bold; }
-        .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
+        .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); background: rgba(255,255,255,0.05); }
 
         @media (min-width: 851px) { #pc-layout { display: flex; } }
         @media (max-width: 850px) { #mobile-layout { display: block; } }
