@@ -10,7 +10,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
 
     <style>
-        :root { --accent: #00a2e8; --bg: #000; --nav-h: 75px; }
+        :root { 
+            --accent: #00a2e8; 
+            --bg: #000; 
+            --nav-h: 75px; 
+            --chat-bar-h: 70px; /* On définit la hauteur du bar de chat */
+        }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         html, body { 
@@ -36,21 +41,22 @@
             flex-direction: column; 
             padding: 20px 20px 0 20px; 
             position: relative;
-            overflow-y: auto; 
-            -webkit-overflow-scrolling: touch;
+            overflow: hidden; /* Changé de auto à hidden pour laisser le scroll aux containers internes */
         }
 
         .scroll-container {
+            flex: 1;
+            overflow-y: auto;
             padding-bottom: 140px; 
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* TILES DESIGN - RÉPARATION DES TROUS */
+        /* TILES DESIGN */
         .tiles-grid { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr); 
             grid-auto-rows: 85px; 
             gap: 12px; 
-            /* L'algorithme dense vient boucher les espaces vides */
             grid-auto-flow: dense; 
         }
         
@@ -62,8 +68,6 @@
         }
         
         .tile:active { transform: scale(0.95); filter: brightness(1.2); }
-        
-        /* Tailles de tuiles */
         .tile.medium { grid-column: span 2; grid-row: span 2; font-size: 18px; }
         .tile.wide { grid-column: span 4; grid-row: span 1; }
         .tile.tall { grid-column: span 1; grid-row: span 2; }
@@ -79,18 +83,44 @@
         .modal-input { width: 100%; padding: 18px; margin-bottom: 15px; border: none; background: #1a1a1a; color: #fff; font-size: 18px; border-radius: 4px; }
         .modal-btn { width: 100%; padding: 18px; background: var(--accent); color: #fff; border: none; font-weight: bold; border-radius: 4px; }
 
-        /* CHAT */
-        .scroll-area { flex: 1; overflow-y: auto; padding-bottom: 20px; }
-        .msg-bubble { margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; }
+        /* --- CHAT CORRECTION --- */
+        .scroll-area { 
+            flex: 1; 
+            overflow-y: auto; 
+            /* CORRECTION 1: On ajoute un padding pour que le dernier message soit au dessus du chat-bar */
+            padding-bottom: calc(var(--chat-bar-h) + var(--nav-h) + 20px); 
+            -webkit-overflow-scrolling: touch;
+        }
+        .msg-bubble { 
+            margin-bottom: 15px; 
+            border-left: 3px solid var(--accent); 
+            padding-left: 12px; 
+            /* CORRECTION 2: On force le retour à la ligne pour les longs textes */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
         .msg-pseudo { color: var(--accent); font-size: 12px; font-weight: 600; }
         .msg-text { font-size: 18px; font-weight: 300; }
 
-        /* NAV */
+        /* NAV & BARS */
         .nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
         .nav-item { font-size: 11px; text-transform: uppercase; color: #555; font-weight: bold; padding: 10px; }
         .nav-item.active { color: #fff; }
         
-        #chat-bar { position: fixed; bottom: var(--nav-h); left: 0; width: 100%; padding: 10px; background: #111; display: none; gap: 8px; border-top: 1px solid #222; }
+        #chat-bar { 
+            position: fixed; 
+            bottom: var(--nav-h); 
+            left: 0; 
+            width: 100%; 
+            height: var(--chat-bar-h);
+            padding: 10px; 
+            background: #111; 
+            display: none; 
+            gap: 8px; 
+            border-top: 1px solid #222; 
+            z-index: 101;
+        }
         #chat-bar input { flex: 1; height: 50px; background: #000; border: 1px solid #333; color: #fff; padding: 0 15px; border-radius: 5px; }
 
         #auth { position: fixed; inset: 0; background: #000; z-index: 3000; padding: 60px 25px; display: flex; flex-direction: column; justify-content: center; }
@@ -138,7 +168,7 @@
 
     <section class="view">
         <div class="page-title">DISCUSSION</div>
-        <h1 class="section-header" id="chat-title">#salon</h1>
+        <h1 class="section-header" id="chat-title" style="margin-bottom: 10px;">#salon</h1>
         <div id="message-container" class="scroll-area"></div>
     </section>
 
@@ -154,7 +184,7 @@
 
 <div id="chat-bar">
     <input id="msgInput" type="text" placeholder="Message...">
-    <button onclick="sendMessage()" style="padding:0 20px; background:var(--accent); border:none; color:#fff;">OK</button>
+    <button onclick="sendMessage()" style="padding:0 20px; background:var(--accent); border:none; color:#fff; border-radius: 5px;">OK</button>
 </div>
 
 <nav class="nav-bottom">
@@ -198,6 +228,12 @@ function goTo(index) {
     document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
     document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === index));
     document.getElementById('chat-bar').style.display = (index === 1) ? 'flex' : 'none';
+    
+    // Auto-scroll en bas quand on arrive sur le chat
+    if(index === 1) {
+        const container = document.getElementById('message-container');
+        setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+    }
 }
 
 function closeModal() { document.getElementById('modal-mobile').style.display = 'none'; }
@@ -208,7 +244,6 @@ function openModal(title, html, onConfirm) {
     document.getElementById('m-confirm').onclick = onConfirm;
 }
 
-// --- LOGIQUE SALONS CORRIGÉE ---
 function loadRooms() {
     db.ref("rooms").on('value', snap => {
         const grid = document.getElementById('rooms-grid');
@@ -224,13 +259,9 @@ function loadRooms() {
             const rName = r.name || child.key;
             const tile = document.createElement('div');
             tile.className = 'tile';
-            
-            // Logique de taille pour éviter les trous (Metro Style)
-            // On alterne les tailles intelligemment pour que l'algorithme 'dense' fonctionne
             if (i % 7 === 0) tile.classList.add('medium');
             else if (i % 4 === 0) tile.classList.add('wide');
             else if (i % 9 === 0) tile.classList.add('tall');
-            
             tile.innerHTML = `<span>#${rName}</span> ${r.private ? '🔒' : ''}`;
             tile.onclick = () => selectRoom(r, rName);
             grid.appendChild(tile);
