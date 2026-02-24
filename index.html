@@ -11,13 +11,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); background-size: cover; background-position: center; background-attachment: fixed; color: #fff; height: 100vh; overflow: hidden; transition: background 0.5s ease; }
         
-        /* Layout & Header */
         #pc-layout, #mobile-layout, #panorama, .view { background: transparent !important; }
         .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(0, 0, 0, 0.1); }
         #sidebar, .mobile-header, .nav-bottom, .input-area, #mobile-menu { background: rgba(0, 0, 0, 0.8) !important; backdrop-filter: blur(15px); }
         .mobile-header { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 0 20px; align-items: center; justify-content: space-between; z-index: 900; }
         
-        /* Modal Metro */
+        /* Modal */
         #metro-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 15px; }
         .metro-modal { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 380px; padding: 25px; box-shadow: 0 0 30px rgba(0,162,232,0.3); }
         .metro-input { width: 100%; padding: 12px; background: #111; border: 2px solid #333; color: #fff; margin-bottom: 10px; outline: none; }
@@ -26,7 +25,7 @@
         .btn-gray { background: #333; color: #fff; }
         .btn-red { background: #cc0000; color: #fff; }
         
-        /* Sidebar PC & Search */
+        /* PC Sidebar */
         #pc-layout { display: none; height: 100vh; }
         #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
         .pc-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #222; }
@@ -36,37 +35,44 @@
         .pc-item { padding: 10px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
         .pc-item:hover { background: rgba(0,162,232,0.15); border-left-color: var(--accent); }
 
+        /* Mobile & Panorama */
+        #mobile-layout { display: none; height: 100vh; position: relative; padding-top: 60px; }
+        #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.6s cubic-bezier(0.1, 0.7, 0.1, 1); perspective: 1500px; }
+        .view { width: 100vw; height: 100%; padding: 15px 15px 180px 15px; display: flex; flex-direction: column; overflow-y: auto; }
+        .nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); border-top: 1px solid #222; display: flex; z-index: 1000; }
+        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #444; }
+        .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
+
+        /* --- L'EFFET TURNSTILE ÉVOLUÉ --- */
+        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; transition: opacity 0.4s; }
+        .tile { 
+            background: var(--accent); padding: 15px; height: 110px; 
+            display: flex; align-items: flex-end; font-weight: bold; 
+            cursor: pointer; position: relative;
+            transition: transform 0.6s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.5s;
+        }
+
+        /* Quand on clique (Explosion vers l'utilisateur) */
+        .view-exit .tile { opacity: 0; pointer-events: none; }
+        
+        /* Soulèvement et directions différentes pour chaque tuile */
+        .view-exit .tile:nth-child(4n+1) { transform: translate3d(-150px, -150px, 600px) rotate(-15deg); }
+        .view-exit .tile:nth-child(4n+2) { transform: translate3d(150px, -150px, 600px) rotate(15deg); }
+        .view-exit .tile:nth-child(4n+3) { transform: translate3d(-150px, 150px, 600px) rotate(10deg); }
+        .view-exit .tile:nth-child(4n+4) { transform: translate3d(150px, 150px, 600px) rotate(-10deg); }
+        .view-exit .tile:nth-child(5n)   { transform: translate3d(0, -250px, 800px) rotateX(45deg); }
+
         /* Messages */
         .msg { background: rgba(30,30,30,0.7); padding: 12px; border-left: 4px solid #333; max-width: 85%; align-self: flex-start; cursor: pointer; word-wrap: break-word; }
         .msg.mine { border-left-color: var(--accent); }
         .msg-actions-pc { display: none; gap: 5px; margin-top: 5px; }
         .msg:hover .msg-actions-pc { display: flex; }
         .btn-mini { font-size: 10px; padding: 4px 8px; background: var(--accent); color: white; border: none; cursor: pointer; }
-        .media-content { max-width: 100%; max-height: 250px; margin-top: 5px; display: block; border-radius: 2px; }
 
-        /* Mobile Layout & Panorama */
-        #mobile-layout { display: none; height: 100vh; position: relative; padding-top: 60px; }
-        #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.5s cubic-bezier(0.1, 0.7, 0.1, 1); perspective: 1200px; }
-        .view { width: 100vw; height: 100%; padding: 15px 15px 180px 15px; display: flex; flex-direction: column; overflow-y: auto; transition: opacity 0.4s ease; }
-        .nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); border-top: 1px solid #222; display: flex; z-index: 1000; }
-        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #444; }
-        .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
-
-        /* ANIMATION DES TUILES (Turnstile) */
-        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease; transform-origin: center; }
-        .tile { background: var(--accent); padding: 15px; height: 110px; display: flex; align-items: flex-end; font-weight: bold; cursor: pointer; position: relative; transition: transform 0.2s cubic-bezier(0.1, 0.8, 0.2, 1); }
-        .tile:active { transform: scale(0.92); }
-        
-        /* État quand on clique sur une tuile */
-        .view-exit .tiles-grid { transform: scale(0.7) translateZ(-300px); opacity: 0; }
-        .view-exit .tile:nth-child(even) { transform: translateX(100px) rotateY(20deg); }
-        .view-exit .tile:nth-child(odd) { transform: translateX(-100px) rotateY(-20deg); }
-
-        /* Inputs Area */
         .input-area { display: flex; align-items: center; gap: 8px; padding: 10px; border-top: 1px solid #222; width: 100%; }
-        .input-area input[type="text"] { flex: 1; min-width: 50px; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
-        .btn-action { flex-shrink: 0; padding: 12px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-file { width: 45px; background: #000 !important; color: var(--accent) !important; border: 1px solid var(--accent); }
+        .input-area input[type="text"] { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
+        .btn-action { padding: 12px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-file { width: 45px; background: #000; color: var(--accent); border: 1px solid var(--accent); }
         .btn-send { min-width: 70px; background: var(--accent); color: #fff; }
 
         @media (min-width: 851px) { #pc-layout { display: flex; } }
@@ -157,7 +163,6 @@
         let user = localStorage.getItem("thinktalk_pseudo");
         let current = { id: 'general', type: 'room' };
         let activePcTab = 'rooms'; 
-        let pressTimer;
 
         function getPath() { return current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; }
 
@@ -169,13 +174,6 @@
                 closeModal();
             });
         }
-        function handleLongPress(mid, txt, path) {
-            pressTimer = setTimeout(() => {
-                openModal("Actions", `<div class="wp-menu"><div class="wp-item" onclick="editMsg('${mid}','${txt.replace(/'/g, "\\'")}', '${path}')">modifier</div><div class="wp-item" onclick="deleteMsg('${mid}', '${path}')" style="color:#ff5050">supprimer</div></div>`, null);
-                document.getElementById('modal-confirm').style.display = 'none';
-            }, 600);
-        }
-        function cancelLongPress() { clearTimeout(pressTimer); }
 
         function send(m) {
             const i = document.getElementById(m==='pc'?'in-pc':'in-mob');
@@ -190,8 +188,8 @@
             setTimeout(() => {
                 setChat(id, type);
                 goTo(1);
-                setTimeout(() => { currentView.classList.remove('view-exit'); }, 600);
-            }, 180);
+                setTimeout(() => { currentView.classList.remove('view-exit'); }, 800);
+            }, 300);
         }
 
         function setChat(id, type) {
@@ -213,7 +211,6 @@
                     h += m.type==='image' ? `<img src="${m.url}" class="media-content">` : `<div>${m.text}${m.edited?'<small style="opacity:0.5"> (modifié)</small>':''}</div>`;
                     if(isMine && m.type!=='image') h += `<div class="msg-actions-pc"><button class="btn-mini" onclick="editMsg('${mid}','${m.text.replace(/'/g, "\\'")}', '${cp}')">éditer</button><button class="btn-mini" onclick="deleteMsg('${mid}', '${cp}')">suppr.</button></div>`;
                     div.innerHTML = h;
-                    if(isMine && m.type!=='image') { div.ontouchstart = () => handleLongPress(mid, m.text, cp); div.ontouchend = cancelLongPress; }
                     mb.appendChild(div); pc.appendChild(div.cloneNode(true));
                 });
                 pc.scrollTop = pc.scrollHeight; mb.scrollTop = mb.scrollHeight;
@@ -253,9 +250,8 @@
 
         function filterPcList(v) { Array.from(document.getElementById('pc-content-list').children).forEach(i => i.style.display = i.textContent.toLowerCase().includes(v.toLowerCase()) ? "block" : "none"); }
         function applyBg(u) { document.body.style.backgroundImage = u ? `url('${u}')` : "none"; }
-        function resetBg() { localStorage.removeItem("thinktalk_bg"); applyBg(null); closeModal(); }
         function uiChangeBg() { 
-            openModal("Fond d'écran", `<button class="metro-btn btn-blue" onclick="document.getElementById('bgInput').click()">CHOISIR UN FICHIER</button><input id="bgurl" class="metro-input" placeholder="OU COLLER UNE URL" style="margin-top:10px;"><button class="metro-btn btn-red" onclick="resetBg()" style="margin-top:20px;">RÉINITIALISER</button>`, () => { 
+            openModal("Fond d'écran", `<button class="metro-btn btn-blue" onclick="document.getElementById('bgInput').click()">CHOISIR UN FICHIER</button><input id="bgurl" class="metro-input" placeholder="OU COLLER UNE URL">`, () => { 
                 const u = document.getElementById('bgurl').value.trim(); 
                 if(u){ applyBg(u); localStorage.setItem("thinktalk_bg", u); } 
                 closeModal(); 
