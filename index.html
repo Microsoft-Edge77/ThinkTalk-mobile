@@ -10,44 +10,29 @@
         :root { --accent: #00a2e8; --bg: #000; --nav-h: 70px; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
-        
-        /* SIDEBAR & PC */
         #pc-layout { display: none; height: 100vh; }
         #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); }
         .pc-tabs { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 5px; }
         .pc-tab { font-size: 12px; font-weight: bold; cursor: pointer; color: #555; text-transform: uppercase; }
         .pc-tab.active { color: #fff; border-bottom: 2px solid var(--accent); }
-
-        /* MESSAGES */
         .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; }
         .msg { background: rgba(255,255,255,0.07); padding: 10px; border-left: 4px solid #333; width: fit-content; max-width: 90%; align-self: flex-start; word-wrap: break-word; }
         .msg.mine { border-left-color: var(--accent); }
         .msg-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: var(--accent); font-weight: bold; gap: 20px; }
-        .msg-text img { max-width: 100%; border: 1px solid #333; margin-top: 5px; display: block; }
+        .msg-text img { max-width: 100%; border: 1px solid #333; margin-top: 5px; display: block; border-radius: 4px; }
         .msg-actions { margin-top: 8px; display: flex; gap: 10px; opacity: 0.6; }
         .msg-actions span { font-size: 10px; cursor: pointer; text-transform: uppercase; color: #888; }
-
-        /* LIVE TILES MOBILE */
         .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
         .tile { background: var(--accent); opacity: 0.8; padding: 12px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; font-weight: bold; cursor: pointer; position: relative; overflow: hidden; }
         .tile .live-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 10px; background: inherit; display: flex; flex-direction: column; font-size: 11px; font-weight: normal; animation: slideUp 0.5s ease-out; z-index: 1; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        /* BARRE DE CHAT AVEC BOUTON ROND */
         .input-area { display: flex; align-items: center; gap: 10px; padding: 10px; background: #000; border-top: 1px solid #222; }
-        .btn-attach { 
-            width: 40px; height: 40px; border-radius: 50%; background: var(--accent); 
-            border: none; color: white; cursor: pointer; display: flex; align-items: center; 
-            justify-content: center; font-size: 20px; flex-shrink: 0;
-        }
+        .btn-attach { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
         .input-area input[type="text"] { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
         .btn-send { background: var(--accent); border: none; color: #fff; font-weight: bold; padding: 12px 20px; cursor: pointer; }
-
-        /* UI GENERALE */
         .color-picker { display: flex; gap: 8px; margin: 10px 0; }
         .color-dot { width: 24px; height: 24px; cursor: pointer; border: 1px solid #333; }
         .btn-action-metro { padding: 10px; font-size: 11px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #333; cursor: pointer; text-align: left; text-transform: uppercase; margin-bottom: 5px; width: 100%; }
-
         #mobile-layout { display: none; height: 100vh; padding-top: 60px; }
         .mobile-header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.8); display: flex; align-items: center; padding: 0 20px; z-index: 900; }
         #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.6s cubic-bezier(0.1, 0.7, 0.1, 1); }
@@ -55,13 +40,11 @@
         .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; }
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #555; font-weight: bold; }
         .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
-
         @media (min-width: 851px) { #pc-layout { display: flex; } }
         @media (max-width: 850px) { #mobile-layout { display: block; } .mobile-header { display: flex; } }
     </style>
 </head>
 <body>
-
     <div id="pc-layout">
         <aside id="sidebar">
             <h1 style="color:var(--accent); font-weight:100; margin-bottom:10px;">ThinkTalk</h1>
@@ -75,14 +58,13 @@
             <div style="padding:20px; border-bottom:1px solid #222;"><h2 id="chat-title-pc" style="font-weight:100;">#accueil</h2></div>
             <div id="msg-pc" class="msg-list"></div>
             <div class="input-area">
-                <input type="file" id="file-pc" style="display:none" onchange="handleFile(this, 'pc')" accept="image/*">
+                <input type="file" id="file-pc" style="display:none" onchange="handleFile(this)" accept="image/*">
                 <button class="btn-attach" onclick="document.getElementById('file-pc').click()">📎</button>
                 <input type="text" id="in-pc" placeholder="Écrire..." onkeypress="if(event.key==='Enter') send('pc')">
                 <button class="btn-send" onclick="send('pc')">ENVOYER</button>
             </div>
         </main>
     </div>
-
     <div id="mobile-layout">
         <div class="mobile-header"><span>THINKTALK</span></div>
         <div id="panorama">
@@ -91,7 +73,7 @@
             <section class="view"><h1 style="font-size:40px; font-weight:100; color:var(--accent); margin-bottom:10px;">moi</h1><div id="accent-selector-mob" class="color-picker"></div><h2 style="font-size:24px; font-weight:100; margin-top:20px; color:var(--accent);">contacts</h2><div id="mob-contacts" class="tiles-grid" style="margin-top:10px;"></div></section>
         </div>
         <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; width:100%;">
-            <input type="file" id="file-mob" style="display:none" onchange="handleFile(this, 'mob')" accept="image/*">
+            <input type="file" id="file-mob" style="display:none" onchange="handleFile(this)" accept="image/*">
             <button class="btn-attach" onclick="document.getElementById('file-mob').click()">📎</button>
             <input type="text" id="in-mob" placeholder="Message..." onkeypress="if(event.key==='Enter') send('mob')">
             <button class="btn-send" onclick="send('mob')">OK</button>
@@ -100,47 +82,42 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
-            authDomain: "chat-github-6abb5.firebaseapp.com",
-            databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "chat-github-6abb5",
-        };
+        const firebaseConfig = { apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w", authDomain: "chat-github-6abb5.firebaseapp.com", databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app", projectId: "chat-github-6abb5" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
-        let user = localStorage.getItem("thinktalk_pseudo");
-        let current = { id: 'general', type: 'room' };
-        let activePcTab = 'rooms';
+        let user = localStorage.getItem("thinktalk_pseudo"), current = { id: 'general', type: 'room' }, activePcTab = 'rooms';
 
-        function handleFile(input, mode) {
-            const file = input.files[0];
-            if (!file) return;
-            if (file.size > 1000000) return alert("Fichier trop lourd (max 1Mo)"); // Limite pour la DB
-
+        function handleFile(input) {
+            const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
-                const base64 = e.target.result;
-                pushMsg(`[img]${base64}`);
-                input.value = ""; // Reset
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let w = img.width, h = img.height, max = 800;
+                    if (w > max) { h = h * (max / w); w = max; }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    pushMsg(`[img]${canvas.toDataURL('image/jpeg', 0.6)}`);
+                    input.value = "";
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        function pushMsg(text) {
-            const path = current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`;
-            db.ref(path).push({
-                pseudo: user,
-                text: text,
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                timestamp: Date.now()
+        function cleanOldMessages(path) {
+            const oneWeek = 7 * 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            db.ref(path).once('value', s => {
+                s.forEach(snap => { if (snap.val().timestamp && (now - snap.val().timestamp > oneWeek)) snap.ref.remove(); });
             });
         }
 
-        function send(m) {
-            const i = document.getElementById(m==='pc'?'in-pc':'in-mob');
-            const v = i.value.trim();
-            if(v && user) { pushMsg(v); i.value = ""; }
+        function pushMsg(text) {
+            const path = current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`;
+            db.ref(path).push({ pseudo: user, text: text, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}), timestamp: Date.now() });
         }
 
         function setChat(id, type) {
@@ -149,16 +126,14 @@
             document.getElementById('chat-title-pc').textContent = title;
             document.getElementById('chat-title-mob').textContent = title;
             const path = type === 'room' ? `messages/public/${id}` : `messages/dm/${[user, id].sort().join("__")}`;
+            cleanOldMessages(path);
             db.ref(path).off();
             db.ref(path).on('value', s => {
                 const pc = document.getElementById('msg-pc'), mb = document.getElementById('msg-mob');
                 pc.innerHTML = ""; mb.innerHTML = "";
                 s.forEach(snap => {
                     const m = snap.val(), isMine = m.pseudo === user;
-                    let content = m.text.startsWith('[img]') 
-                        ? `<img src="${m.text.replace('[img]', '')}">` 
-                        : m.text;
-                    
+                    let content = m.text.startsWith('[img]') ? `<img src="${m.text.replace('[img]', '')}">` : m.text;
                     const html = `<div class="msg ${isMine?'mine':''}">
                         <div class="msg-header"><span>${m.pseudo}</span><span class="msg-time">${m.time||''}</span></div>
                         <div class="msg-text">${content}</div>
@@ -170,7 +145,6 @@
             });
         }
 
-        /* --- LOGIQUE INITIALISATION (Identique précédente mais avec chargement) --- */
         function initColors() {
             const colors = ["#00a2e8", "#a200ff", "#99b433", "#ff0097", "#e3a21a", "#da532c", "#00aba9"];
             const saved = localStorage.getItem("thinktalk_accent") || "#00a2e8";
@@ -190,18 +164,11 @@
                 const m = snap.val(); if(!m) return;
                 let preview = element.querySelector('.live-preview');
                 if(!preview) { preview = document.createElement('div'); preview.className = 'live-preview'; element.appendChild(preview); }
-                let txt = m.text.startsWith('[img]') ? '📷 Image' : m.text;
-                preview.innerHTML = `<div style="font-weight:bold;font-size:10px;">${m.pseudo}</div><div style="opacity:0.9;font-size:10px;">${txt}</div>`;
+                preview.innerHTML = `<div style="font-weight:bold;font-size:10px;">${m.pseudo}</div><div style="opacity:0.9;font-size:10px;">${m.text.startsWith('[img]')?'📷 Image':m.text}</div>`;
             });
         }
 
-        function switchPcTab(tab) {
-            activePcTab = tab;
-            document.getElementById('tab-pc-rooms').classList.toggle('active', tab === 'rooms');
-            document.getElementById('tab-pc-contacts').classList.toggle('active', tab === 'contacts');
-            document.getElementById('pc-actions-rooms').style.display = (tab === 'rooms' ? 'block' : 'none');
-            loadLists();
-        }
+        function switchPcTab(tab) { activePcTab = tab; document.getElementById('tab-pc-rooms').classList.toggle('active', tab === 'rooms'); document.getElementById('tab-pc-contacts').classList.toggle('active', tab === 'contacts'); document.getElementById('pc-actions-rooms').style.display = (tab === 'rooms' ? 'block' : 'none'); loadLists(); }
 
         function loadLists() {
             db.ref("rooms").on('value', s => {
@@ -227,13 +194,10 @@
             });
         }
 
-        function deleteMsg(mid) {
-            const path = current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`;
-            if(confirm("Supprimer ?")) db.ref(path + "/" + mid).remove();
-        }
-
+        function send(m) { const i = document.getElementById(m==='pc'?'in-pc':'in-mob'); const v = i.value.trim(); if(v && user) { pushMsg(v); i.value = ""; } }
+        function deleteMsg(mid) { const path = current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; if(confirm("Supprimer ?")) db.ref(path + "/" + mid).remove(); }
         function uiCreateRoom() { const n = prompt("Nom :"), c = prompt("Code :"); if(n) { db.ref('rooms/'+n.toLowerCase()).set({ code: c || null }); if(c) { let s = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]"); s.push(n.toLowerCase()); localStorage.setItem("thinktalk_private_rooms", JSON.stringify(s)); } } }
-        function uiJoinPrivate() { const n = prompt("Nom :").toLowerCase(), c = prompt("Code :"); db.ref('rooms/'+n).get().then(s => { if(s.exists() && s.val().code === c) { let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]"); if(!saved.includes(n)) saved.push(n); localStorage.setItem("thinktalk_accent", JSON.stringify(saved)); setChat(n, 'room'); goTo(1); } else alert("Erreur"); }); }
+        function uiJoinPrivate() { const n = prompt("Nom :").toLowerCase(), c = prompt("Code :"); db.ref('rooms/'+n).get().then(s => { if(s.exists() && s.val().code === c) { let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]"); if(!saved.includes(n)) saved.push(n); localStorage.setItem("thinktalk_private_rooms", JSON.stringify(saved)); setChat(n, 'room'); goTo(1); } else alert("Erreur"); }); }
         function goTo(x) { document.getElementById('panorama').style.transform = `translateX(-${x*100}vw)`; document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i===x)); document.getElementById('mob-bar').style.display = (x===1) ? 'flex' : 'none'; }
         window.onload = () => { if(!user) { user = prompt("Pseudo :"); localStorage.setItem("thinktalk_pseudo", user); } initColors(); loadLists(); setChat('general', 'room'); }
         function logout() { localStorage.clear(); location.reload(); }
