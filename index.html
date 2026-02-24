@@ -2,299 +2,195 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ThinkTalk</title>
+    <title>ThinkTalk OS - Infinity</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <style>
-        :root { --accent: #00a2e8; --bg: #000; --nav-h: 70px; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; }
+        :root { --accent: #00a2e8; --bg-img: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Layouts */
-        #pc-layout, #mobile-layout, #panorama, .view { background: transparent !important; }
-        #pc-layout { display: none; height: 100vh; }
-        #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); }
-        
-        /* Messages (Style demandé : Alignés à gauche, saut de ligne) */
-        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; }
+        body { 
+            background: #000; color: #fff; height: 100vh; overflow: hidden; 
+            background-image: var(--bg-img); background-size: cover; background-position: center;
+        }
+
+        /* --- MESSAGES (ALIGNÉS À GAUCHE) --- */
+        .msg-list { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
         .msg { 
-            background: rgba(255,255,255,0.07); 
-            padding: 10px; 
-            border-left: 4px solid #333; 
-            width: fit-content;
-            max-width: 90%; 
-            align-self: flex-start; 
-            word-wrap: break-word; 
-            overflow-wrap: break-word;
-            position: relative;
+            background: rgba(25, 25, 25, 0.95); padding: 12px; border-left: 4px solid var(--accent); 
+            align-self: flex-start !important; /* Force l'alignement à gauche */
+            max-width: 85%; width: fit-content;
         }
-        .msg.mine { border-left-color: var(--accent); }
-        .msg-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: var(--accent); font-weight: bold; gap: 20px; }
-        .msg-time { color: #666; font-weight: normal; }
-        .msg-text { font-size: 15px; line-height: 1.4; color: #eee; white-space: pre-wrap; }
+        .msg-author { font-size: 10px; color: var(--accent); font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+
+        /* --- PC LAYOUT (SIDEBAR FIXE) --- */
+        #pc-layout { display: none; height: 100vh; width: 100vw; }
+        #sidebar { width: 340px; background: #000; border-right: 1px solid #222; display: flex; flex-direction: column; padding: 25px; height: 100%; }
+        .pc-scroll-area { overflow-y: auto; flex: 1; margin-bottom: 15px; padding-right: 5px; }
+        .pc-item { padding: 12px; background: #111; margin-bottom: 6px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
+        .pc-item:hover { background: #1a1a1a; border-left-color: var(--accent); }
+
+        /* --- MOBILE LAYOUT --- */
+        #mobile-layout { display: none; background: #000; height: 100vh; width: 100vw; position: relative; }
+        #panorama { display: flex; width: 300vw; height: 100%; transition: 0.5s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        .view { width: 100vw; height: 100%; background: #000; flex-shrink: 0; overflow-y: auto; padding-top: 60px; }
+        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 20px; }
+        .tile { background: var(--accent); padding: 15px; height: 140px; cursor: pointer; display: flex; align-items: flex-end; font-weight: bold; font-size: 18px; }
         
-        .msg-actions { margin-top: 8px; display: flex; gap: 10px; opacity: 0.6; }
-        .msg-actions span { font-size: 10px; cursor: pointer; text-transform: uppercase; color: #888; }
-        .msg-actions span:hover { color: #fff; }
+        /* NAVIGATION BAR */
+        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #333; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .nav-item { font-size: 11px; color: #555; cursor: pointer; font-weight: bold; letter-spacing: 1px; }
+        .nav-item.active { color: #fff; border-bottom: 2px solid var(--accent); padding-bottom: 4px; }
 
-        /* Tiles Style (Transparentes & Live) */
-        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .tile { 
-            background: rgba(0, 162, 232, 0.7); /* Transparence accent */
-            padding: 12px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end;
-            font-weight: bold; cursor: pointer; position: relative; overflow: hidden;
-            transition: transform 0.2s;
-        }
-        .tile:active { transform: scale(0.95); }
-        .tile.private { background: rgba(50, 50, 50, 0.7); border: 1px solid var(--accent); }
-        
-        .tile .tile-label { font-size: 14px; z-index: 2; text-transform: lowercase; }
-        .tile .live-preview { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            padding: 10px; background: inherit; display: flex; flex-direction: column;
-            font-size: 11px; font-weight: normal; animation: slideUp 0.5s ease-out;
-        }
-        .live-author { color: #fff; font-weight: bold; margin-bottom: 2px; font-size: 10px; opacity: 0.8; }
-        .live-text { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+        /* --- INTERFACE INPUT --- */
+        .input-area { display: flex; background: #000; padding: 15px; gap: 10px; border-top: 1px solid #222; width: 100%; }
+        .input-area input { flex: 1; background: #111; border: 1px solid #333; color: #fff; padding: 12px; outline: none; }
+        .input-area button { background: var(--accent); border: none; padding: 0 20px; color: white; cursor: pointer; font-weight: bold; }
 
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-
-        /* UI elements */
-        .metro-input { width: 100%; padding: 12px; background: #111; border: 2px solid #333; color: #fff; margin-bottom: 10px; outline: none; }
-        .btn-action-metro { padding: 10px; font-size: 11px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #333; cursor: pointer; text-align: left; text-transform: uppercase; margin-bottom: 5px; width: 100%; }
-        .search-box { width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid #333; color: #fff; margin-bottom: 15px; outline: none; }
-
-        #mobile-layout { display: none; height: 100vh; padding-top: 60px; }
-        .mobile-header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.8); display: flex; align-items: center; padding: 0 20px; z-index: 900; }
-        #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.6s cubic-bezier(0.1, 0.7, 0.1, 1); }
-        .view { width: 100vw; height: 100%; padding: 15px; overflow-y: auto; padding-bottom: 150px; }
-        
-        .input-area { display: flex; gap: 8px; padding: 10px; background: #000; border-top: 1px solid #222; }
-        .input-area input { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
-        .btn-send { background: var(--accent); border: none; color: #fff; font-weight: bold; padding: 0 20px; cursor: pointer; }
-
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; }
-        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #555; font-weight: bold; }
-        .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
+        /* --- LOGIN --- */
+        #login-screen { position: fixed; inset: 0; background: #000; z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .login-box { width: 85%; max-width: 350px; padding: 30px; border: 2px solid var(--accent); background: #000; }
 
         @media (min-width: 851px) { #pc-layout { display: flex; } }
-        @media (max-width: 850px) { #mobile-layout { display: block; } .mobile-header { display: flex; } }
+        @media (max-width: 850px) { #mobile-layout { display: block; } }
     </style>
 </head>
 <body>
 
+    <div id="login-screen">
+        <div class="login-box">
+            <h1 style="font-weight: 100; font-size: 32px; margin-bottom: 20px;">ThinkTalk</h1>
+            <input type="text" id="log-user" placeholder="Pseudo" style="width:100%; padding:15px; background:#111; border:1px solid #333; color:white; margin-bottom:10px; outline:none;">
+            <input type="password" id="log-pass" placeholder="Code d'accès" style="width:100%; padding:15px; background:#111; border:1px solid #333; color:white; margin-bottom:20px; outline:none;">
+            <button onclick="login()" style="width:100%; padding:15px; background:var(--accent); border:none; color:white; font-weight:bold; cursor:pointer;">DÉVERROUILLER</button>
+        </div>
+    </div>
+
     <div id="pc-layout">
         <aside id="sidebar">
-            <h1 style="color:var(--accent); font-weight:100; margin-bottom:20px;">ThinkTalk</h1>
-            <div class="room-actions">
-                <button class="btn-action-metro" onclick="uiCreateRoom()">+ CRÉER UN SALON</button>
-                <button class="btn-action-metro" onclick="uiJoinPrivate()">🔑 REJOINDRE PRIVÉ</button>
-            </div>
-            <div id="pc-content-list" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
-            <button onclick="logout()" style="background:none; border:none; color:red; cursor:pointer; text-align:left; padding:10px 0;">DÉCONNEXION</button>
+            <h2 style="font-weight:100; font-size:32px; margin-bottom:30px;">ThinkTalk</h2>
+            <p style="color:var(--accent); font-size:11px; font-weight:bold; margin-bottom:10px;">SALONS</p>
+            <div id="pc-rooms" class="pc-scroll-area"></div>
+            <p style="color:var(--accent); font-size:11px; font-weight:bold; margin-bottom:10px;">CONTACTS</p>
+            <div id="pc-contacts" class="pc-scroll-area"></div>
+            <button onclick="logout()" style="padding:10px; background:#e51400; color:white; border:none; cursor:pointer;">DÉCONNEXION</button>
         </aside>
         <main style="flex:1; display:flex; flex-direction:column;">
-            <div style="padding:20px; border-bottom:1px solid #222;"><h2 id="chat-title-pc" style="font-weight:100;">#accueil</h2></div>
             <div id="msg-pc" class="msg-list"></div>
             <div class="input-area">
-                <input type="text" id="in-pc" placeholder="Écrire..." onkeypress="if(event.key==='Enter') send('pc')">
-                <button class="btn-send" onclick="send('pc')">ENVOYER</button>
+                <input type="text" id="in-pc" placeholder="Message..." onkeypress="if(event.key==='Enter') send('pc')">
+                <button onclick="send('pc')">ENVOYER</button>
             </div>
         </main>
     </div>
 
     <div id="mobile-layout">
-        <div class="mobile-header"><span>THINKTALK</span></div>
         <div id="panorama">
             <section class="view">
-                <h1 style="font-size:40px; font-weight:100; color:var(--accent); margin-bottom:20px;">salons</h1>
+                <h1 style="margin:20px; font-weight:100; font-size:45px;">salons</h1>
                 <div id="mob-rooms" class="tiles-grid"></div>
             </section>
-            <section class="view">
-                <h2 id="chat-title-mob" style="font-weight:100; margin-bottom:10px;">Chat</h2>
+            <section class="view" style="display:flex; flex-direction:column; padding-bottom: 140px;">
+                <h1 id="mob-title" style="margin:20px; font-weight:100; font-size:24px;">#accueil</h1>
                 <div id="msg-mob" class="msg-list"></div>
+                <div class="input-area" id="mob-input-bar" style="display:none; position:fixed; bottom:70px; width:100%;">
+                    <input type="text" id="in-mob" placeholder="Réponse..." onkeypress="if(event.key==='Enter') send('mob')">
+                    <button onclick="send('mob')">OK</button>
+                </div>
             </section>
             <section class="view">
-                <h1 style="font-size:40px; font-weight:100; color:var(--accent);">contacts</h1>
+                <h1 style="margin:20px; font-weight:100; font-size:45px;">contacts</h1>
                 <div id="mob-contacts" class="tiles-grid"></div>
             </section>
         </div>
-        <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; width:100%;">
-            <input type="text" id="in-mob" placeholder="Message..." onkeypress="if(event.key==='Enter') send('mob')">
-            <button class="btn-send" onclick="send('mob')">OK</button>
-        </div>
-        <nav class="nav-bottom">
-            <div class="nav-btn active" onclick="goTo(0)">ACCUEIL</div>
-            <div class="nav-btn" onclick="goTo(1)">CHAT</div>
-            <div class="nav-btn" onclick="goTo(2)">CONTACTS</div>
+        <nav class="nav-bar">
+            <div class="nav-item active" onclick="goTo(0)">SALONS</div>
+            <div class="nav-item" onclick="goTo(1)">CHAT</div>
+            <div class="nav-item" onclick="goTo(2)">CONTACTS</div>
         </nav>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
-            authDomain: "chat-github-6abb5.firebaseapp.com",
-            databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "chat-github-6abb5",
-        };
+        const firebaseConfig = { apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w", authDomain: "chat-github-6abb5.firebaseapp.com", databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app", projectId: "chat-github-6abb5" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let user = localStorage.getItem("thinktalk_pseudo");
-        let current = { id: 'general', type: 'room' };
+        const ACCESS_CODE = "1234"; // TON CODE DE SÉCURITÉ
+        let user = localStorage.getItem("tt_user"), current = { id: 'general', type: 'room' };
 
-        function getPath(id, type) { 
-            const targetId = id || current.id;
-            const targetType = type || current.type;
-            return targetType === 'room' ? `messages/public/${targetId}` : `messages/dm/${[user, targetId].sort().join("__")}`; 
-        }
-
-        // Système Live Tile
-        function bindLiveTile(id, type, element) {
-            db.ref(targetPath = (type === 'room' ? `messages/public/${id}` : `messages/dm/${[user, id].sort().join("__")}`))
-              .limitToLast(1).on('child_added', snap => {
-                const m = snap.val();
-                if(!m) return;
-                const prev = element.querySelector('.live-preview');
-                if(prev) prev.remove();
-                
-                const preview = document.createElement('div');
-                preview.className = 'live-preview';
-                preview.innerHTML = `<div class="live-author">${m.pseudo}</div><div class="live-text">${m.text}</div>`;
-                element.appendChild(preview);
-                
-                // Effet Metro : La preview disparaît après 5s pour remontrer le nom du salon, puis revient
-                setTimeout(() => { if(preview) preview.style.opacity = "0"; }, 5000);
-                setTimeout(() => { if(preview) preview.style.opacity = "1"; }, 8000);
-            });
+        function login() {
+            const u = document.getElementById('log-user').value.trim();
+            const p = document.getElementById('log-pass').value;
+            if(u && p === ACCESS_CODE) {
+                localStorage.setItem("tt_user", u);
+                location.reload();
+            } else { alert("Accès refusé"); }
         }
 
         function setChat(id, type) {
             current = { id, type };
-            document.getElementById('chat-title-pc').textContent = (type==='room'?'#':'@') + id;
-            document.getElementById('chat-title-mob').textContent = (type==='room'?'#':'@') + id;
-            const path = getPath();
+            const path = type === 'room' ? `messages/public/${id}` : `messages/dm/${[user,id].sort().join("__")}`;
             db.ref(path).off();
             db.ref(path).on('value', s => {
                 const pc = document.getElementById('msg-pc'), mb = document.getElementById('msg-mob');
-                pc.innerHTML = ""; mb.innerHTML = "";
+                pc.innerHTML = mb.innerHTML = "";
                 s.forEach(snap => {
                     const m = snap.val();
-                    const mid = snap.key;
-                    const isMine = m.pseudo === user;
-                    const html = `
-                        <div class="msg ${isMine?'mine':''}">
-                            <div class="msg-header"><span>${m.pseudo}</span><span class="msg-time">${m.time || ''}</span></div>
-                            <div class="msg-text">${m.text}</div>
-                            ${isMine ? `<div class="msg-actions"><span onclick="editMsg('${mid}','${m.text.replace(/'/g, "\\'")}')">Modifier</span><span onclick="deleteMsg('${mid}')">Supprimer</span></div>` : ''}
-                        </div>`;
-                    pc.innerHTML += html; mb.innerHTML += html;
+                    const html = `<div class="msg"><div class="msg-author">${m.pseudo}</div><div>${m.text}</div></div>`;
+                    pc.insertAdjacentHTML('beforeend', html); mb.insertAdjacentHTML('beforeend', html);
                 });
                 pc.scrollTop = pc.scrollHeight; mb.scrollTop = mb.scrollHeight;
             });
+            document.getElementById('mob-title').textContent = (type==='room'?'# ':'@ ')+id;
         }
 
-        function loadLists() {
-            // Salons
+        function loadData() {
             db.ref("rooms").on('value', s => {
-                const mb = document.getElementById('mob-rooms'), pc = document.getElementById('pc-content-list');
-                let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
-                mb.innerHTML = ""; pc.innerHTML = "";
-                
-                // On ajoute manuellement général
-                const genTile = createTile('general', 'room', false);
-                mb.appendChild(genTile);
-                pc.innerHTML += `<div class="btn-action-metro" onclick="setChat('general','room')">#general</div>`;
-                bindLiveTile('general', 'room', genTile);
-
-                s.forEach(r => {
-                    const isPriv = r.val().code;
-                    if(r.key !== 'general' && (!isPriv || saved.includes(r.key))) {
-                        const tile = createTile(r.key, 'room', isPriv);
-                        mb.appendChild(tile);
-                        pc.innerHTML += `<div class="btn-action-metro" onclick="setChat('${r.key}','room')">${isPriv?'🔑':'#'} ${r.key}</div>`;
-                        bindLiveTile(r.key, 'room', tile);
+                const pr = document.getElementById('pc-rooms'), mr = document.getElementById('mob-rooms');
+                pr.innerHTML = mr.innerHTML = "";
+                const render = (id) => {
+                    pr.innerHTML += `<div class="pc-item" onclick="setChat('${id}','room')"># ${id}</div>`;
+                    mr.innerHTML += `<div class="tile" onclick="setChat('${id}','room');goTo(1)">${id}</div>`;
+                };
+                render('general'); s.forEach(r => { if(r.key!=='general') render(r.key); });
+            });
+            db.ref("users").on('value', s => {
+                const pc = document.getElementById('pc-contacts'), mc = document.getElementById('mob-contacts');
+                pc.innerHTML = mc.innerHTML = "";
+                s.forEach(u => {
+                    if(u.key !== user) {
+                        pc.innerHTML += `<div class="pc-item" onclick="setChat('${u.key}','dm')">@ ${u.key}</div>`;
+                        mc.innerHTML += `<div class="tile" style="background:#222;" onclick="setChat('${u.key}','dm');goTo(1)">${u.key}</div>`;
                     }
                 });
             });
-
-            // Contacts
-            db.ref("contacts/"+user).on('value', s => {
-                const mc = document.getElementById('mob-contacts');
-                mc.innerHTML = "";
-                s.forEach(c => {
-                    const tile = createTile(c.key, 'contact', false);
-                    tile.style.background = "rgba(100,100,100,0.5)";
-                    mc.appendChild(tile);
-                    bindLiveTile(c.key, 'contact', tile);
-                });
-            });
         }
 
-        function createTile(id, type, isPriv) {
-            const div = document.createElement('div');
-            div.className = `tile ${isPriv?'private':''}`;
-            div.innerHTML = `<div class="tile-label">${isPriv?'🔑':(type==='room'?'#':'@')} ${id}</div>`;
-            div.onclick = () => { setChat(id, type); goTo(1); };
-            return div;
-        }
-
-        function send(m) {
-            const i = document.getElementById(m==='pc'?'in-pc':'in-mob');
-            const v = i.value.trim();
-            if(v && user) {
-                db.ref(getPath()).push({
-                    pseudo: user, text: v,
-                    time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    timestamp: Date.now()
-                });
-                i.value = "";
-            }
-        }
-
-        function editMsg(mid, oldText) {
-            const n = prompt("Modifier :", oldText);
-            if(n && n !== oldText) db.ref(getPath() + "/" + mid).update({ text: n + " (modifié)" });
-        }
-
-        function deleteMsg(mid) {
-            if(confirm("Supprimer ?")) db.ref(getPath() + "/" + mid).remove();
-        }
-
-        function uiCreateRoom() {
-            const n = prompt("Nom du salon :"), c = prompt("Code (vide = public) :");
-            if(n) {
-                db.ref('rooms/'+n.toLowerCase()).set({ code: c || null });
-                if(c) {
-                    let s = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
-                    s.push(n.toLowerCase()); localStorage.setItem("thinktalk_private_rooms", JSON.stringify(s));
-                }
-            }
-        }
-
-        function uiJoinPrivate() {
-            const n = prompt("Nom :").toLowerCase(), c = prompt("Code :");
-            db.ref('rooms/'+n).get().then(s => {
-                if(s.exists() && s.val().code === c) {
-                    let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
-                    if(!saved.includes(n)) saved.push(n);
-                    localStorage.setItem("thinktalk_private_rooms", JSON.stringify(saved));
-                    setChat(n, 'room'); goTo(1);
-                } else alert("Erreur");
-            });
+        function send(origin) {
+            const i = document.getElementById(origin==='pc'?'in-pc':'in-mob');
+            if(!i.value.trim()) return;
+            const path = current.type==='room'?`messages/public/${current.id}`:`messages/dm/${[user,current.id].sort().join("__")}`;
+            db.ref(path).push({ pseudo: user, text: i.value.trim(), timestamp: Date.now() });
+            i.value = "";
         }
 
         function goTo(x) {
             document.getElementById('panorama').style.transform = `translateX(-${x*100}vw)`;
-            document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i===x));
-            document.getElementById('mob-bar').style.display = (x===1) ? 'flex' : 'none';
+            document.querySelectorAll('.nav-item').forEach((n,i)=>n.classList.toggle('active', i===x));
+            document.getElementById('mob-input-bar').style.display = (x===1)?'flex':'none';
         }
 
-        window.onload = () => {
-            if(!user) { user = prompt("Pseudo :"); localStorage.setItem("thinktalk_pseudo", user); }
-            loadLists(); setChat('general', 'room');
-        }
         function logout() { localStorage.clear(); location.reload(); }
+
+        window.onload = () => {
+            if(!user) {
+                document.getElementById('login-screen').style.display = 'flex';
+            } else {
+                db.ref('users/'+user).set(true);
+                loadData();
+                setChat('general', 'room');
+            }
+        };
     </script>
 </body>
 </html>
