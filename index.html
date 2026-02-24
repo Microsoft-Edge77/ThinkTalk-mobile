@@ -2,8 +2,10 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>ThinkTalk Mobile v8.1</title>
+<title>ThinkTalk Mobile v3.3 - Windows Edition</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;600&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
@@ -18,15 +20,15 @@
 html, body { 
     margin: 0; padding: 0; 
     background: var(--bg); color: #fff; 
-    font-family: 'Segoe UI', 'Helvetica Neue', sans-serif; 
+    font-family: 'Inter', sans-serif; 
     height: 100%; overflow: hidden;
 }
 
-/* PANORAMA */
+/* PANORAMA FLUIDE */
 #panorama { 
     display: flex; 
     width: 300vw; height: 100%; 
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1); 
+    transition: transform 0.5s cubic-bezier(0.1, 0.7, 0.1, 1); 
 }
 .view { 
     width: 100vw; height: 100%; 
@@ -34,78 +36,65 @@ html, body {
     padding: 20px 20px 0 20px; position: relative;
 }
 
-/* HEADER */
-.header-row { display: flex; align-items: center; gap: 15px; margin-bottom: 5px; }
-.hamburger { font-size: 28px; cursor: pointer; color: var(--accent); }
-.page-title { font-size: 13px; text-transform: uppercase; font-weight: 600; letter-spacing: 2px; opacity: 0.7; }
-.section-header { font-size: 45px; font-weight: 100; margin-bottom: 20px; color: var(--accent); }
-
-/* TILES */
-.tiles-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 85px; gap: 12px; }
+/* EFFET TILT WINDOWS PHONE */
 .tile { 
     background: var(--accent); padding: 15px; display: flex; flex-direction: column; 
-    justify-content: flex-end; font-size: 16px; font-weight: 600; position: relative; overflow: hidden;
+    justify-content: flex-end; font-size: 16px; font-weight: 600; position: relative; 
+    overflow: hidden; transition: transform 0.2s ease-out;
+    cursor: pointer;
 }
+.tile:active { 
+    transform: perspective(500px) scale(0.94) rotateX(3deg);
+    filter: brightness(1.2);
+    transition: transform 0.05s ease-out;
+}
+
+/* GRILLE ET TYPO */
+.tiles-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 85px; gap: 12px; }
 .tile.medium { grid-column: span 2; grid-row: span 2; font-size: 20px; }
 .tile.wide { grid-column: span 4; }
 .tile.contact { background: #1a1a1a; border: 1px solid #333; }
 
-/* NOTIFICATION POP-UP (CARRÉ BLEU) */
+.section-header { font-size: 48px; font-weight: 100; margin-bottom: 20px; color: var(--accent); letter-spacing: -1px; }
+.page-title { font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 3px; opacity: 0.6; }
+
+/* NOTIFICATION CARRÉE BLEUE */
 #notification {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 220px; height: 220px; background: var(--accent);
+    width: 240px; height: 240px; background: var(--accent);
     display: none; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 20px; z-index: 5000;
-    box-shadow: 0 0 50px rgba(0, 162, 232, 0.5);
-    font-weight: bold; font-size: 18px; text-transform: uppercase;
-    backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.2);
+    text-align: center; padding: 25px; z-index: 5000;
+    box-shadow: 0 0 60px rgba(0, 162, 232, 0.4);
+    font-weight: 600; font-size: 18px; text-transform: uppercase;
+    animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
-/* PROFIL MENU */
-#profile-menu {
-    position: fixed; top: 0; left: 0; width: 85%; height: 100%;
-    background: #051933; z-index: 2000;
-    transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    padding: 50px 30px; border-right: 3px solid var(--accent);
-}
-#profile-menu.open { transform: translateX(0); }
-.profile-link { display: block; padding: 20px 0; font-size: 22px; color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-
-/* CHAT */
-.scroll-area { flex: 1; overflow-y: auto; padding-bottom: 140px; }
-.msg-bubble { margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 12px; }
-.msg-pseudo { color: var(--accent); font-size: 12px; font-weight: bold; }
-.msg-text { font-size: 18px; font-weight: 300; word-wrap: break-word; }
-
-/* NAVIGATION */
-.nav-bottom { 
-    position: fixed; bottom: 0; left: 0; width: 100%; 
-    height: var(--nav-h); background: #000; 
-    display: flex; justify-content: space-around; align-items: center; 
-    border-top: 1px solid #333; z-index: 100;
-}
-.nav-item { font-size: 11px; text-transform: uppercase; color: #666; font-weight: bold; }
-.nav-item.active { color: #fff; border-bottom: 2px solid var(--accent); }
-
-#chat-bar {
-    position: fixed; bottom: var(--nav-h); left: 0; width: 100%;
-    padding: 10px; background: #111; display: none; align-items: center; gap: 8px;
-    z-index: 95; border-top: 1px solid #222;
-}
-#chat-bar input { flex: 1; height: 45px; padding: 0 15px; border-radius: 8px; border: none; font-size: 16px;}
-#chat-bar button { height: 45px; padding: 0 20px; background: var(--accent); border: none; border-radius: 8px; color: #fff; font-weight: bold; }
-
-/* AUTH */
-#auth { position: fixed; inset: 0; background: #000; z-index: 3000; padding: 60px 25px; }
+@keyframes popIn { from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
 /* MODAL */
 #modal-mobile {
     position: fixed; inset: 0; background: #000; z-index: 4000;
     padding: 40px 25px; display: none; flex-direction: column;
 }
-.modal-input { width: 100%; padding: 18px; margin-bottom: 15px; border: none; background: #1a1a1a; color: #fff; border-radius: 8px; font-size: 16px; }
-.modal-btn { width: 100%; padding: 18px; background: var(--accent); color: #fff; border: none; font-weight: bold; border-radius: 8px; margin-top: 10px; }
+.modal-input { width: 100%; padding: 18px; margin-bottom: 15px; border: none; background: #1a1a1a; color: #fff; border-radius: 0; font-size: 18px; font-family: inherit; }
+.modal-btn { width: 100%; padding: 18px; background: var(--accent); color: #fff; border: none; font-weight: bold; font-size: 16px; margin-top: 10px; }
 
+/* CHAT AREA */
+.scroll-area { flex: 1; overflow-y: auto; padding-bottom: 140px; scroll-behavior: smooth; }
+.msg-bubble { margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 15px; }
+.msg-pseudo { color: var(--accent); font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.msg-text { font-size: 20px; font-weight: 300; line-height: 1.3; }
+
+/* NAVIGATION */
+.nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-h); background: #000; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #222; z-index: 100; }
+.nav-item { font-size: 11px; text-transform: uppercase; color: #555; font-weight: bold; transition: 0.3s; }
+.nav-item.active { color: #fff; transform: scale(1.1); }
+
+#chat-bar { position: fixed; bottom: var(--nav-h); left: 0; width: 100%; padding: 10px; background: #111; display: none; align-items: center; gap: 8px; z-index: 95; }
+#chat-bar input { flex: 1; height: 50px; padding: 0 15px; border: 2px solid #333; background: #000; color: #fff; font-size: 16px; outline: none; }
+#chat-bar input:focus { border-color: var(--accent); }
+#chat-bar button { height: 50px; padding: 0 20px; background: var(--accent); border: none; color: #fff; font-weight: bold; }
+
+#auth { position: fixed; inset: 0; background: #000; z-index: 3000; padding: 60px 25px; display: flex; flex-direction: column; justify-content: center; }
 .hidden { display: none !important; }
 </style>
 </head>
@@ -114,33 +103,34 @@ html, body {
 <div id="notification">MESSAGE</div>
 
 <div id="modal-mobile">
-    <h1 class="modal-title" id="m-title" style="font-size: 32px; font-weight: 100; color: var(--accent); margin-bottom: 30px;">TITRE</h1>
+    <h1 class="section-header" id="m-title">TITRE</h1>
     <div id="m-content"></div>
     <button class="modal-btn" id="m-confirm">VALIDER</button>
-    <button class="modal-cancel" onclick="closeModal()" style="width: 100%; padding: 15px; background: none; color: #666; border: none; margin-top: 10px;">ANNULER</button>
+    <button onclick="closeModal()" style="width: 100%; padding: 15px; background: none; color: #666; border: none; margin-top: 10px; font-size: 14px;">ANNULER</button>
 </div>
 
-<div id="profile-menu">
-    <h2 id="me-pseudo" style="margin:5px 0 40px 0; color:var(--accent); font-size: 32px; font-weight: 100;">PSEUDO</h2>
-    <a href="#" class="profile-link" onclick="uiChangeCode()">Changer mon code</a>
-    <a href="#" class="profile-link" onclick="logout()">Déconnexion</a>
-    <button onclick="toggleMenu()" style="margin-top:60px; background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:12px 25px; width: 100%;">RETOUR</button>
+<div id="profile-menu" style="position: fixed; top: 0; left: 0; width: 85%; height: 100%; background: #051933; z-index: 2000; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 50px 30px; border-right: 3px solid var(--accent);">
+    <h2 id="me-pseudo" class="section-header" style="font-size: 32px; margin-bottom: 40px;">PSEUDO</h2>
+    <div onclick="uiChangeCode()" style="padding: 20px 0; font-size: 20px; border-bottom: 1px solid #1a1a1a;">Changer mon code</div>
+    <div onclick="logout()" style="padding: 20px 0; font-size: 20px; color: #ff5050;">Déconnexion</div>
+    <button onclick="toggleMenu()" style="margin-top:60px; background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:12px; width: 100%;">RETOUR</button>
 </div>
 
 <div id="auth">
-    <h1 class="section-header" style="font-size: 55px; margin-bottom: 40px;">ThinkTalk</h1>
-    <input id="authPseudo" placeholder="pseudo" style="width:100%; padding:18px; margin-bottom:12px; border:none; background:#1a1a1a; color:#fff; border-radius: 8px;">
-    <input id="authCode" type="password" placeholder="code" style="width:100%; padding:18px; margin-bottom:30px; border:none; background:#1a1a1a; color:#fff; border-radius: 8px;">
-    <button onclick="handleAuth('login')" style="width:100%; padding:20px; background:var(--accent); color:#fff; border:none; font-weight:bold; border-radius: 8px;">CONNEXION</button>
-    <button onclick="handleAuth('register')" style="width:100%; padding:15px; background:none; color:#555; border:none; margin-top:15px; font-size: 14px;">créer un nouveau compte</button>
+    <h1 class="section-header" style="font-size: 60px;">ThinkTalk</h1>
+    <p style="margin-bottom: 40px; opacity: 0.5;">BIENVENUE DANS LE RÉSEAU</p>
+    <input id="authPseudo" class="modal-input" placeholder="pseudo">
+    <input id="authCode" type="password" class="modal-input" placeholder="code">
+    <button onclick="handleAuth('login')" class="modal-btn">CONNEXION</button>
+    <button onclick="handleAuth('register')" style="background:none; color:#555; border:none; margin-top:20px;">CRÉER UN COMPTE</button>
 </div>
 
 <div id="panorama">
     <section class="view">
-        <div class="header-row"><div class="hamburger" onclick="toggleMenu()">☰</div><div class="page-title">THINKTALK</div></div>
+        <div class="header-row"><div style="font-size: 28px; color: var(--accent);" onclick="toggleMenu()">☰</div><div class="page-title">THINKTALK</div></div>
         <h1 class="section-header">accueil</h1>
         <div id="rooms-grid" class="tiles-grid"></div>
-        <button onclick="uiCreateRoom()" style="margin-top:20px; width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius: 8px;">+ NOUVEAU SALON</button>
+        <button onclick="uiCreateRoom()" style="margin-top:25px; width:100%; padding:18px; background:none; border:2px solid #222; color:#aaa; font-weight: bold;">+ NOUVEAU SALON</button>
     </section>
 
     <section class="view">
@@ -153,12 +143,12 @@ html, body {
         <div class="page-title">PERSONNES</div>
         <h1 class="section-header">contacts</h1>
         <div id="contacts-grid" class="tiles-grid"></div>
-        <button onclick="uiAddContact()" style="margin-top:20px; width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius: 8px;">+ AJOUTER UN AMI</button>
+        <button onclick="uiAddContact()" style="margin-top:25px; width:100%; padding:18px; background:none; border:2px solid #222; color:#aaa; font-weight: bold;">+ AJOUTER AMI</button>
     </section>
 </div>
 
 <div id="chat-bar">
-    <input id="msgInput" type="text" placeholder="Répondre...">
+    <input id="msgInput" type="text" placeholder="Taper un message...">
     <button onclick="sendMessage()">OK</button>
 </div>
 
@@ -169,7 +159,7 @@ html, body {
 </nav>
 
 <script>
-// CONFIG FIREBASE
+// CONFIG FIREBASE (Inchangée)
 const firebaseConfig = {
     apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
     authDomain: "chat-github-6abb5.firebaseapp.com",
@@ -185,48 +175,35 @@ const db = firebase.database();
 let user = localStorage.getItem('tt_user');
 let currentCtx = null;
 
-// NOTIFICATION SYSTEM (Pop-up carré bleu)
 function showNotify(msg) {
     const n = document.getElementById('notification');
     n.textContent = msg;
     n.style.display = 'flex';
-    setTimeout(() => { n.style.display = 'none'; }, 2500);
+    setTimeout(() => { n.style.display = 'none'; }, 2000);
 }
 
-// UI UTILS
-function toggleMenu() { document.getElementById('profile-menu').classList.toggle('open'); }
+function toggleMenu() { document.getElementById('profile-menu').style.transform = document.getElementById('profile-menu').style.transform === 'translateX(0%)' ? 'translateX(-100%)' : 'translateX(0%)'; }
 function goTo(index) {
     document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
     document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === index));
     document.getElementById('chat-bar').style.display = (index === 1) ? 'flex' : 'none';
 }
 
-// MODAL SYSTEM
+// MODAL
 const modal = document.getElementById('modal-mobile');
-const mTitle = document.getElementById('m-title');
-const mContent = document.getElementById('m-content');
-const mConfirm = document.getElementById('m-confirm');
-
 function openModal(title, html, onConfirm) {
-    mTitle.textContent = title;
-    mContent.innerHTML = html;
+    document.getElementById('m-title').textContent = title;
+    document.getElementById('m-content').innerHTML = html;
     modal.style.display = 'flex';
-    mConfirm.onclick = onConfirm;
+    document.getElementById('m-confirm').onclick = onConfirm;
 }
 function closeModal() { modal.style.display = 'none'; }
-
-document.addEventListener('change', (e) => {
-    if(e.target.id === 'new-room-priv') {
-        const c = document.getElementById('new-room-code');
-        if(c) c.style.display = e.target.checked ? 'block' : 'none';
-    }
-});
 
 // ACTIONS
 function uiCreateRoom() {
     openModal("Nouveau Salon", `
-        <input id="new-room-name" class="modal-input" placeholder="nom du salon">
-        <div style="margin: 10px 0;"><input type="checkbox" id="new-room-priv"> <label>Salon privé</label></div>
+        <input id="new-room-name" class="modal-input" placeholder="nom">
+        <div style="margin: 15px 0;"><input type="checkbox" id="new-room-priv" style="transform: scale(1.5);"> <label style="margin-left:10px">Salon privé</label></div>
         <input id="new-room-code" class="modal-input" placeholder="code secret" style="display:none">
     `, async () => {
         const name = document.getElementById('new-room-name').value.trim().toLowerCase().replace(/\s+/g, '-');
@@ -235,18 +212,18 @@ function uiCreateRoom() {
         if(!name) return;
         await db.ref("rooms/"+name).set({ name, private: isPriv, code, creator: user });
         closeModal();
-        showNotify("SALON CRÉÉ");
+        showNotify("SALON PRÊT");
         openRoom(name, 'room');
     });
 }
 
 function uiAddContact() {
-    openModal("Ajouter un ami", `<input id="new-contact-name" class="modal-input" placeholder="pseudo exact">`, async () => {
+    openModal("Ajouter Ami", `<input id="new-contact-name" class="modal-input" placeholder="pseudo exact">`, async () => {
         const p = document.getElementById('new-contact-name').value.trim();
         if(!p) return;
         if(p === user) { showNotify("VOUS NE POUVEZ PAS VOUS AJOUTER VOUS MÊME"); return; }
         const check = await db.ref("users/"+p).get();
-        if(!check.exists()) return showNotify("UTILISATEUR INCONNU");
+        if(!check.exists()) return showNotify("INCONNU");
         await db.ref(`contacts/${user}/${p}`).set(true);
         await db.ref(`contacts/${p}/${user}`).set(true);
         showNotify("AMI AJOUTÉ");
@@ -353,15 +330,13 @@ function getConvId(a, b) { return [a, b].sort().join("__"); }
 function logout() { localStorage.clear(); location.reload(); }
 window.onload = () => { if(user) startApp(); };
 
-function uiChangeCode() {
-    openModal("Nouveau Code", `<input id="new-user-code" class="modal-input" type="password">`, async () => {
-        const n = document.getElementById('new-user-code').value;
-        if(n.length >= 4) {
-            await db.ref(`users/${user}`).update({code: n});
-            closeModal(); showNotify("CODE MODIFIÉ"); toggleMenu();
-        }
-    });
-}
+// Event listener pour le mode privé
+document.addEventListener('change', (e) => {
+    if(e.target.id === 'new-room-priv') {
+        const c = document.getElementById('new-room-code');
+        if(c) c.style.display = e.target.checked ? 'block' : 'none';
+    }
+});
 </script>
 </body>
 </html>
