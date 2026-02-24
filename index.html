@@ -34,6 +34,12 @@
         #pc-layout { display: none; height: 100vh; }
         #mobile-layout { display: none; height: 100vh; position: relative; padding-top: 60px; }
         #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
+        
+        /* Nouveaux styles pour les onglets PC */
+        .pc-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #222; }
+        .pc-tab { padding-bottom: 5px; cursor: pointer; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; transition: 0.2s; }
+        .pc-tab.active { color: #fff; border-bottom: 2px solid var(--accent); }
+        
         .pc-item { padding: 10px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
         .pc-item:hover { background: rgba(0,162,232,0.15); border-left-color: var(--accent); }
         .msg { background: rgba(30,30,30,0.7); padding: 12px; border-left: 4px solid #333; max-width: 85%; align-self: flex-start; cursor: pointer; word-wrap: break-word; }
@@ -80,12 +86,17 @@
     <div id="pc-layout">
         <aside id="sidebar">
             <h1 style="font-weight:100; color:var(--accent); margin-bottom:15px;">thinktalk</h1>
-            <div style="flex:1; overflow-y:auto;">
-                <input type="text" class="search-box" placeholder="Salons..." oninput="filterList('pc-rooms', this.value)">
-                <div id="pc-rooms"></div><div style="height:20px;"></div>
-                <input type="text" class="search-box" placeholder="Amis..." oninput="filterList('pc-contacts', this.value)">
-                <div id="pc-contacts"></div>
+            
+            <div class="pc-tabs">
+                <div class="pc-tab active" id="tab-rooms" onclick="switchPcTab('rooms')">Salons</div>
+                <div class="pc-tab" id="tab-contacts" onclick="switchPcTab('contacts')">Contacts</div>
             </div>
+
+            <div style="flex:1; overflow-y:auto;">
+                <input type="text" class="search-box" id="pc-search" placeholder="Chercher..." oninput="filterPcList(this.value)">
+                <div id="pc-content-list"></div>
+            </div>
+            
             <button class="metro-btn btn-gray" onclick="uiChangeBg()" style="font-size:11px;">🖼 FOND D'ÉCRAN</button>
             <button onclick="logout()" style="color:#ff5050; border:none; background:none; cursor:pointer; font-weight:bold; padding:10px 0;">DÉCONNEXION</button>
         </aside>
@@ -104,8 +115,7 @@
         <div id="panorama">
             <section class="view">
                 <h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">salons</h1>
-                <input type="text" class="search-box" placeholder="Chercher un salon..." oninput="filterTiles('mob-rooms', this.value)">
-                <div id="mob-rooms" class="tiles-grid"></div>
+                <input type="text" class="search-box" placeholder="Chercher un salon..." oninput="filterTiles('mob-rooms', this.value)"><div id="mob-rooms" class="tiles-grid"></div>
             </section>
             <section class="view">
                 <h1 id="chat-title-mob" style="font-weight:100; font-size:28px; margin-bottom:10px;">Chat</h1>
@@ -113,8 +123,7 @@
             </section>
             <section class="view">
                 <h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">contacts</h1>
-                <input type="text" class="search-box" placeholder="Chercher un ami..." oninput="filterTiles('mob-contacts', this.value)">
-                <div id="mob-contacts" class="tiles-grid"></div>
+                <input type="text" class="search-box" placeholder="Chercher un ami..." oninput="filterTiles('mob-contacts', this.value)"><div id="mob-contacts" class="tiles-grid"></div>
             </section>
         </div>
         <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; left:0;">
@@ -136,6 +145,7 @@
         const db = firebase.database();
         let user = localStorage.getItem("thinktalk_pseudo");
         let current = { id: 'general', type: 'room' };
+        let activePcTab = 'rooms'; 
         let pressTimer;
 
         function getPath() { return current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; }
@@ -189,29 +199,42 @@
             });
         }
 
+        function switchPcTab(tab) {
+            activePcTab = tab;
+            document.querySelectorAll('.pc-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-'+tab).classList.add('active');
+            loadLists();
+        }
+
         function loadLists() {
+            const pcList = document.getElementById('pc-content-list');
+            
             db.ref("rooms").on('value', s => {
-                const pc = document.getElementById('pc-rooms'), mb = document.getElementById('mob-rooms');
-                // On ajoute "general" manuellement au début
-                pc.innerHTML = `<div class="pc-item" onclick="setChat('general','room')">#general</div>`;
+                const mb = document.getElementById('mob-rooms');
                 mb.innerHTML = `<div class="tile" data-name="general" style="background:linear-gradient(45deg, #005, var(--accent))" onclick="setChat('general','room'); goTo(1);">#general</div>`;
+                if(activePcTab === 'rooms') pcList.innerHTML = `<div class="pc-item" onclick="setChat('general','room')">#general</div>`;
+                
                 s.forEach(r => {
                     if(r.key !== 'general') {
-                        pc.innerHTML += `<div class="pc-item" onclick="setChat('${r.key}','room')">#${r.key}</div>`;
+                        if(activePcTab === 'rooms') pcList.innerHTML += `<div class="pc-item" onclick="setChat('${r.key}','room')">#${r.key}</div>`;
                         mb.innerHTML += `<div class="tile" data-name="${r.key}" onclick="setChat('${r.key}','room'); goTo(1);">#${r.key}</div>`;
                     }
                 });
             });
+
             db.ref("contacts/"+user).on('value', s => {
-                const pc = document.getElementById('pc-contacts'), mb = document.getElementById('mob-contacts');
-                pc.innerHTML = ""; mb.innerHTML = "";
+                const mb = document.getElementById('mob-contacts');
+                mb.innerHTML = "";
+                if(activePcTab === 'contacts') pcList.innerHTML = "";
+                
                 s.forEach(c => {
-                    pc.innerHTML += `<div class="pc-item" onclick="setChat('${c.key}','dm')">@${c.key}</div>`;
+                    if(activePcTab === 'contacts') pcList.innerHTML += `<div class="pc-item" onclick="setChat('${c.key}','dm')">@${c.key}</div>`;
                     mb.innerHTML += `<div class="tile" data-name="${c.key}" style="background:#222" onclick="setChat('${c.key}','dm'); goTo(1);">@${c.key}</div>`;
                 });
             });
         }
 
+        function filterPcList(v) { Array.from(document.getElementById('pc-content-list').children).forEach(i => i.style.display = i.textContent.toLowerCase().includes(v.toLowerCase()) ? "block" : "none"); }
         function applyBg(u) { document.body.style.backgroundImage = u ? `url('${u}')` : "none"; }
         function resetBg() { localStorage.removeItem("thinktalk_bg"); applyBg(null); closeModal(); }
         function uiChangeBg() { 
@@ -239,7 +262,6 @@
         }
         function loginSuccess(p) { user = p; localStorage.setItem("thinktalk_pseudo", p); closeModal(); loadLists(); setChat('general', 'room'); }
         function filterTiles(id, v) { Array.from(document.getElementById(id).getElementsByClassName('tile')).forEach(t => { t.style.display = t.getAttribute('data-name').toLowerCase().includes(v.toLowerCase()) ? "flex" : "none"; }); }
-        function filterList(id, v) { Array.from(document.getElementById(id).children).forEach(i => i.style.display = i.textContent.toLowerCase().includes(v.toLowerCase()) ? "block" : "none"); }
         function goTo(x) { document.getElementById('panorama').style.transform = `translateX(-${x*100}vw)`; document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === x)); document.getElementById('mob-bar').style.display = (x === 1) ? 'flex' : 'none'; }
         function toggleMenu() { const o = document.getElementById('mobile-menu').classList.toggle('open'); document.getElementById('menu-overlay').style.display = o ? 'block' : 'none'; }
         function openModal(t, h, c) { document.getElementById('modal-title').textContent = t; document.getElementById('modal-content').innerHTML = h; document.getElementById('metro-modal-overlay').style.display = 'flex'; const b = document.getElementById('modal-confirm'); b.style.display = c ? 'block' : 'none'; b.onclick = c; }
