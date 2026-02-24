@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>ThinkTalk Mobile v3.1 - Metro Sync Fixed</title>
+<title>ThinkTalk Mobile v3.1</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
@@ -103,22 +103,40 @@ html, body {
 
 /* AUTH */
 #auth { position: fixed; inset: 0; background: #000; z-index: 3000; padding: 60px 25px; }
+
+/* MODAL MOBILE SYSTEM */
+#modal-mobile {
+    position: fixed; inset: 0; background: #000; z-index: 4000;
+    padding: 40px 25px; display: none; flex-direction: column;
+}
+.modal-title { font-size: 32px; font-weight: 100; color: var(--accent); margin-bottom: 30px; }
+.modal-input { width: 100%; padding: 18px; margin-bottom: 15px; border: none; background: #1a1a1a; color: #fff; border-radius: 8px; font-size: 16px; }
+.modal-btn { width: 100%; padding: 18px; background: var(--accent); color: #fff; border: none; font-weight: bold; border-radius: 8px; margin-top: 10px; }
+.modal-cancel { width: 100%; padding: 15px; background: none; color: #666; border: none; margin-top: 10px; }
+
 .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
+<div id="modal-mobile">
+    <h1 class="modal-title" id="m-title">TITRE</h1>
+    <div id="m-content"></div>
+    <button class="modal-btn" id="m-confirm">VALIDER</button>
+    <button class="modal-cancel" onclick="closeModal()">ANNULER</button>
+</div>
+
 <div id="profile-menu">
     <div style="font-size: 11px; opacity: 0.5; letter-spacing: 1px;">SESSION ACTIVE</div>
     <h2 id="me-pseudo" style="margin:5px 0 40px 0; color:var(--accent); font-size: 32px; font-weight: 100;">PSEUDO</h2>
-    <a href="#" class="profile-link" onclick="changeCode()">Changer mon code</a>
+    <a href="#" class="profile-link" onclick="uiChangeCode()">Changer mon code</a>
     <a href="#" class="profile-link" onclick="logout()">Déconnexion</a>
-    <a href="#" class="profile-link delete" onclick="deleteMyAccount()">Supprimer le compte</a>
+    <a href="#" class="profile-link delete" onclick="uiDeleteAccount()">Supprimer le compte</a>
     <button onclick="toggleMenu()" style="margin-top:60px; background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:12px 25px; width: 100%;">RETOUR</button>
 </div>
 
 <div id="auth">
-    <h1 class="section-header" style="font-size: 55px; margin-bottom: 40px;">salut.</h1>
+    <h1 class="section-header" style="font-size: 55px; margin-bottom: 40px;">ThinkTalk</h1>
     <input id="authPseudo" type="text" placeholder="pseudo" style="width:100%; padding:18px; margin-bottom:12px; border:none; background:#1a1a1a; color:#fff; border-radius: 8px;">
     <input id="authCode" type="password" placeholder="code" style="width:100%; padding:18px; margin-bottom:30px; border:none; background:#1a1a1a; color:#fff; border-radius: 8px;">
     <button onclick="handleAuth('login')" style="width:100%; padding:20px; background:var(--accent); color:#fff; border:none; font-weight:bold; letter-spacing:2px; border-radius: 8px;">CONNEXION</button>
@@ -133,7 +151,7 @@ html, body {
         </div>
         <h1 class="section-header">accueil</h1>
         <div id="rooms-grid" class="tiles-grid"></div>
-        <button onclick="createRoomPrompt()" style="margin-top:20px; width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius: 8px; font-weight: bold; font-size: 12px;">+ NOUVEAU SALON</button>
+        <button onclick="uiCreateRoom()" style="margin-top:20px; width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius: 8px; font-weight: bold; font-size: 12px;">+ NOUVEAU SALON</button>
     </section>
 
     <section class="view">
@@ -146,7 +164,7 @@ html, body {
         <div class="page-title">PERSONNES</div>
         <h1 class="section-header">contacts</h1>
         <div id="contacts-grid" class="tiles-grid"></div>
-        <button onclick="addContactPrompt()" style="margin-top:20px; width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius: 8px; font-weight: bold; font-size: 12px;">+ AJOUTER UN AMI</button>
+        <button onclick="uiAddContact()" style="margin-top:20px; width:100%; padding:15px; background:none; border:1px solid #333; color:#888; border-radius: 8px; font-weight: bold; font-size: 12px;">+ AJOUTER UN AMI</button>
     </section>
 </div>
 
@@ -177,6 +195,7 @@ const db = firebase.database();
 let user = localStorage.getItem('tt_user');
 let currentCtx = null;
 
+// UI UTILS
 function toggleMenu() { document.getElementById('profile-menu').classList.toggle('open'); }
 function goTo(index) {
     document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
@@ -184,7 +203,99 @@ function goTo(index) {
     document.getElementById('chat-bar').style.display = (index === 1) ? 'flex' : 'none';
 }
 
-// FIX : Assurer que les salons par défaut existent
+// MODAL SYSTEM
+const modal = document.getElementById('modal-mobile');
+const mTitle = document.getElementById('m-title');
+const mContent = document.getElementById('m-content');
+const mConfirm = document.getElementById('m-confirm');
+
+function openModal(title, html, onConfirm) {
+    mTitle.textContent = title;
+    mContent.innerHTML = html;
+    modal.style.display = 'flex';
+    mConfirm.onclick = onConfirm;
+}
+function closeModal() { modal.style.display = 'none'; }
+
+// MODAL ACTIONS
+function uiCreateRoom() {
+    openModal("Nouveau Salon", `
+        <input id="new-room-name" class="modal-input" placeholder="nom du salon">
+        <div style="margin: 10px 0;">
+            <input type="checkbox" id="new-room-priv" style="width:20px; height:20px; vertical-align:middle;"> 
+            <label style="font-size:14px; margin-left:10px;">Salon privé</label>
+        </div>
+        <input id="new-room-code" class="modal-input" placeholder="code secret" style="display:none">
+    `, async () => {
+        const name = document.getElementById('new-room-name').value.trim().toLowerCase().replace(/\s+/g, '-');
+        const isPriv = document.getElementById('new-room-priv').checked;
+        const code = document.getElementById('new-room-code').value.trim();
+        if(!name) return;
+        await db.ref("rooms/"+name).set({ name, private: isPriv, code, creator: user });
+        closeModal();
+    });
+
+    document.body.addEventListener('change', (e) => {
+        if(e.target.id === 'new-room-priv') {
+            document.getElementById('new-room-code').style.display = e.target.checked ? 'block' : 'none';
+        }
+    });
+}
+
+function uiAddContact() {
+    openModal("Ajouter un ami", `
+        <input id="new-contact-name" class="modal-input" placeholder="pseudo exact">
+    `, async () => {
+        const p = document.getElementById('new-contact-name').value.trim();
+        if(!p || p === user) return closeModal();
+        const check = await db.ref("users/"+p).get();
+        if(!check.exists()) return alert("Utilisateur inconnu");
+        await db.ref(`contacts/${user}/${p}`).set(true);
+        await db.ref(`contacts/${p}/${user}`).set(true);
+        closeModal();
+    });
+}
+
+async function selectRoom(room) {
+    if(room.private && room.creator !== user) {
+        openModal("Salon Privé", `
+            <input id="join-room-code" class="modal-input" type="password" placeholder="code d'accès">
+        `, () => {
+            const pass = document.getElementById('join-room-code').value;
+            if(pass === room.code) {
+                openRoom(room.name, 'room');
+                closeModal();
+            } else { alert("Code erroné"); }
+        });
+    } else { openRoom(room.name, 'room'); }
+}
+
+function uiChangeCode() {
+    openModal("Changer Code", `
+        <input id="new-user-code" class="modal-input" type="password" placeholder="nouveau code (4+)">
+    `, async () => {
+        const n = document.getElementById('new-user-code').value;
+        if(n && n.length >= 4) {
+            await db.ref(`users/${user}`).update({code: n});
+            closeModal();
+            toggleMenu();
+        }
+    });
+}
+
+function uiDeleteAccount() {
+    openModal("Supprimer ?", `
+        <p style="color:red; margin-bottom:10px">Cette action est définitive.</p>
+        <input id="del-confirm" class="modal-input" placeholder="tapez votre pseudo">
+    `, async () => {
+        if(document.getElementById('del-confirm').value === user) {
+            await db.ref(`users/${user}`).remove();
+            logout();
+        }
+    });
+}
+
+// LOGIQUE CORE
 async function ensureDefaultRooms() {
     const snap = await db.ref("rooms/general").get();
     if(!snap.exists()) {
@@ -218,7 +329,7 @@ async function handleAuth(type) {
 async function startApp() {
     document.getElementById('auth').classList.add('hidden');
     document.getElementById('me-pseudo').textContent = user;
-    await ensureDefaultRooms(); // On s'assure que les salons sont là avant de charger
+    await ensureDefaultRooms();
     loadRooms();
     loadContacts();
     openRoom('general', 'room');
@@ -233,25 +344,14 @@ function loadRooms() {
             const r = child.val();
             const tile = document.createElement('div');
             tile.className = 'tile';
-            
-            // Design Metro Asymétrique
             if(i % 5 === 0) tile.classList.add('medium');
             else if(i % 3 === 0) tile.classList.add('wide');
-            
             tile.innerHTML = `<span>#${r.name}</span> ${r.private ? '<span class="private-icon">🔒</span>' : ''}`;
             tile.onclick = () => selectRoom(r);
             grid.appendChild(tile);
             i++;
         });
     });
-}
-
-async function selectRoom(room) {
-    if(room.private && room.creator !== user) {
-        const pass = prompt("Code d'accès :");
-        if(pass !== room.code) return alert("Code erroné");
-    }
-    openRoom(room.name, 'room');
 }
 
 function openRoom(id, type) {
@@ -291,31 +391,6 @@ function sendMessage() {
     input.value = "";
 }
 
-async function changeCode() {
-    const n = prompt("Nouveau code secret :");
-    if(n && n.length >= 4) {
-        await db.ref(`users/${user}`).update({code: n});
-        alert("Code mis à jour !");
-        toggleMenu();
-    }
-}
-
-async function deleteMyAccount() {
-    const confirmName = prompt("Tapez votre pseudo pour confirmer :");
-    if(confirmName === user) {
-        await db.ref(`users/${user}`).remove();
-        logout();
-    }
-}
-
-async function createRoomPrompt() {
-    const name = prompt("Nom du salon :")?.trim().toLowerCase().replace(/\s+/g, '-');
-    if(!name) return;
-    const isPriv = confirm("Rendre ce salon privé ?");
-    let code = isPriv ? prompt("Code du salon :") : "";
-    await db.ref("rooms/"+name).set({ name, private: isPriv, code, creator: user });
-}
-
 function loadContacts() {
     const grid = document.getElementById('contacts-grid');
     db.ref("contacts/"+user).on('value', snap => {
@@ -328,15 +403,6 @@ function loadContacts() {
             grid.appendChild(tile);
         });
     });
-}
-
-async function addContactPrompt() {
-    const p = prompt("Pseudo de l'ami :");
-    if(!p || p === user) return;
-    const check = await db.ref("users/"+p).get();
-    if(!check.exists()) return alert("Inconnu");
-    await db.ref(`contacts/${user}/${p}`).set(true);
-    await db.ref(`contacts/${p}/${user}`).set(true);
 }
 
 function getConvId(a, b) { return [a, b].sort().join("__"); }
