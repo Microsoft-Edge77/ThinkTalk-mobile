@@ -16,7 +16,6 @@
         #sidebar, .mobile-header, .nav-bottom, .input-area, #mobile-menu { background: rgba(0, 0, 0, 0.8) !important; backdrop-filter: blur(15px); }
         .mobile-header { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 60px; padding: 0 20px; align-items: center; justify-content: space-between; z-index: 900; }
         
-        /* Modals Metro */
         #metro-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 15px; }
         .metro-modal { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 380px; padding: 25px; box-shadow: 0 0 30px rgba(0,162,232,0.3); }
         .metro-input { width: 100%; padding: 12px; background: #111; border: 2px solid #333; color: #fff; margin-bottom: 10px; outline: none; border-radius: 0; }
@@ -24,7 +23,6 @@
         .btn-blue { background: var(--accent); color: #fff; }
         .btn-gray { background: #333; color: #fff; }
 
-        /* PC Sidebar */
         #pc-layout { display: none; height: 100vh; }
         #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
         .pc-tabs { display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #222; }
@@ -39,7 +37,6 @@
         .pc-item { padding: 10px; cursor: pointer; border-left: 3px solid transparent; }
         .pc-item:hover { background: rgba(0,162,232,0.15); border-left-color: var(--accent); }
 
-        /* Mobile & 3D Panorama */
         #mobile-layout { display: none; height: 100vh; position: relative; padding-top: 60px; }
         #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.6s cubic-bezier(0.1, 0.7, 0.1, 1); perspective: 1500px; }
         .view { width: 100vw; height: 100%; padding: 15px 15px 180px 15px; display: flex; flex-direction: column; overflow-y: auto; }
@@ -47,12 +44,8 @@
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #444; }
         .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
 
-        /* Animation Turnstile */
         .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; }
-        .tile { 
-            background: var(--accent); padding: 15px; height: 110px; display: flex; align-items: flex-end; font-weight: bold; 
-            cursor: pointer; position: relative; transition: transform 0.6s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.5s; 
-        }
+        .tile { background: var(--accent); padding: 15px; height: 110px; display: flex; align-items: flex-end; font-weight: bold; cursor: pointer; position: relative; transition: transform 0.6s cubic-bezier(0.2, 1, 0.2, 1), opacity 0.5s; }
         .tile.private { background: #333; border: 1px solid var(--accent); }
         .view-exit .tile { opacity: 0; pointer-events: none; }
         .view-exit .tile:nth-child(4n+1) { transform: translate3d(-200px, -200px, 800px) rotate(-20deg); }
@@ -150,13 +143,9 @@
         let current = { id: 'general', type: 'room' };
         let activePcTab = 'rooms'; 
 
-        // Fonction pour gérer les salons privés mémorisés
         function savePrivateRoom(id) {
             let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
-            if (!saved.includes(id)) {
-                saved.push(id);
-                localStorage.setItem("thinktalk_private_rooms", JSON.stringify(saved));
-            }
+            if (!saved.includes(id)) { saved.push(id); localStorage.setItem("thinktalk_private_rooms", JSON.stringify(saved)); }
         }
 
         function getPath() { return current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; }
@@ -167,9 +156,8 @@
                 const code = document.getElementById('nr-code').value.trim();
                 if(!name) return;
                 await db.ref('rooms/'+name).set({ code: code || null });
-                if(code) savePrivateRoom(name); // On l'ajoute direct si on le crée
+                if(code) savePrivateRoom(name);
                 closeModal();
-                loadLists();
             });
         }
 
@@ -178,12 +166,7 @@
                 const name = document.getElementById('jr-name').value.trim().toLowerCase();
                 const code = document.getElementById('jr-code').value.trim();
                 const s = await db.ref('rooms/'+name).get();
-                if(s.exists() && s.val().code === code) { 
-                    savePrivateRoom(name); 
-                    enterChatMobile(name, 'room'); 
-                    closeModal();
-                    loadLists(); // Refresh pour voir la tuile apparaître
-                }
+                if(s.exists() && s.val().code === code) { savePrivateRoom(name); enterChatMobile(name, 'room'); closeModal(); }
                 else alert("Accès refusé");
             });
         }
@@ -191,17 +174,12 @@
         async function tryEnterRoom(id) {
             const s = await db.ref('rooms/'+id).get();
             if(s.exists() && s.val().code) {
-                // On vérifie si on le connaît déjà pour éviter de redemander le code à chaque clic
                 let saved = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
-                if(saved.includes(id)) {
-                    enterChatMobile(id, 'room');
-                } else {
+                if(saved.includes(id)) enterChatMobile(id, 'room');
+                else {
                     openModal("Salon Privé", `<input id="lock-code" class="metro-input" type="password" placeholder="Code pour #${id}">`, () => {
-                        if(document.getElementById('lock-code').value === s.val().code) { 
-                            savePrivateRoom(id);
-                            enterChatMobile(id, 'room'); 
-                            closeModal();
-                        } else alert("Code erroné");
+                        if(document.getElementById('lock-code').value === s.val().code) { savePrivateRoom(id); enterChatMobile(id, 'room'); closeModal(); }
+                        else alert("Code erroné");
                     });
                 }
             } else enterChatMobile(id, 'room');
@@ -237,21 +215,19 @@
             db.ref("rooms").on('value', s => {
                 const mb = document.getElementById('mob-rooms'), pc = document.getElementById('pc-content-list');
                 if(!mb || !pc) return;
-                
                 let savedPrivate = JSON.parse(localStorage.getItem("thinktalk_private_rooms") || "[]");
-                
                 mb.innerHTML = `<div class="tile" onclick="tryEnterRoom('general')">#general</div>`;
                 if(activePcTab==='rooms') pc.innerHTML = `<div class="pc-item" onclick="tryEnterRoom('general')">#general</div>`;
                 
                 s.forEach(r => {
-                    const isPrivate = r.val().code !== null;
+                    const roomData = r.val();
+                    const isPrivate = roomData && roomData.code;
                     const isKnown = savedPrivate.includes(r.key);
-
-                    // Affiche si Public OU si c'est un salon privé que l'utilisateur a déjà rejoint
+                    // On affiche si c'est public OU si c'est un privé déjà rejoint
                     if(r.key !== 'general' && (!isPrivate || isKnown)) {
                         let classList = isPrivate ? "tile private" : "tile";
-                        mb.innerHTML += `<div class="${classList}" data-name="${r.key}" onclick="tryEnterRoom('${r.key}')">${isPrivate ? '🔑 ' : ''}#${r.key}</div>`;
-                        if(activePcTab==='rooms') pc.innerHTML += `<div class="pc-item" onclick="tryEnterRoom('${r.key}')">${isPrivate ? '🔑 ' : ''}#${r.key}</div>`;
+                        mb.innerHTML += `<div class="${classList}" onclick="tryEnterRoom('${r.key}')">${isPrivate ? '🔑 ' : '#'} ${r.key}</div>`;
+                        if(activePcTab==='rooms') pc.innerHTML += `<div class="pc-item" onclick="tryEnterRoom('${r.key}')">${isPrivate ? '🔑 ' : '#'} ${r.key}</div>`;
                     }
                 });
             });
