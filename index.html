@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); background-size: cover; background-position: center; background-attachment: fixed; color: #fff; height: 100vh; overflow: hidden; transition: background 0.5s ease; }
         #pc-layout, #mobile-layout, #panorama, .view { background: transparent !important; }
-        .msg-list { background: rgba(0, 0, 0, 0.1); }
+        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; background: rgba(0, 0, 0, 0.1); }
         #sidebar, .mobile-header, .nav-bottom, .input-area, #mobile-menu { background: rgba(0, 0, 0, 0.8) !important; backdrop-filter: blur(15px); }
         #metro-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 99999; display: none; align-items: center; justify-content: center; padding: 15px; }
         .metro-modal { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 380px; padding: 25px; box-shadow: 0 0 30px rgba(0,162,232,0.3); }
@@ -36,7 +36,6 @@
         #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; flex-shrink: 0; }
         .pc-item { padding: 10px; cursor: pointer; transition: 0.2s; border-left: 3px solid transparent; }
         .pc-item:hover { background: rgba(0,162,232,0.15); border-left-color: var(--accent); }
-        .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; }
         .msg { background: rgba(30,30,30,0.7); padding: 12px; border-left: 4px solid #333; max-width: 85%; align-self: flex-start; cursor: pointer; word-wrap: break-word; }
         .msg.mine { border-left-color: var(--accent); }
         .media-content { max-width: 100%; max-height: 250px; margin-top: 5px; display: block; border-radius: 2px; }
@@ -52,7 +51,6 @@
         .view { width: 100vw; height: 100%; padding: 15px 15px 180px 15px; display: flex; flex-direction: column; overflow-y: auto; }
         .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; width: 100%; }
         .tile { background: var(--accent); padding: 15px; height: 110px; display: flex; align-items: flex-end; font-weight: bold; cursor: pointer; position: relative; transition: 0.2s; }
-        .notif-badge { position: absolute; top: 10px; right: 10px; background: #ff5050; color: white; border-radius: 50%; width: 22px; height: 22px; display: none; align-items: center; justify-content: center; font-size: 10px; }
         @media (min-width: 851px) { #pc-layout { display: flex; } }
         @media (max-width: 850px) { #mobile-layout { display: block; } .mobile-header { display: flex; } }
     </style>
@@ -69,6 +67,7 @@
         <button class="metro-btn btn-blue" onclick="toggleMenu()">Retour</button>
     </div>
     <div class="mobile-header"><span style="font-weight: 100; letter-spacing: 2px;">THINKTALK</span><div style="font-size:30px; cursor:pointer; color:var(--accent);" onclick="toggleMenu()">≡</div></div>
+    
     <div id="metro-modal-overlay">
         <div class="metro-modal">
             <h3 id="modal-title" style="font-weight:100; margin-bottom:15px;">titre</h3>
@@ -77,6 +76,7 @@
             <button class="metro-btn btn-gray" onclick="closeModal()">Annuler</button>
         </div>
     </div>
+
     <div id="pc-layout">
         <aside id="sidebar">
             <h1 style="font-weight:100; color:var(--accent); margin-bottom:15px;">thinktalk</h1>
@@ -99,11 +99,23 @@
             </div>
         </main>
     </div>
+
     <div id="mobile-layout">
         <div id="panorama">
-            <section class="view"><h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">salons</h1><input type="text" class="search-box" placeholder="Chercher un salon..." oninput="filterTiles('mob-rooms', this.value)"><div id="mob-rooms" class="tiles-grid"></div></section>
-            <section class="view"><h1 id="chat-title-mob" style="font-weight:100; font-size:28px; margin-bottom:10px;">Chat</h1><div id="msg-mob" class="msg-list"></div></section>
-            <section class="view"><h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">contacts</h1><input type="text" class="search-box" placeholder="Chercher un ami..." oninput="filterTiles('mob-contacts', this.value)"><div id="mob-contacts" class="tiles-grid"></div></section>
+            <section class="view">
+                <h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">salons</h1>
+                <input type="text" class="search-box" placeholder="Chercher un salon..." oninput="filterTiles('mob-rooms', this.value)">
+                <div id="mob-rooms" class="tiles-grid"></div>
+            </section>
+            <section class="view">
+                <h1 id="chat-title-mob" style="font-weight:100; font-size:28px; margin-bottom:10px;">Chat</h1>
+                <div id="msg-mob" class="msg-list"></div>
+            </section>
+            <section class="view">
+                <h1 style="font-weight:100; font-size:38px; color:var(--accent); margin-bottom:10px;">contacts</h1>
+                <input type="text" class="search-box" placeholder="Chercher un ami..." oninput="filterTiles('mob-contacts', this.value)">
+                <div id="mob-contacts" class="tiles-grid"></div>
+            </section>
         </div>
         <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; left:0;">
             <button class="btn-action btn-file" onclick="triggerFile()">📁</button>
@@ -129,7 +141,6 @@
         function getPath() { return current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`; }
 
         function deleteMsg(mid, path) { if(confirm("Supprimer ?")) db.ref(path+"/"+mid).remove(); closeModal(); }
-        
         function editMsg(mid, txt, path) {
             openModal("Éditer", `<input id="ed-in" class="metro-input" value="${txt.replace(/"/g, '&quot;')}">`, () => {
                 const nt = document.getElementById('ed-in').value.trim();
@@ -143,7 +154,7 @@
                 document.getElementById('modal-confirm').style.display = 'none';
             }, 600);
         }
-        function cancelLongPress() { clearTimeout(pressTimer); document.getElementById('modal-confirm').style.display = 'block'; }
+        function cancelLongPress() { clearTimeout(pressTimer); }
 
         function send(m) {
             const i = document.getElementById(m==='pc'?'in-pc':'in-mob');
@@ -154,38 +165,24 @@
 
         function setChat(id, type) {
             current = { id, type };
-            const currentPath = getPath(); // Fixe le chemin pour cette instance de chat
+            const cp = getPath();
             document.getElementById('chat-title-pc').textContent = (type==='room'?'#':'@')+id;
             document.getElementById('chat-title-mob').textContent = (type==='room'?'#':'@')+id;
-            db.ref(currentPath).off();
-            db.ref(currentPath).limitToLast(30).on('value', s => {
+            db.ref(cp).off();
+            db.ref(cp).limitToLast(30).on('value', s => {
                 const pc = document.getElementById('msg-pc'), mb = document.getElementById('msg-mob');
                 pc.innerHTML = ""; mb.innerHTML = "";
                 s.forEach(c => {
                     const m = c.val(), mid = c.key, isMine = m.pseudo === user;
                     const date = m.timestamp ? new Date(m.timestamp) : new Date();
                     const timeStr = date.getHours().toString().padStart(2,'0') + ":" + date.getMinutes().toString().padStart(2,'0');
-                    
                     const div = document.createElement('div');
                     div.className = 'msg' + (isMine ? ' mine' : '');
-                    let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                                <span style="color:var(--accent); font-size:10px; font-weight:bold;">${m.pseudo}</span>
-                                <span style="opacity:0.4; font-size:9px;">${timeStr}</span>
-                             </div>`;
+                    let h = `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;"><span style="color:var(--accent); font-size:10px; font-weight:bold;">${m.pseudo}</span><span style="opacity:0.4; font-size:9px;">${timeStr}</span></div>`;
                     h += m.type==='image' ? `<img src="${m.url}" class="media-content">` : `<div>${m.text}${m.edited?'<small style="opacity:0.5"> (modifié)</small>':''}</div>`;
-                    
-                    if(isMine && m.type!=='image') {
-                        h += `<div class="msg-actions-pc">
-                                <button class="btn-mini" onclick="editMsg('${mid}','${m.text.replace(/'/g, "\\'")}', '${currentPath}')">éditer</button>
-                                <button class="btn-mini" onclick="deleteMsg('${mid}', '${currentPath}')">suppr.</button>
-                              </div>`;
-                    }
-                    
+                    if(isMine && m.type!=='image') h += `<div class="msg-actions-pc"><button class="btn-mini" onclick="editMsg('${mid}','${m.text.replace(/'/g, "\\'")}', '${cp}')">éditer</button><button class="btn-mini" onclick="deleteMsg('${mid}', '${cp}')">suppr.</button></div>`;
                     div.innerHTML = h;
-                    if(isMine && m.type!=='image') { 
-                        div.ontouchstart = () => handleLongPress(mid, m.text, currentPath); 
-                        div.ontouchend = cancelLongPress; 
-                    }
+                    if(isMine && m.type!=='image') { div.ontouchstart = () => handleLongPress(mid, m.text, cp); div.ontouchend = cancelLongPress; }
                     mb.appendChild(div); pc.appendChild(div.cloneNode(true));
                 });
                 pc.scrollTop = pc.scrollHeight; mb.scrollTop = mb.scrollHeight;
@@ -195,10 +192,14 @@
         function loadLists() {
             db.ref("rooms").on('value', s => {
                 const pc = document.getElementById('pc-rooms'), mb = document.getElementById('mob-rooms');
-                pc.innerHTML = ""; mb.innerHTML = "";
+                // On ajoute "general" manuellement au début
+                pc.innerHTML = `<div class="pc-item" onclick="setChat('general','room')">#general</div>`;
+                mb.innerHTML = `<div class="tile" data-name="general" style="background:linear-gradient(45deg, #005, var(--accent))" onclick="setChat('general','room'); goTo(1);">#general</div>`;
                 s.forEach(r => {
-                    pc.innerHTML += `<div class="pc-item" onclick="setChat('${r.key}','room')">#${r.key}</div>`;
-                    mb.innerHTML += `<div class="tile" data-name="${r.key}" onclick="setChat('${r.key}','room'); goTo(1);">#${r.key}</div>`;
+                    if(r.key !== 'general') {
+                        pc.innerHTML += `<div class="pc-item" onclick="setChat('${r.key}','room')">#${r.key}</div>`;
+                        mb.innerHTML += `<div class="tile" data-name="${r.key}" onclick="setChat('${r.key}','room'); goTo(1);">#${r.key}</div>`;
+                    }
                 });
             });
             db.ref("contacts/"+user).on('value', s => {
@@ -212,37 +213,29 @@
         }
 
         function applyBg(u) { document.body.style.backgroundImage = u ? `url('${u}')` : "none"; }
-        
-        function resetBg() {
-            localStorage.removeItem("thinktalk_bg");
-            applyBg(null);
-            closeModal();
-        }
-
+        function resetBg() { localStorage.removeItem("thinktalk_bg"); applyBg(null); closeModal(); }
         function uiChangeBg() { 
-            openModal("Fond d'écran", `
-                <button class="metro-btn btn-blue" onclick="document.getElementById('bgInput').click()">CHOISIR UN FICHIER</button>
-                <input id="bgurl" class="metro-input" placeholder="OU COLLER UNE URL" style="margin-top:10px;">
-                <button class="metro-btn btn-red" onclick="resetBg()" style="margin-top:20px;">RÉINITIALISER (DÉFAUT)</button>
-            `, () => { 
+            openModal("Fond d'écran", `<button class="metro-btn btn-blue" onclick="document.getElementById('bgInput').click()">CHOISIR UN FICHIER</button><input id="bgurl" class="metro-input" placeholder="OU COLLER UNE URL" style="margin-top:10px;"><button class="metro-btn btn-red" onclick="resetBg()" style="margin-top:20px;">RÉINITIALISER</button>`, () => { 
                 const u = document.getElementById('bgurl').value.trim(); 
                 if(u){ applyBg(u); localStorage.setItem("thinktalk_bg", u); } 
                 closeModal(); 
             }); 
         }
-
         function handleBgUpload(i) { const f = i.files[0]; if(!f) return; const r = new FileReader(); r.onload=(e)=>{ applyBg(e.target.result); localStorage.setItem("thinktalk_bg", e.target.result); closeModal(); }; r.readAsDataURL(f); }
         function triggerFile() { document.getElementById('fileInput').click(); }
         function handleFileUpload(i) { const f = i.files[0]; if(!f) return; const r = new FileReader(); r.onload=(e)=>{ db.ref(getPath()).push({ pseudo: user, url: e.target.result, type: 'image', timestamp: Date.now() }); }; r.readAsDataURL(f); }
+        
         async function init() {
             const b = localStorage.getItem("thinktalk_bg"); if(b) applyBg(b);
-            if(!user) { openModal("Connexion", `<input id="ap" class="metro-input" placeholder="Pseudo"><input id="ac" type="password" class="metro-input" placeholder="Code">`, async () => {
-                const p = document.getElementById('ap').value.trim(), c = document.getElementById('ac').value.trim();
-                if(!p || !c) return;
-                const s = await db.ref('users/'+p).get();
-                if(s.exists()) { if(s.val().code === c) loginSuccess(p); else alert("Code faux"); }
-                else { await db.ref('users/'+p).set({ code: c }); loginSuccess(p); }
-            }); } else { loginSuccess(user); }
+            if(!user) { 
+                openModal("Connexion", `<input id="ap" class="metro-input" placeholder="Pseudo"><input id="ac" type="password" class="metro-input" placeholder="Code">`, async () => {
+                    const p = document.getElementById('ap').value.trim(), c = document.getElementById('ac').value.trim();
+                    if(!p || !c) return;
+                    const s = await db.ref('users/'+p).get();
+                    if(s.exists()) { if(s.val().code === c) loginSuccess(p); else alert("Code faux"); }
+                    else { await db.ref('users/'+p).set({ code: c }); loginSuccess(p); }
+                }); 
+            } else { loginSuccess(user); }
         }
         function loginSuccess(p) { user = p; localStorage.setItem("thinktalk_pseudo", p); closeModal(); loadLists(); setChat('general', 'room'); }
         function filterTiles(id, v) { Array.from(document.getElementById(id).getElementsByClassName('tile')).forEach(t => { t.style.display = t.getAttribute('data-name').toLowerCase().includes(v.toLowerCase()) ? "flex" : "none"; }); }
