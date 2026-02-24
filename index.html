@@ -112,6 +112,7 @@ html, body {
 <div id="profile-menu" style="position: fixed; top: 0; left: 0; width: 85%; height: 100%; background: #051933; z-index: 2000; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 50px 30px; border-right: 3px solid var(--accent);">
     <h2 id="me-pseudo" class="section-header" style="font-size: 32px; margin-bottom: 40px;">PSEUDO</h2>
     <div onclick="uiChangeCode()" style="padding: 20px 0; font-size: 20px; border-bottom: 1px solid #1a1a1a;">Changer mon code</div>
+    <div onclick="uiDeleteAccount()" style="padding: 20px 0; font-size: 20px; color: #ff8080; border-bottom: 1px solid #1a1a1a;">Supprimer mon compte</div>
     <div onclick="logout()" style="padding: 20px 0; font-size: 20px; color: #ff5050;">Déconnexion</div>
     <button onclick="toggleMenu()" style="margin-top:60px; background:none; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:12px; width: 100%;">RETOUR</button>
 </div>
@@ -182,7 +183,11 @@ function showNotify(msg) {
     setTimeout(() => { n.style.display = 'none'; }, 2000);
 }
 
-function toggleMenu() { document.getElementById('profile-menu').style.transform = document.getElementById('profile-menu').style.transform === 'translateX(0%)' ? 'translateX(-100%)' : 'translateX(0%)'; }
+function toggleMenu() {
+    const m = document.getElementById('profile-menu');
+    m.style.transform = (m.style.transform === 'translateX(0%)') ? 'translateX(-100%)' : 'translateX(0%)';
+}
+
 function goTo(index) {
     document.getElementById('panorama').style.transform = `translateX(-${index * 100}vw)`;
     document.querySelectorAll('.nav-item').forEach((n, i) => n.classList.toggle('active', i === index));
@@ -206,10 +211,11 @@ function uiCreateRoom() {
         <div style="margin: 15px 0;"><input type="checkbox" id="new-room-priv" style="transform: scale(1.5);"> <label style="margin-left:10px">Salon privé</label></div>
         <input id="new-room-code" class="modal-input" placeholder="code secret" style="display:none">
     `, async () => {
-        const name = document.getElementById('new-room-name').value.trim().toLowerCase().replace(/\s+/g, '-');
+        const nameRaw = document.getElementById('new-room-name').value.trim();
+        if (!nameRaw) { showNotify("NOM REQUIS"); return; }
+        const name = nameRaw.toLowerCase().replace(/\s+/g, '-');
         const isPriv = document.getElementById('new-room-priv').checked;
         const code = document.getElementById('new-room-code').value.trim();
-        if(!name) return;
         await db.ref("rooms/"+name).set({ name, private: isPriv, code, creator: user });
         closeModal();
         showNotify("SALON PRÊT");
@@ -228,6 +234,66 @@ function uiAddContact() {
         await db.ref(`contacts/${p}/${user}`).set(true);
         showNotify("AMI AJOUTÉ");
         closeModal();
+    });
+}
+
+function uiChangeCode() {
+    openModal("Changer mon code", `
+        <input id="old-code" class="modal-input" type="password" placeholder="ancien code">
+        <input id="new-code" class="modal-input" type="password" placeholder="nouveau code (min. 4 chiffres)">
+    `, async () => {
+        const oldC = document.getElementById('old-code').value.trim();
+        const newC = document.getElementById('new-code').value.trim();
+        if (!oldC || !newC || newC.length < 4) {
+            showNotify("CODES INVALIDES");
+            return;
+        }
+
+        const userRef = db.ref('users/' + user);
+        const snap = await userRef.get();
+        if (!snap.exists() || snap.val().code !== oldC) {
+            showNotify("ANCIEN CODE FAUX");
+            return;
+        }
+
+        await userRef.update({ code: newC });
+        showNotify("CODE MIS À JOUR");
+        closeModal();
+    });
+}
+
+function uiDeleteAccount() {
+    openModal("Supprimer mon compte", `
+        <p style="margin-bottom:15px;">Cette action est définitive.</p>
+        <input id="del-code" class="modal-input" type="password" placeholder="confirmez votre code">
+    `, async () => {
+        const c = document.getElementById('del-code').value.trim();
+        if (!c) { showNotify("CODE REQUIS"); return; }
+
+        const userRef = db.ref('users/' + user);
+        const snap = await userRef.get();
+        if (!snap.exists() || snap.val().code !== c) {
+            showNotify("CODE INCORRECT");
+            return;
+        }
+
+        // Supprimer l’utilisateur
+        await userRef.remove();
+
+        // Supprimer ses contacts
+        await db.ref('contacts/' + user).remove();
+
+        // Supprimer les liens chez les autres
+        const allContactsSnap = await db.ref('contacts').get();
+        if (allContactsSnap.exists()) {
+            allContactsSnap.forEach(child => {
+                db.ref(`contacts/${child.key}/${user}`).remove();
+            });
+        }
+
+        showNotify("COMPTE SUPPRIMÉ");
+        localStorage.clear();
+        setTimeout(() => location.reload(), 1500);
     });
 }
 
@@ -260,6 +326,14 @@ async function handleAuth(type) {
 async function startApp() {
     document.getElementById('auth').classList.add('hidden');
     document.getElementById('me-pseudo').textContent = user;
+
+    // Créer le salon "general" s'il n'existe pas
+    const genRef = db.ref('rooms/general');
+    const genSnap = await genRef.get();
+    if (!genSnap.exists()) {
+        await genRef.set({ name: 'general', private: false, code: '', creator: 'system' });
+    }
+
     loadRooms();
     loadContacts();
     openRoom('general', 'room');
@@ -328,6 +402,7 @@ function sendMessage() {
 
 function getConvId(a, b) { return [a, b].sort().join("__"); }
 function logout() { localStorage.clear(); location.reload(); }
+
 window.onload = () => { if(user) startApp(); };
 
 // Event listener pour le mode privé
