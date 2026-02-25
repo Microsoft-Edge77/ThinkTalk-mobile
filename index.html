@@ -5,9 +5,10 @@
   <title>ThinkTalk</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Firebase compat (Realtime Database) -->
+  <!-- Firebase compat -->
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
   <style>
     :root {
@@ -168,6 +169,8 @@
       border: 1px solid #222;
       padding: 8px;
       margin-bottom: 8px;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
     }
 
     .msg {
@@ -176,11 +179,17 @@
       justify-content: space-between;
       gap: 8px;
       align-items: center;
+      animation: msgIn 140ms ease-out both;
     }
 
     .msg-text {
       flex: 1;
       font-size: 14px;
+    }
+
+    .msg-text img {
+      display: block;
+      margin-top: 2px;
     }
 
     .msg-actions {
@@ -205,6 +214,10 @@
       border: 1px solid #333;
       background: #000;
       color: var(--text);
+    }
+
+    .input-area button {
+      flex-shrink: 0;
     }
 
     /* Mobile layout */
@@ -272,6 +285,7 @@
       border-radius: 4px;
       cursor: pointer;
       font-size: 14px;
+      animation: tileIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     .contact-name { font-weight: 600; }
@@ -303,12 +317,79 @@
       justify-content: space-between;
       align-items: center;
       font-size: 14px;
+      cursor: pointer;
+      animation: tileIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     .room-name { font-weight: 600; }
     .room-tag {
       font-size: 11px;
       opacity: 0.8;
+    }
+
+    /* Animations */
+    @keyframes tileIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes msgIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #popup-box,
+    #auth-popup {
+      animation: popupIn 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    @keyframes popupIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+        box-shadow: 0 0 0 rgba(0,0,0,0);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      }
+    }
+
+    .mob-dust-in {
+      position: relative;
+      overflow: hidden;
+      animation: dustIn 260ms ease-out both;
+    }
+
+    @keyframes dustIn {
+      0% {
+        opacity: 0;
+        filter: blur(6px);
+        clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
+      }
+      40% {
+        opacity: 0.4;
+        filter: blur(3px);
+        clip-path: polygon(0 60%, 100% 80%, 100% 100%, 0 100%);
+      }
+      100% {
+        opacity: 1;
+        filter: blur(0);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      }
     }
 
     /* Responsive */
@@ -344,14 +425,15 @@
   <!-- Settings -->
   <div id="settings-panel">
     <h3>Paramètres</h3>
-    <button id="btn-change-color">Couleur (placeholder)</button>
+    <button id="btn-change-color">Changer la couleur</button>
     <button id="btn-change-bg">Changer le fond</button>
     <button id="btn-reset-bg">Réinitialiser le fond</button>
     <button id="btn-logout">Déconnexion</button>
   </div>
 
-  <!-- Input fichier fond -->
+  <!-- Inputs fichiers -->
   <input type="file" id="bg-file-input" accept="image/*" style="display:none;">
+  <input type="file" id="chat-file-input" accept="image/*,application/pdf,application/zip" style="display:none;">
 
   <!-- PC layout -->
   <div id="pc-layout">
@@ -399,6 +481,7 @@
         <h2 id="chat-title-pc">Aucun salon</h2>
         <div id="msg-pc" class="msg-list"></div>
         <div class="input-area">
+          <button id="btn-file-pc">📎</button>
           <input type="text" id="in-pc" placeholder="Écrire...">
           <button id="btn-send-pc">Envoyer</button>
         </div>
@@ -456,6 +539,7 @@
         <h2 id="chat-title-mob">Aucun salon</h2>
         <div id="msg-mob" class="msg-list"></div>
         <div class="input-area">
+          <button id="btn-file-mob">📎</button>
           <input type="text" id="in-mob" placeholder="Écrire...">
           <button id="btn-send-mob">Envoyer</button>
         </div>
@@ -466,6 +550,7 @@
       <button class="mob-tab active" data-view="mob-home">Accueil</button>
       <button class="mob-tab" data-view="mob-rooms">Salons</button>
       <button class="mob-tab" data-view="mob-contacts">Contacts</button>
+      <button class="mob-tab" data-view="mob-chat">Chat</button>
     </nav>
   </div>
 
@@ -484,16 +569,17 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const storage = firebase.storage();
 
     // === État global ===
     let currentUser = { pseudo: null, code: null };
     let currentChat = {
-      type: null,      // "room" ou "dm"
-      roomId: null,    // pour salons
+      type: null,
+      roomId: null,
       roomName: null,
       isPrivateRoom: false,
-      convId: null,    // pour DM
-      dmWith: null     // pseudo du contact
+      convId: null,
+      dmWith: null
     };
 
     // === Popup ===
@@ -549,7 +635,7 @@
       return userRef(pseudo).once("value").then(s => s.val());
     }
 
-    // === Fond ===
+    // === Thème ===
     function applyBackgroundFromStorage() {
       const bg = localStorage.getItem("thinktalk_bg");
       if (bg) {
@@ -562,6 +648,18 @@
       }
     }
 
+    function applyAccentFromStorage() {
+      const accent = localStorage.getItem("thinktalk_accent");
+      if (accent) {
+        document.documentElement.style.setProperty("--accent", accent);
+      }
+    }
+
+    function setAccent(color) {
+      localStorage.setItem("thinktalk_accent", color);
+      applyAccentFromStorage();
+    }
+
     // === Messages : helpers ===
     function buildMessageElement(msgId, data, isPC, isDM, isPrivateRoom) {
       const div = document.createElement("div");
@@ -570,371 +668,12 @@
 
       const textDiv = document.createElement("div");
       textDiv.className = "msg-text";
-      const content = data.text || data.url || "";
-      textDiv.textContent = `${data.pseudo} : ${content}`;
-      div.appendChild(textDiv);
 
-      if (data.pseudo === currentUser.pseudo) {
-        const actions = document.createElement("div");
-        actions.className = "msg-actions";
-
-        const btnEdit = document.createElement("button");
-        btnEdit.textContent = "✏️";
-        btnEdit.title = "Modifier";
-        btnEdit.addEventListener("click", (e) => {
-          e.stopPropagation();
-          editMessage(msgId, data, isDM, isPrivateRoom);
-        });
-
-        const btnDel = document.createElement("button");
-        btnDel.textContent = "🗑️";
-        btnDel.title = "Supprimer";
-        btnDel.addEventListener("click", (e) => {
-          e.stopPropagation();
-          deleteMessage(msgId, isDM, isPrivateRoom);
-        });
-
-        actions.appendChild(btnEdit);
-        actions.appendChild(btnDel);
-        div.appendChild(actions);
-      }
-
-      if (!isPC) {
-        let pressTimer = null;
-        div.addEventListener("touchstart", (e) => {
-          pressTimer = setTimeout(() => {
-            if (data.pseudo === currentUser.pseudo) {
-              const choice = prompt("Tape '1' pour modifier, '2' pour supprimer");
-              if (choice === "1") editMessage(msgId, data, isDM, isPrivateRoom);
-              else if (choice === "2") deleteMessage(msgId, isDM, isPrivateRoom);
-            }
-          }, 500);
-        });
-        div.addEventListener("touchend", () => {
-          clearTimeout(pressTimer);
-        });
-      }
-
-      return div;
-    }
-
-    function getCurrentRoomPath() {
-      if (!currentChat.roomId) return null;
-      if (currentChat.isPrivateRoom) {
-        return "messages/private_rooms/" + currentChat.roomId;
-      } else {
-        return "messages/public/" + currentChat.roomId;
-      }
-    }
-
-    function getCurrentDMPath() {
-      if (!currentChat.convId) return null;
-      return "messages/dm/" + currentChat.convId;
-    }
-
-    function deleteMessage(msgId, isDM, isPrivateRoom) {
-      let path;
-      if (isDM) {
-        path = getCurrentDMPath();
-      } else {
-        path = getCurrentRoomPath();
-      }
-      if (!path) return;
-      db.ref(path + "/" + msgId).remove();
-    }
-
-    function editMessage(msgId, data, isDM, isPrivateRoom) {
-      const newText = prompt("Modifier le message :", data.text || "");
-      if (newText === null) return;
-      let path;
-      if (isDM) path = getCurrentDMPath();
-      else path = getCurrentRoomPath();
-      if (!path) return;
-      db.ref(path + "/" + msgId).update({
-        text: newText
-      });
-    }
-
-    // === Chat listeners ===
-    let currentRoomListener = null;
-    let currentDMListener = null;
-
-    function listenRoom(roomId, roomName, isPrivateRoom, targetId) {
-      currentChat.type = "room";
-      currentChat.roomId = roomId;
-      currentChat.roomName = roomName;
-      currentChat.isPrivateRoom = isPrivateRoom;
-      currentChat.convId = null;
-      currentChat.dmWith = null;
-
-      const container = document.getElementById(targetId);
-      const path = isPrivateRoom
-        ? "messages/private_rooms/" + roomId
-        : "messages/public/" + roomId;
-
-      if (currentRoomListener) currentRoomListener.off();
-      if (currentDMListener) currentDMListener.off();
-
-      const ref = db.ref(path);
-      currentRoomListener = ref;
-      ref.on("value", snap => {
-        container.innerHTML = "";
-        snap.forEach(child => {
-          const msgId = child.key;
-          const data = child.val();
-          const el = buildMessageElement(
-            msgId,
-            data,
-            targetId === "msg-pc",
-            false,
-            isPrivateRoom
-          );
-          container.appendChild(el);
-        });
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-
-    function listenDM(convId, otherPseudo, targetId) {
-      currentChat.type = "dm";
-      currentChat.convId = convId;
-      currentChat.dmWith = otherPseudo;
-      currentChat.roomId = null;
-      currentChat.roomName = null;
-      currentChat.isPrivateRoom = false;
-
-      const container = document.getElementById(targetId);
-      const path = "messages/dm/" + convId;
-
-      if (currentRoomListener) currentRoomListener.off();
-      if (currentDMListener) currentDMListener.off();
-
-      const ref = db.ref(path);
-      currentDMListener = ref;
-      ref.on("value", snap => {
-        container.innerHTML = "";
-        snap.forEach(child => {
-          const msgId = child.key;
-          const data = child.val();
-          const el = buildMessageElement(
-            msgId,
-            data,
-            targetId === "msg-pc",
-            true,
-            false
-          );
-          container.appendChild(el);
-        });
-        container.scrollTop = container.scrollHeight;
-      });
-    }
-
-    function sendCurrentMessage(text) {
-      if (!text) return;
-      if (currentChat.type === "room") {
-        const path = getCurrentRoomPath();
-        if (!path) return;
-        db.ref(path).push({
-          pseudo: currentUser.pseudo,
-          text: text,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-      } else if (currentChat.type === "dm") {
-        const path = getCurrentDMPath();
-        if (!path) return;
-        db.ref(path).push({
-          pseudo: currentUser.pseudo,
-          text: text,
-          timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-      }
-    }
-
-    // === Rooms ===
-    function ensureDefaultPublicRooms() {
-      const ref = db.ref("rooms");
-      ref.once("value").then(snap => {
-        if (!snap.exists()) {
-          const defaults = ["general", "random", "dev"];
-          defaults.forEach(name => {
-            ref.push({
-              name: name,
-              isPrivate: false
-            });
-          });
-        }
-      });
-    }
-
-    function createPrivateRoom(name, code) {
-      if (!name || !code) {
-        showPopup("Nom et code obligatoires.");
-        return;
-      }
-      const ref = db.ref("rooms").push();
-      const roomId = ref.key;
-      ref.set({
-        name: name,
-        isPrivate: true,
-        code: code,
-        owner: currentUser.pseudo,
-        members: {
-          [currentUser.pseudo]: true
-        }
-      });
-    }
-
-    function joinPrivateRoom(name, code) {
-      if (!name || !code) {
-        showPopup("Nom et code obligatoires.");
-        return;
-      }
-      db.ref("rooms").once("value").then(snap => {
-        let found = null;
-        snap.forEach(child => {
-          const val = child.val();
-          if (val && val.isPrivate && val.name === name && val.code === code) {
-            found = { id: child.key, data: val };
-          }
-        });
-        if (!found) {
-          showPopup("Aucun salon privé trouvé avec ce nom et ce code.");
-          return;
-        }
-        const membersRef = db.ref("rooms/" + found.id + "/members/" + currentUser.pseudo);
-        membersRef.set(true);
-      });
-    }
-
-    function userIsMemberOfRoom(roomData) {
-      if (!roomData.isPrivate) return true;
-      if (!roomData.members) return false;
-      return !!roomData.members[currentUser.pseudo];
-    }
-
-    function initRoomsPC() {
-      const list = document.getElementById("pc-list");
-      const ref = db.ref("rooms");
-      ref.on("value", snap => {
-        list.innerHTML = "";
-        let firstSelectable = null;
-        snap.forEach(child => {
-          const id = child.key;
-          const data = child.val();
-          if (!data || !data.name) return;
-          if (!userIsMemberOfRoom(data)) return;
-
-          const btn = document.createElement("button");
-          btn.className = "room-item";
-          const left = document.createElement("span");
-          left.className = "room-name";
-          left.textContent = "#" + data.name;
-          const right = document.createElement("span");
-          right.className = "room-tag";
-          right.textContent = data.isPrivate ? "Privé" : "Public";
-          btn.appendChild(left);
-          btn.appendChild(right);
-
-          btn.addEventListener("click", () => {
-            document.getElementById("chat-title-pc").textContent = "#" + data.name;
-            listenRoom(id, data.name, !!data.isPrivate, "msg-pc");
-          });
-
-          list.appendChild(btn);
-
-          if (!firstSelectable) firstSelectable = { id, name: data.name, isPrivate: !!data.isPrivate };
-        });
-
-        if (!currentChat.roomId && firstSelectable) {
-          document.getElementById("chat-title-pc").textContent = "#" + firstSelectable.name;
-          listenRoom(firstSelectable.id, firstSelectable.name, firstSelectable.isPrivate, "msg-pc");
-        }
-      });
-    }
-
-    function initRoomsMobile() {
-      const list = document.getElementById("mob-rooms-list");
-      const ref = db.ref("rooms");
-      ref.on("value", snap => {
-        list.innerHTML = "";
-        let firstSelectable = null;
-        snap.forEach(child => {
-          const id = child.key;
-          const data = child.val();
-          if (!data || !data.name) return;
-          if (!userIsMemberOfRoom(data)) return;
-
-          const btn = document.createElement("button");
-          btn.className = "room-item";
-          const left = document.createElement("span");
-          left.className = "room-name";
-          left.textContent = "#" + data.name;
-          const right = document.createElement("span");
-          right.className = "room-tag";
-          right.textContent = data.isPrivate ? "Privé" : "Public";
-          btn.appendChild(left);
-          btn.appendChild(right);
-
-          btn.addEventListener("click", () => {
-            document.getElementById("chat-title-mob").textContent = "#" + data.name;
-            document.querySelectorAll(".mob-view").forEach(v => v.classList.remove("active"));
-            document.getElementById("mob-chat").classList.add("active");
-            listenRoom(id, data.name, !!data.isPrivate, "msg-mob");
-          });
-
-          list.appendChild(btn);
-
-          if (!firstSelectable) firstSelectable = { id, name: data.name, isPrivate: !!data.isPrivate };
-        });
-
-        if (!currentChat.roomId && firstSelectable) {
-          document.getElementById("chat-title-mob").textContent = "#" + firstSelectable.name;
-          listenRoom(firstSelectable.id, firstSelectable.name, firstSelectable.isPrivate, "msg-mob");
-        }
-      });
-    }
-
-    // === Contacts + DM ===
-    function convIdFor(a, b) {
-      return [a, b].sort().join("_");
-    }
-
-    function addContact(pseudo) {
-      if (!pseudo || pseudo === currentUser.pseudo) {
-        showPopup("Pseudo invalide.");
-        return;
-      }
-      checkUserExists(pseudo).then(exists => {
-        if (!exists) {
-          showPopup("Ce pseudo n'existe pas.");
-          return;
-        }
-        const myRef = db.ref("contacts/" + currentUser.pseudo + "/" + pseudo);
-        const hisRef = db.ref("contacts/" + pseudo + "/" + currentUser.pseudo);
-        myRef.set(true);
-        hisRef.set(true);
-      });
-    }
-
-    function initContactsPC() {
-      const list = document.getElementById("pc-list");
-      const ref = db.ref("contacts/" + currentUser.pseudo);
-      ref.on("value", snap => {
-        list.innerHTML = "";
-        snap.forEach(child => {
-          const other = child.key;
-          const tile = document.createElement("button");
-          tile.className = "room-item";
-          const left = document.createElement("span");
-          left.className = "room-name";
-          left.textContent = other;
-          const right = document.createElement("span");
-          right.className = "room-tag";
-          right.textContent = "DM";
-          tile.appendChild(left);
-          tile.appendChild(right);
-
-          tile.addEventListener("click", () => {
+      if (data.text) {
+        textDiv.textContent = `${data.pseudo} : ${data.text}`;
+      } else if (data.url) {
+        if (data.url.match(/\.(png|jpe?g|gif|webp)$/i)) {
+          textDiv.textContent = data.pseudo +("click", () => {
             const cid = convIdFor(currentUser.pseudo, other);
             document.getElementById("chat-title-pc").textContent = other;
             listenDM(cid, other, "msg-pc");
@@ -978,7 +717,11 @@
             const cid = convIdFor(currentUser.pseudo, other);
             document.getElementById("chat-title-mob").textContent = other;
             document.querySelectorAll(".mob-view").forEach(v => v.classList.remove("active"));
-            document.getElementById("mob-chat").classList.add("active");
+            const chatView = document.getElementById("mob-chat");
+            chatView.classList.add("active");
+            chatView.classList.remove("mob-dust-in");
+            void chatView.offsetWidth;
+            chatView.classList.add("mob-dust-in");
             listenDM(cid, other, "msg-mob");
           });
 
@@ -1048,6 +791,7 @@
       const btnLogout = document.getElementById("btn-logout");
       const btnChangeBg = document.getElementById("btn-change-bg");
       const btnResetBg = document.getElementById("btn-reset-bg");
+      const btnChangeColor = document.getElementById("btn-change-color");
       const fileInput = document.getElementById("bg-file-input");
 
       function openPanel() { panel.style.left = "0"; }
@@ -1088,6 +832,15 @@
       btnResetBg.addEventListener("click", () => {
         localStorage.removeItem("thinktalk_bg");
         applyBackgroundFromStorage();
+      });
+
+      btnChangeColor.addEventListener("click", () => {
+        const current = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+        const palette = ["#00a2e8", "#ff4081", "#00c853", "#ffab00", "#9c27b0"];
+        let idx = palette.indexOf(current);
+        if (idx === -1) idx = 0;
+        const next = palette[(idx + 1) % palette.length];
+        setAccent(next);
       });
     }
 
@@ -1147,6 +900,13 @@
         const pseudo = document.getElementById("pc-add-contact-pseudo").value.trim();
         addContact(pseudo);
       });
+
+      const btnFilePc = document.getElementById("btn-file-pc");
+      const chatFileInput = document.getElementById("chat-file-input");
+      btnFilePc.addEventListener("click", () => {
+        chatFileInput.value = "";
+        chatFileInput.click();
+      });
     }
 
     // === Mobile UI ===
@@ -1160,7 +920,14 @@
           tab.classList.add("active");
           const viewId = tab.getAttribute("data-view");
           views.forEach(v => v.classList.remove("active"));
-          document.getElementById(viewId).classList.add("active");
+          const target = document.getElementById(viewId);
+          target.classList.add("active");
+
+          if (viewId === "mob-chat") {
+            target.classList.remove("mob-dust-in");
+            void target.offsetWidth;
+            target.classList.add("mob-dust-in");
+          }
         });
       });
 
@@ -1199,9 +966,17 @@
         const pseudo = document.getElementById("mob-add-contact-pseudo").value.trim();
         addContact(pseudo);
       });
+
+      const btnFileMob = document.getElementById("btn-file-mob");
+      const chatFileInput = document.getElementById("chat-file-input");
+      btnFileMob.addEventListener("click", () => {
+        chatFileInput.value = "";
+        chatFileInput.click();
+      });
     }
 
     function initAfterAuth() {
+      applyAccentFromStorage();
       applyBackgroundFromStorage();
       initSettings();
       ensureDefaultPublicRooms();
@@ -1211,6 +986,13 @@
 
     window.addEventListener("load", () => {
       initAuth();
+
+      document.getElementById("chat-file-input").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        uploadFileAndSend(file);
+      });
+
       if (loadSession()) {
         document.getElementById("auth-overlay").style.display = "none";
         initAfterAuth();
