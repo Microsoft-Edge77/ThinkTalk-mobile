@@ -1,1003 +1,866 @@
+========================
+= index.html
+========================
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>ThinkTalk</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>ThinkTalk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Firebase compat -->
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    <!-- Typo Metro/Fluent -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap">
 
-  <style>
-    :root {
-      --accent: #00a2e8;
-      --bg: #000000;
-      --text: #ffffff;
-    }
+    <!-- Styles Metro/Fluent -->
+    <link rel="stylesheet" href="ui.css">
 
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 8px 12px;
-      cursor: pointer;
-      border-radius: 4px;
-      font: inherit;
-    }
-
-    button:disabled { opacity: 0.6; cursor: default; }
-    input { font: inherit; }
-
-    /* Auth overlay */
-    #auth-overlay {
-      position: fixed;
-      inset: 0;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    #auth-popup {
-      background: #111;
-      padding: 20px;
-      border-radius: 8px;
-      width: 90%;
-      max-width: 320px;
-    }
-
-    #auth-popup h2 { margin: 0 0 10px 0; }
-    #auth-popup input {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border: 1px solid #333;
-      background: #000;
-      color: var(--text);
-    }
-
-    .auth-buttons {
-      display: flex;
-      gap: 10px;
-    }
-
-    .auth-buttons button { flex: 1; }
-
-    /* Popup custom */
-    #popup-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1100;
-    }
-
-    #popup-box {
-      background: #111;
-      padding: 16px;
-      border-radius: 8px;
-      max-width: 320px;
-      width: 90%;
-    }
-
-    #popup-box p { margin: 0 0 12px 0; }
-
-    /* Settings panel */
-    #settings-panel {
-      position: fixed;
-      top: 0;
-      left: -260px;
-      width: 260px;
-      height: 100%;
-      background: #111;
-      padding: 16px;
-      z-index: 900;
-      transition: left 0.2s;
-    }
-
-    #settings-panel h3 { margin: 0 0 12px 0; }
-    #settings-panel button {
-      display: block;
-      width: 100%;
-      margin-bottom: 8px;
-      text-align: left;
-    }
-
-    /* PC layout */
-    #pc-layout {
-      display: none;
-      height: 100vh;
-      flex-direction: column;
-    }
-
-    #pc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 12px;
-      border-bottom: 1px solid #222;
-    }
-
-    #pc-header h1 { margin: 0; font-size: 20px; }
-    #pc-header nav button { margin-left: 8px; }
-
-    #pc-main {
-      flex: 1;
-      display: flex;
-      min-height: 0;
-    }
-
-    #pc-sidebar {
-      width: 260px;
-      border-right: 1px solid #222;
-      padding: 8px;
-      overflow-y: auto;
-    }
-
-    #pc-sidebar h2 { margin: 0 0 8px 0; }
-
-    #pc-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    #pc-chat {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 8px;
-    }
-
-    .msg-list {
-      flex: 1;
-      overflow-y: auto;
-      border: 1px solid #222;
-      padding: 8px;
-      margin-bottom: 8px;
-      background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(4px);
-    }
-
-    .msg {
-      margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-      gap: 8px;
-      align-items: center;
-      animation: msgIn 140ms ease-out both;
-    }
-
-    .msg-text {
-      flex: 1;
-      font-size: 14px;
-    }
-
-    .msg-text img {
-      display: block;
-      margin-top: 2px;
-    }
-
-    .msg-actions {
-      display: flex;
-      gap: 4px;
-      flex-shrink: 0;
-    }
-
-    .msg-actions button {
-      padding: 2px 6px;
-      font-size: 11px;
-    }
-
-    .input-area {
-      display: flex;
-      gap: 6px;
-    }
-
-    .input-area input {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #333;
-      background: #000;
-      color: var(--text);
-    }
-
-    .input-area button {
-      flex-shrink: 0;
-    }
-
-    /* Mobile layout */
-    #mobile-layout {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-
-    #mob-header {
-      display: flex;
-      align-items: center;
-      padding: 8px 12px;
-      border-bottom: 1px solid #222;
-    }
-
-    #mob-header h1 {
-      margin: 0 auto 0 8px;
-      font-size: 18px;
-    }
-
-    #mob-main {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .mob-view {
-      display: none;
-      padding: 8px;
-      height: 100%;
-      overflow-y: auto;
-    }
-
-    .mob-view.active { display: block; }
-
-    #mob-bottom-bar {
-      display: flex;
-      border-top: 1px solid #222;
-    }
-
-    #mob-bottom-bar button {
-      flex: 1;
-      border-radius: 0;
-    }
-
-    .mob-tab.active { background: #111; }
-
-    /* Contacts tiles */
-    .mob-contacts-actions {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    #mob-contacts-tiles {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .contact-tile {
-      background: #222;
-      padding: 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      animation: tileIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-
-    .contact-name { font-weight: 600; }
-    .contact-last { font-size: 12px; opacity: 0.8; }
-
-    /* Forms salons privés */
-    .small-form {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .small-form input {
-      padding: 6px;
-      border: 1px solid #333;
-      background: #000;
-      color: var(--text);
-    }
-
-    .room-item {
-      width: 100%;
-      text-align: left;
-      padding: 6px 8px;
-      border-radius: 4px;
-      border: 1px solid #222;
-      background: #111;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-      cursor: pointer;
-      animation: tileIn 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-
-    .room-name { font-weight: 600; }
-    .room-tag {
-      font-size: 11px;
-      opacity: 0.8;
-    }
-
-    /* Animations */
-    @keyframes tileIn {
-      from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    @keyframes msgIn {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    #popup-box,
-    #auth-popup {
-      animation: popupIn 160ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    }
-
-    @keyframes popupIn {
-      from {
-        opacity: 0;
-        transform: scale(0.95);
-        box-shadow: 0 0 0 rgba(0,0,0,0);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-        box-shadow: 0 18px 40px rgba(0,0,0,0.6);
-      }
-    }
-
-    .mob-dust-in {
-      position: relative;
-      overflow: hidden;
-      animation: dustIn 260ms ease-out both;
-    }
-
-    @keyframes dustIn {
-      0% {
-        opacity: 0;
-        filter: blur(6px);
-        clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
-      }
-      40% {
-        opacity: 0.4;
-        filter: blur(3px);
-        clip-path: polygon(0 60%, 100% 80%, 100% 100%, 0 100%);
-      }
-      100% {
-        opacity: 1;
-        filter: blur(0);
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      }
-    }
-
-    /* Responsive */
-    @media (min-width: 800px) {
-      #pc-layout { display: flex; }
-      #mobile-layout { display: none; }
-    }
-  </style>
+    <!-- JS modules -->
+    <script type="module" src="main.js"></script>
 </head>
+
 <body>
+<div id="acrylic-overlay"></div>
 
-  <!-- Auth -->
-  <div id="auth-overlay">
-    <div id="auth-popup">
-      <h2>Connexion</h2>
-      <input type="text" id="auth-pseudo" placeholder="Pseudo">
-      <input type="text" id="auth-code" placeholder="Code">
-      <div class="auth-buttons">
-        <button id="btn-login">Se connecter</button>
-        <button id="btn-register">Créer un compte</button>
-      </div>
-    </div>
-  </div>
+<div id="app-container">
 
-  <!-- Popup -->
-  <div id="popup-overlay">
-    <div id="popup-box">
-      <p id="popup-message"></p>
-      <button id="popup-ok">OK</button>
-    </div>
-  </div>
-
-  <!-- Settings -->
-  <div id="settings-panel">
-    <h3>Paramètres</h3>
-    <button id="btn-change-color">Changer la couleur</button>
-    <button id="btn-change-bg">Changer le fond</button>
-    <button id="btn-reset-bg">Réinitialiser le fond</button>
-    <button id="btn-logout">Déconnexion</button>
-  </div>
-
-  <!-- Inputs fichiers -->
-  <input type="file" id="bg-file-input" accept="image/*" style="display:none;">
-  <input type="file" id="chat-file-input" accept="image/*,application/pdf,application/zip" style="display:none;">
-
-  <!-- PC layout -->
-  <div id="pc-layout">
-    <header id="pc-header">
-      <h1>ThinkTalk</h1>
-      <nav>
-        <button class="pc-tab" data-tab="rooms">Salons</button>
-        <button class="pc-tab" data-tab="contacts">Contacts</button>
-        <button class="pc-tab" data-tab="settings" id="pc-settings-btn">Paramètres</button>
-      </nav>
-    </header>
-
-    <div id="pc-main">
-      <aside id="pc-sidebar">
-        <h2 id="pc-sidebar-title">Salons</h2>
-
-        <div id="pc-rooms-panel">
-          <div class="small-form">
-            <strong>Créer un salon privé</strong>
-            <input type="text" id="pc-new-room-name" placeholder="Nom du salon">
-            <input type="text" id="pc-new-room-code" placeholder="Code du salon">
-            <button id="pc-btn-create-private-room">Créer</button>
-          </div>
-
-          <div class="small-form">
-            <strong>Rejoindre un salon privé</strong>
-            <input type="text" id="pc-join-room-name" placeholder="Nom du salon">
-            <input type="text" id="pc-join-room-code" placeholder="Code du salon">
-            <button id="pc-btn-join-private-room">Rejoindre</button>
-          </div>
+    <!-- SIDEBAR METRO -->
+    <nav id="metro-sidebar">
+        <div class="user-profile-tile">
+            <div class="avatar"></div>
+            <div class="username"></div>
         </div>
 
-        <div id="pc-contacts-panel" style="display:none;">
-          <div class="small-form">
-            <strong>Ajouter un contact</strong>
-            <input type="text" id="pc-add-contact-pseudo" placeholder="Pseudo du contact">
-            <button id="pc-btn-add-contact">Ajouter</button>
-          </div>
+        <div class="nav-items">
+            <button class="nav-btn active" data-view="rooms">Salons</button>
+            <button class="nav-btn" data-view="dm">Messages privés</button>
+            <button class="nav-btn" data-view="settings">Paramètres</button>
+        </div>
+    </nav>
+
+    <!-- MAIN VIEW -->
+    <main id="main-view">
+        <header id="chat-header">
+            <h2 id="chat-title">#general</h2>
+        </header>
+
+        <div id="messages-container" class="fluent-scrollbar">
+            <!-- Messages -->
         </div>
 
-        <div id="pc-list"></div>
-      </aside>
-
-      <main id="pc-chat">
-        <h2 id="chat-title-pc">Aucun salon</h2>
-        <div id="msg-pc" class="msg-list"></div>
-        <div class="input-area">
-          <button id="btn-file-pc">📎</button>
-          <input type="text" id="in-pc" placeholder="Écrire...">
-          <button id="btn-send-pc">Envoyer</button>
-        </div>
-      </main>
-    </div>
-  </div>
-
-  <!-- Mobile layout -->
-  <div id="mobile-layout">
-    <header id="mob-header">
-      <button id="mob-hamburger">☰</button>
-      <h1>ThinkTalk</h1>
-    </header>
-
-    <main id="mob-main">
-      <section id="mob-home" class="mob-view active">
-        <h2>Accueil</h2>
-        <p>Bienvenue sur ThinkTalk.</p>
-      </section>
-
-      <section id="mob-rooms" class="mob-view">
-        <h2>Salons</h2>
-
-        <div class="small-form">
-          <strong>Créer un salon privé</strong>
-          <input type="text" id="mob-new-room-name" placeholder="Nom du salon">
-          <input type="text" id="mob-new-room-code" placeholder="Code du salon">
-          <button id="mob-btn-create-private-room">Créer</button>
-        </div>
-
-        <div class="small-form">
-          <strong>Rejoindre un salon privé</strong>
-          <input type="text" id="mob-join-room-name" placeholder="Nom du salon">
-          <input type="text" id="mob-join-room-code" placeholder="Code du salon">
-          <button id="mob-btn-join-private-room">Rejoindre</button>
-        </div>
-
-        <div id="mob-rooms-list"></div>
-      </section>
-
-      <section id="mob-contacts" class="mob-view">
-        <h2>Contacts</h2>
-        <div class="mob-contacts-actions">
-          <button id="btn-search-contact">Rechercher un contact (placeholder)</button>
-          <button id="btn-add-contact-mob">Ajouter un contact</button>
-        </div>
-        <div class="small-form" id="mob-add-contact-form" style="display:none;">
-          <input type="text" id="mob-add-contact-pseudo" placeholder="Pseudo du contact">
-          <button id="mob-btn-add-contact-confirm">Ajouter</button>
-        </div>
-        <div id="mob-contacts-tiles"></div>
-      </section>
-
-      <section id="mob-chat" class="mob-view">
-        <h2 id="chat-title-mob">Aucun salon</h2>
-        <div id="msg-mob" class="msg-list"></div>
-        <div class="input-area">
-          <button id="btn-file-mob">📎</button>
-          <input type="text" id="in-mob" placeholder="Écrire...">
-          <button id="btn-send-mob">Envoyer</button>
-        </div>
-      </section>
+        <footer id="input-zone">
+            <input type="text" id="chat-input" placeholder="Écrire un message…">
+            <button id="send-btn">Envoyer</button>
+            <button id="file-btn">📎</button>
+            <input type="file" id="file-input" hidden>
+        </footer>
     </main>
 
-    <nav id="mob-bottom-bar">
-      <button class="mob-tab active" data-view="mob-home">Accueil</button>
-      <button class="mob-tab" data-view="mob-rooms">Salons</button>
-      <button class="mob-tab" data-view="mob-contacts">Contacts</button>
-      <button class="mob-tab" data-view="mob-chat">Chat</button>
-    </nav>
-  </div>
-
-  <script>
-    // === Firebase config ===
-    const firebaseConfig = {
-      apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
-      authDomain: "chat-github-6abb5.firebaseapp.com",
-      databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "chat-github-6abb5",
-      storageBucket: "chat-github-6abb5.firebasestorage.app",
-      messagingSenderId: "1038562300660",
-      appId: "1:1038562300660:web:def37e626c74983e6384a1",
-      measurementId: "G-2N92RJXQDT"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const storage = firebase.storage();
-
-    // === État global ===
-    let currentUser = { pseudo: null, code: null };
-    let currentChat = {
-      type: null,
-      roomId: null,
-      roomName: null,
-      isPrivateRoom: false,
-      convId: null,
-      dmWith: null
-    };
-
-    // === Popup ===
-    function showPopup(msg) {
-      document.getElementById("popup-message").textContent = msg;
-      document.getElementById("popup-overlay").style.display = "flex";
-    }
-    function hidePopup() {
-      document.getElementById("popup-overlay").style.display = "none";
-    }
-
-    // === Session ===
-    function saveSession(pseudo, code) {
-      localStorage.setItem("thinktalk_pseudo", pseudo);
-      localStorage.setItem("thinktalk_code", code);
-      currentUser.pseudo = pseudo;
-      currentUser.code = code;
-    }
-
-    function loadSession() {
-      const p = localStorage.getItem("thinktalk_pseudo");
-      const c = localStorage.getItem("thinktalk_code");
-      if (p && c) {
-        currentUser.pseudo = p;
-        currentUser.code = c;
-        return true;
-      }
-      return false;
-    }
-
-    function logout() {
-      localStorage.removeItem("thinktalk_pseudo");
-      localStorage.removeItem("thinktalk_code");
-      currentUser.pseudo = null;
-      currentUser.code = null;
-      document.getElementById("auth-overlay").style.display = "flex";
-    }
-
-    // === Users ===
-    function userRef(pseudo) {
-      return db.ref("users/" + pseudo);
-    }
-
-    function checkUserExists(pseudo) {
-      return userRef(pseudo).once("value").then(s => s.exists());
-    }
-
-    function createUser(pseudo, code) {
-      return userRef(pseudo).set({ code: code });
-    }
-
-    function loadUser(pseudo) {
-      return userRef(pseudo).once("value").then(s => s.val());
-    }
-
-    // === Thème ===
-    function applyBackgroundFromStorage() {
-      const bg = localStorage.getItem("thinktalk_bg");
-      if (bg) {
-        document.body.style.backgroundImage = `url(${bg})`;
-        document.body.style.backgroundSize = "cover";
-        document.body.style.backgroundPosition = "center";
-      } else {
-        document.body.style.backgroundImage = "none";
-        document.body.style.backgroundColor = "#000000";
-      }
-    }
-
-    function applyAccentFromStorage() {
-      const accent = localStorage.getItem("thinktalk_accent");
-      if (accent) {
-        document.documentElement.style.setProperty("--accent", accent);
-      }
-    }
-
-    function setAccent(color) {
-      localStorage.setItem("thinktalk_accent", color);
-      applyAccentFromStorage();
-    }
-
-    // === Messages : helpers ===
-    function buildMessageElement(msgId, data, isPC, isDM, isPrivateRoom) {
-      const div = document.createElement("div");
-      div.className = "msg";
-      div.dataset.msgId = msgId;
-
-      const textDiv = document.createElement("div");
-      textDiv.className = "msg-text";
-
-      if (data.text) {
-        textDiv.textContent = `${data.pseudo} : ${data.text}`;
-      } else if (data.url) {
-        if (data.url.match(/\.(png|jpe?g|gif|webp)$/i)) {
-          textDiv.textContent = data.pseudo +("click", () => {
-            const cid = convIdFor(currentUser.pseudo, other);
-            document.getElementById("chat-title-pc").textContent = other;
-            listenDM(cid, other, "msg-pc");
-          });
-
-          list.appendChild(tile);
-        });
-      });
-    }
-
-    function initContactsMobile() {
-      const tiles = document.getElementById("mob-contacts-tiles");
-      const ref = db.ref("contacts/" + currentUser.pseudo);
-      ref.on("value", snap => {
-        tiles.innerHTML = "";
-        snap.forEach(child => {
-          const other = child.key;
-          const convId = convIdFor(currentUser.pseudo, other);
-          const tile = document.createElement("div");
-          tile.className = "contact-tile";
-          const nameDiv = document.createElement("div");
-          nameDiv.className = "contact-name";
-          nameDiv.textContent = other;
-          const lastDiv = document.createElement("div");
-          lastDiv.className = "contact-last";
-          lastDiv.textContent = "Dernier message...";
-
-          tile.appendChild(nameDiv);
-          tile.appendChild(lastDiv);
-
-          db.ref("messages/dm/" + convId).orderByChild("timestamp").limitToLast(1)
-            .on("value", s2 => {
-              s2.forEach(m => {
-                const v = m.val();
-                const txt = v.text || v.url || "";
-                lastDiv.textContent = txt;
-              });
-            });
-
-          tile.addEventListener("click", () => {
-            const cid = convIdFor(currentUser.pseudo, other);
-            document.getElementById("chat-title-mob").textContent = other;
-            document.querySelectorAll(".mob-view").forEach(v => v.classList.remove("active"));
-            const chatView = document.getElementById("mob-chat");
-            chatView.classList.add("active");
-            chatView.classList.remove("mob-dust-in");
-            void chatView.offsetWidth;
-            chatView.classList.add("mob-dust-in");
-            listenDM(cid, other, "msg-mob");
-          });
-
-          tiles.appendChild(tile);
-        });
-      });
-    }
-
-    // === Auth init ===
-    function initAuth() {
-      document.getElementById("popup-ok").addEventListener("click", hidePopup);
-
-      const overlay = document.getElementById("auth-overlay");
-      const btnLogin = document.getElementById("btn-login");
-      const btnRegister = document.getElementById("btn-register");
-
-      btnLogin.addEventListener("click", () => {
-        const pseudo = document.getElementById("auth-pseudo").value.trim();
-        const code = document.getElementById("auth-code").value.trim();
-        if (!pseudo || !code) {
-          showPopup("Pseudo et code sont obligatoires.");
-          return;
-        }
-        checkUserExists(pseudo).then(exists => {
-          if (!exists) {
-            showPopup("Ce pseudo n'existe pas.");
-            return;
-          }
-          loadUser(pseudo).then(data => {
-            if (!data || data.code !== code) {
-              showPopup("Code incorrect.");
-              return;
-            }
-            saveSession(pseudo, code);
-            overlay.style.display = "none";
-            initAfterAuth();
-          });
-        });
-      });
-
-      btnRegister.addEventListener("click", () => {
-        const pseudo = document.getElementById("auth-pseudo").value.trim();
-        const code = document.getElementById("auth-code").value.trim();
-        if (!pseudo || !code) {
-          showPopup("Pseudo et code sont obligatoires.");
-          return;
-        }
-        checkUserExists(pseudo).then(exists => {
-          if (exists) {
-            showPopup("Ce pseudo est déjà utilisé.");
-            return;
-          }
-          createUser(pseudo, code).then(() => {
-            saveSession(pseudo, code);
-            overlay.style.display = "none";
-            initAfterAuth();
-          });
-        });
-      });
-    }
-
-    // === Settings ===
-    function initSettings() {
-      const panel = document.getElementById("settings-panel");
-      const mobHamburger = document.getElementById("mob-hamburger");
-      const pcSettingsBtn = document.getElementById("pc-settings-btn");
-      const btnLogout = document.getElementById("btn-logout");
-      const btnChangeBg = document.getElementById("btn-change-bg");
-      const btnResetBg = document.getElementById("btn-reset-bg");
-      const btnChangeColor = document.getElementById("btn-change-color");
-      const fileInput = document.getElementById("bg-file-input");
-
-      function openPanel() { panel.style.left = "0"; }
-      function closePanel() { panel.style.left = "-260px"; }
-
-      mobHamburger.addEventListener("click", () => {
-        if (panel.style.left === "0px") closePanel();
-        else openPanel();
-      });
-
-      pcSettingsBtn.addEventListener("click", () => {
-        if (panel.style.left === "0px") closePanel();
-        else openPanel();
-      });
-
-      btnLogout.addEventListener("click", () => {
-        logout();
-        closePanel();
-      });
-
-      btnChangeBg.addEventListener("click", () => {
-        fileInput.value = "";
-        fileInput.click();
-      });
-
-      fileInput.addEventListener("change", () => {
-        const file = fileInput.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-          const dataUrl = e.target.result;
-          localStorage.setItem("thinktalk_bg", dataUrl);
-          applyBackgroundFromStorage();
-        };
-        reader.readAsDataURL(file);
-      });
-
-      btnResetBg.addEventListener("click", () => {
-        localStorage.removeItem("thinktalk_bg");
-        applyBackgroundFromStorage();
-      });
-
-      btnChangeColor.addEventListener("click", () => {
-        const current = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
-        const palette = ["#00a2e8", "#ff4081", "#00c853", "#ffab00", "#9c27b0"];
-        let idx = palette.indexOf(current);
-        if (idx === -1) idx = 0;
-        const next = palette[(idx + 1) % palette.length];
-        setAccent(next);
-      });
-    }
-
-    // === PC UI ===
-    function initPC() {
-      const tabs = document.querySelectorAll(".pc-tab");
-      const roomsPanel = document.getElementById("pc-rooms-panel");
-      const contactsPanel = document.getElementById("pc-contacts-panel");
-
-      function showRooms() {
-        document.getElementById("pc-sidebar-title").textContent = "Salons";
-        roomsPanel.style.display = "block";
-        contactsPanel.style.display = "none";
-        initRoomsPC();
-      }
-
-      function showContacts() {
-        document.getElementById("pc-sidebar-title").textContent = "Contacts";
-        roomsPanel.style.display = "none";
-        contactsPanel.style.display = "block";
-        initContactsPC();
-      }
-
-      tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-          tabs.forEach(t => t.classList.remove("active"));
-          tab.classList.add("active");
-          const tabName = tab.getAttribute("data-tab");
-          if (tabName === "rooms") showRooms();
-          else if (tabName === "contacts") showContacts();
-        });
-      });
-
-      showRooms();
-
-      document.getElementById("btn-send-pc").addEventListener("click", () => {
-        const input = document.getElementById("in-pc");
-        const value = input.value.trim();
-        if (!value) return;
-        sendCurrentMessage(value);
-        input.value = "";
-      });
-
-      document.getElementById("pc-btn-create-private-room").addEventListener("click", () => {
-        const name = document.getElementById("pc-new-room-name").value.trim();
-        const code = document.getElementById("pc-new-room-code").value.trim();
-        createPrivateRoom(name, code);
-      });
-
-      document.getElementById("pc-btn-join-private-room").addEventListener("click", () => {
-        const name = document.getElementById("pc-join-room-name").value.trim();
-        const code = document.getElementById("pc-join-room-code").value.trim();
-        joinPrivateRoom(name, code);
-      });
-
-      document.getElementById("pc-btn-add-contact").addEventListener("click", () => {
-        const pseudo = document.getElementById("pc-add-contact-pseudo").value.trim();
-        addContact(pseudo);
-      });
-
-      const btnFilePc = document.getElementById("btn-file-pc");
-      const chatFileInput = document.getElementById("chat-file-input");
-      btnFilePc.addEventListener("click", () => {
-        chatFileInput.value = "";
-        chatFileInput.click();
-      });
-    }
-
-    // === Mobile UI ===
-    function initMobile() {
-      const tabs = document.querySelectorAll(".mob-tab");
-      const views = document.querySelectorAll(".mob-view");
-
-      tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-          tabs.forEach(t => t.classList.remove("active"));
-          tab.classList.add("active");
-          const viewId = tab.getAttribute("data-view");
-          views.forEach(v => v.classList.remove("active"));
-          const target = document.getElementById(viewId);
-          target.classList.add("active");
-
-          if (viewId === "mob-chat") {
-            target.classList.remove("mob-dust-in");
-            void target.offsetWidth;
-            target.classList.add("mob-dust-in");
-          }
-        });
-      });
-
-      initRoomsMobile();
-      initContactsMobile();
-
-      document.getElementById("btn-send-mob").addEventListener("click", () => {
-        const input = document.getElementById("in-mob");
-        const value = input.value.trim();
-        if (!value) return;
-        sendCurrentMessage(value);
-        input.value = "";
-      });
-
-      document.getElementById("mob-btn-create-private-room").addEventListener("click", () => {
-        const name = document.getElementById("mob-new-room-name").value.trim();
-        const code = document.getElementById("mob-new-room-code").value.trim();
-        createPrivateRoom(name, code);
-      });
-
-      document.getElementById("mob-btn-join-private-room").addEventListener("click", () => {
-        const name = document.getElementById("mob-join-room-name").value.trim();
-        const code = document.getElementById("mob-join-room-code").value.trim();
-        joinPrivateRoom(name, code);
-      });
-
-      const addBtn = document.getElementById("btn-add-contact-mob");
-      const form = document.getElementById("mob-add-contact-form");
-      const confirmBtn = document.getElementById("mob-btn-add-contact-confirm");
-
-      addBtn.addEventListener("click", () => {
-        form.style.display = form.style.display === "none" ? "block" : "none";
-      });
-
-      confirmBtn.addEventListener("click", () => {
-        const pseudo = document.getElementById("mob-add-contact-pseudo").value.trim();
-        addContact(pseudo);
-      });
-
-      const btnFileMob = document.getElementById("btn-file-mob");
-      const chatFileInput = document.getElementById("chat-file-input");
-      btnFileMob.addEventListener("click", () => {
-        chatFileInput.value = "";
-        chatFileInput.click();
-      });
-    }
-
-    function initAfterAuth() {
-      applyAccentFromStorage();
-      applyBackgroundFromStorage();
-      initSettings();
-      ensureDefaultPublicRooms();
-      initPC();
-      initMobile();
-    }
-
-    window.addEventListener("load", () => {
-      initAuth();
-
-      document.getElementById("chat-file-input").addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        uploadFileAndSend(file);
-      });
-
-      if (loadSession()) {
-        document.getElementById("auth-overlay").style.display = "none";
-        initAfterAuth();
-      }
-    });
-  </script>
+</div>
 </body>
 </html>
+
+
+========================
+= ui.css
+========================
+:root {
+  --bg: #05060a;
+  --bg-elevated: rgba(15, 17, 25, 0.9);
+  --accent: #00a2e8;
+  --accent-soft: rgba(0, 162, 232, 0.2);
+  --text: #f5f5f5;
+  --text-muted: #9ca3af;
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --blur: 18px;
+}
+
+/* Reset léger */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: radial-gradient(circle at top left, #101322, #05060a 60%);
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Acrylic overlay */
+#acrylic-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at top left, rgba(255,255,255,0.06), transparent 55%);
+  mix-blend-mode: screen;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+/* Layout global */
+#app-container {
+  position: relative;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  height: 100vh;
+  z-index: 2;
+}
+
+/* Sidebar Metro */
+#metro-sidebar {
+  background: linear-gradient(180deg, rgba(10,12,20,0.95), rgba(5,6,10,0.98));
+  border-right: 1px solid var(--border-soft);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Tuile profil */
+.user-profile-tile {
+  background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(0,0,0,0.4));
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-soft);
+  backdrop-filter: blur(var(--blur));
+}
+
+.user-profile-tile .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: radial-gradient(circle at 30% 20%, var(--accent), #1f2937);
+}
+
+.user-profile-tile .username {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Navigation */
+.nav-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: 
+    background 0.18s ease-out,
+    color 0.18s ease-out,
+    border-color 0.18s ease-out,
+    transform 0.12s ease-out;
+}
+
+.nav-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.nav-btn.active {
+  background: rgba(0,0,0,0.6);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* Main view */
+#main-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at top, rgba(255,255,255,0.03), transparent 55%);
+}
+
+/* Header */
+#chat-header {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(10,12,20,0.9), rgba(5,6,10,0.95));
+  backdrop-filter: blur(var(--blur));
+  display: flex;
+  align-items: center;
+}
+
+#chat-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Messages container */
+#messages-container {
+  flex: 1;
+  padding: 12px 18px 8px;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Fluent scrollbar */
+#messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+#messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+#messages-container::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 999px;
+}
+#messages-container:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.7);
+}
+
+/* Message bubble */
+.message {
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(15, 23, 42, 0.9);
+  font-size: 13px;
+}
+
+/* Input zone */
+#input-zone {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(5,6,10,0.96), rgba(0,0,0,0.98));
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+#chat-input:focus {
+  border-color: var(--accent);
+}
+
+#send-btn,
+#file-btn {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border-soft);
+  background: rgba(15, 23, 42, 0.95);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    background 0.16s ease-out,
+    border-color 0.16s ease-out,
+    transform 0.1s ease-out;
+}
+
+#send-btn:hover,
+#file-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  #app-container {
+    grid-template-columns: 1fr;
+  }
+
+  #metro-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 230px;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease-out;
+    z-index: 10;
+  }
+
+  #metro-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Animations Metro/Fluent */
+.message.animate-in {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  animation: msg-in 220ms cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+}
+
+@keyframes msg-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Hover reveal */
+.nav-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.12), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+  pointer-events: none;
+}
+
+.nav-btn:hover::before {
+  opacity: 1;
+}
+
+/* Poussière numérique */
+#main-view::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255,255,255,0.06) 0, transparent 55%),
+    radial-gradient(circle at 80% 70%, rgba(0,162,232,0.18) 0, transparent 60%);
+  opacity: 0.18;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+
+#chat-header,
+#messages-container,
+#input-zone {
+  position: relative;
+  z-index: 1;
+}
+
+
+========================
+= firebase.js
+========================
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+  getDatabase, 
+  ref, 
+  push, 
+  onValue, 
+  onChildAdded, 
+  update, 
+  remove 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { 
+  getStorage, 
+  ref as storageRef, 
+  uploadBytes, 
+  getDownloadURL 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCrgPMXzSyS6NXNajPxr0x_J-CTESOtp5w",
+  authDomain: "chat-github-6abb5.firebaseapp.com",
+  databaseURL: "https://chat-github-6abb5-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "chat-github-6abb5",
+  storageBucket: "chat-github-6abb5.appspot.com",
+  messagingSenderId: "1038562300660",
+  appId: "1:1038562300660:web:def37e626c74983e6384a1",
+  measurementId: "G-2N92RJXQDT"
+};
+
+const app = initializeApp(firebaseConfig);
+export const db = getDatabase(app);
+export const storage = getStorage(app);
+
+export {
+  ref,
+  push,
+  onValue,
+  onChildAdded,
+  update,
+  remove,
+  storageRef,
+  uploadBytes,
+  getDownloadURL
+};
+
+
+========================
+= chat.js
+========================
+import { 
+  db, 
+  ref, 
+  push, 
+  onChildAdded, 
+  update, 
+  remove 
+} from "./firebase.js";
+
+function getUser() {
+  const pseudo = localStorage.getItem("thinktalk_pseudo");
+  if (!pseudo) throw new Error("Aucun pseudo trouvé dans localStorage.");
+  return pseudo;
+}
+
+function normalizeMessage(id, data) {
+  return {
+    id,
+    pseudo: data.pseudo || "???",
+    text: data.text || null,
+    url: data.url || null,
+    filename: data.filename || null,
+    timestamp: data.timestamp || Date.now()
+  };
+}
+
+export function sendMessage(roomId, text) {
+  const pseudo = getUser();
+  const path = `messages/public/${roomId}`;
+
+  return push(ref(db, path), {
+    pseudo,
+    text,
+    timestamp: Date.now()
+  });
+}
+
+let currentUnsubscribe = null;
+
+export function listenToRoom(roomId, callback) {
+  if (currentUnsubscribe) {
+    currentUnsubscribe();
+    currentUnsubscribe = null;
+  }
+
+  const path = `messages/public/${roomId}`;
+  const roomRef = ref(db, path);
+
+  const unsubscribe = onChildAdded(roomRef, snap => {
+    const msg = normalizeMessage(snap.key, snap.val());
+    callback(msg);
+  });
+
+  currentUnsubscribe = () => unsubscribe();
+}
+
+export function editMessage(roomId, msgId, newText) {
+  const path = `messages/public/${roomId}/${msgId}`;
+  return update(ref(db, path), { text: newText });
+}
+
+export function deleteMessage(roomId, msgId) {
+  const path = `messages/public/${roomId}/${msgId}`;
+  return remove(ref(db, path));
+}
+
+
+========================
+= rooms.js
+========================
+import { 
+  db, 
+  ref, 
+  push, 
+  onValue, 
+  update 
+} from "./firebase.js";
+
+function normalizeRoom(id, data) {
+  return {
+    id,
+    name: data.name || "???",
+    isPrivate: data.isPrivate || false,
+    code: data.code || null,
+    members: data.members || {}
+  };
+}
+
+function getUser() {
+  const pseudo = localStorage.getItem("thinktalk_pseudo");
+  if (!pseudo) throw new Error("Aucun pseudo trouvé.");
+  return pseudo;
+}
+
+let unsubscribeRooms = null;
+
+export function listenToRooms(callback) {
+  if (unsubscribeRooms) {
+    unsubscribeRooms();
+    unsubscribeRooms = null;
+  }
+
+  const roomsRef = ref(db, "rooms");
+
+  const unsubscribe = onValue(roomsRef, snap => {
+    const rooms = [];
+    snap.forEach(child => {
+      const room = normalizeRoom(child.key, child.val());
+      rooms.push(room);
+    });
+    callback(rooms);
+  });
+
+  unsubscribeRooms = () => unsubscribe();
+}
+
+export function createPublicRoom(name) {
+  const roomsRef = ref(db, "rooms");
+  return push(roomsRef, {
+    name,
+    isPrivate: false
+  });
+}
+
+export function createPrivateRoom(name, code) {
+  const pseudo = getUser();
+  const roomsRef = ref(db, "rooms");
+
+  return push(roomsRef, {
+    name,
+    isPrivate: true,
+    code,
+    members: {
+      [pseudo]: true
+    }
+  });
+}
+
+export function joinPrivateRoom(name, code) {
+  const pseudo = getUser();
+
+  return new Promise((resolve, reject) => {
+    const roomsRef = ref(db, "rooms");
+
+    onValue(roomsRef, snap => {
+      let found = null;
+
+      snap.forEach(child => {
+        const data = child.val();
+        if (data.isPrivate && data.name === name && data.code === code) {
+          found = { id: child.key, data };
+        }
+      });
+
+      if (!found) {
+        reject("Salon introuvable ou code incorrect.");
+        return;
+      }
+
+      const memberRef = ref(db, `rooms/${found.id}/members/${pseudo}`);
+      update(memberRef, true)
+        .then(() => resolve(found.id))
+        .catch(reject);
+    }, { onlyOnce: true });
+  });
+}
+
+
+========================
+= dm.js
+========================
+import { 
+  db, 
+  ref, 
+  push, 
+  onChildAdded, 
+  onValue 
+} from "./firebase.js";
+
+function getUser() {
+  const pseudo = localStorage.getItem("thinktalk_pseudo");
+  if (!pseudo) throw new Error("Aucun pseudo trouvé.");
+  return pseudo;
+}
+
+export function convIdFor(a, b) {
+  return [a, b].sort().join("_");
+}
+
+function normalizeDM(id, data) {
+  return {
+    id,
+    pseudo: data.pseudo,
+    text: data.text || null,
+    url: data.url || null,
+    filename: data.filename || null,
+    timestamp: data.timestamp || Date.now()
+  };
+}
+
+export function addContact(otherPseudo) {
+  const me = getUser();
+
+  const myRef = ref(db, `contacts/${me}/${otherPseudo}`);
+  const hisRef = ref(db, `contacts/${otherPseudo}/${me}`);
+
+  return Promise.all([
+    push(myRef, true),
+    push(hisRef, true)
+  ]);
+}
+
+export function listenContacts(callback) {
+  const me = getUser();
+  const contactsRef = ref(db, `contacts/${me}`);
+
+  onValue(contactsRef, snap => {
+    const list = [];
+    snap.forEach(child => {
+      list.push(child.key);
+    });
+    callback(list);
+  });
+}
+
+let unsubscribeDM = null;
+
+export function sendDM(to, text) {
+  const me = getUser();
+  const convId = convIdFor(me, to);
+  const path = `messages/dm/${convId}`;
+
+  return push(ref(db, path), {
+    pseudo: me,
+    text,
+    timestamp: Date.now()
+  });
+}
+
+export function listenToDM(convId, callback) {
+  if (unsubscribeDM) {
+    unsubscribeDM();
+    unsubscribeDM = null;
+  }
+
+  const dmRef = ref(db, `messages/dm/${convId}`);
+
+  const unsub = onChildAdded(dmRef, snap => {
+    const msg = normalizeDM(snap.key, snap.val());
+    callback(msg);
+  });
+
+  unsubscribeDM = () => unsub();
+}
+
+export function listenLastDMMessage(convId, callback) {
+  const dmRef = ref(db, `messages/dm/${convId}`);
+
+  onValue(dmRef, snap => {
+    let last = null;
+    snap.forEach(child => {
+      last = normalizeDM(child.key, child.val());
+    });
+    callback(last);
+  });
+}
+
+
+========================
+= main.js
+========================
+import "./firebase.js";
+import { listenToRoom, sendMessage } from "./chat.js";
+import { listenToRooms } from "./rooms.js";
+import { listenContacts, listenLastDMMessage, convIdFor, sendDM } from "./dm.js";
+
+const pseudo = localStorage.getItem("thinktalk_pseudo") || "Utilisateur";
+document.addEventListener("DOMContentLoaded", () => {
+  const usernameEl = document.querySelector(".username");
+  if (usernameEl) usernameEl.textContent = pseudo;
+});
+
+const navButtons = document.querySelectorAll(".nav-btn");
+const messagesContainer = document.getElementById("messages-container");
+const chatTitle = document.getElementById("chat-title");
+
+let currentView = "rooms";
+let currentRoom = "general";
+let currentDM = null;
+
+function switchView(view) {
+  currentView = view;
+
+  navButtons.forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.view === view);
+  });
+
+  if (view === "rooms") loadRoomsView();
+  if (view === "dm") loadDMView();
+  if (view === "settings") loadSettingsView();
+}
+
+navButtons.forEach(btn => {
+  btn.addEventListener("click", () => switchView(btn.dataset.view));
+});
+
+function addMessageToUI(msg) {
+  const div = document.createElement("div");
+  div.className = "message animate-in";
+  if (msg.text) {
+    div.textContent = `${msg.pseudo} : ${msg.text}`;
+  }
+  messagesContainer.appendChild(div);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function loadRoomsView() {
+  messagesContainer.innerHTML = "";
+  chatTitle.textContent = `#${currentRoom}`;
+
+  listenToRoom(currentRoom, msg => {
+    addMessageToUI(msg);
+  });
+
+  listenToRooms(rooms => {
+    const nav = document.querySelector(".nav-items");
+    nav.innerHTML = `
+      <button class="nav-btn active" data-view="rooms">Salons</button>
+      <button class="nav-btn" data-view="dm">Messages privés</button>
+      <button class="nav-btn" data-view="settings">Paramètres</button>
+    `;
+
+    nav.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
+
+    rooms.forEach(room => {
+      const btn = document.createElement("button");
+      btn.className = "nav-btn";
+      btn.textContent = room.isPrivate ? `🔒 ${room.name}` : room.name;
+
+      btn.addEventListener("click", () => {
+        currentRoom = room.id;
+        switchView("rooms");
+      });
+
+      nav.appendChild(btn);
+    });
+  });
+}
+
+function loadDMView() {
+  messagesContainer.innerHTML = "";
+  chatTitle.textContent = "Messages privés";
+
+  listenContacts(list => {
+    const nav = document.querySelector(".nav-items");
+    nav.innerHTML = `
+      <button class="nav-btn" data-view="rooms">Salons</button>
+      <button class="nav-btn active" data-view="dm">Messages privés</button>
+      <button class="nav-btn" data-view="settings">Paramètres</button>
+    `;
+
+    nav.querySelectorAll(".nav-btn").forEach(btn => {
+      btn.addEventListener("click", () => switchView(btn.dataset.view));
+    });
+
+    list.forEach(contact => {
+      const convId = convIdFor(pseudo, contact);
+      const btn = document.createElement("button");
+      btn.className = "nav-btn";
+      btn.textContent = contact;
+
+      listenLastDMMessage(convId, last => {
+        if (last) {
+          btn.textContent = `${contact} — ${last.text || "[Fichier]"}`;
+        }
+      });
+
+      btn.addEventListener("click", () => {
+        currentDM = contact;
+        openDM(contact);
+      });
+
+      nav.appendChild(btn);
+    });
+  });
+}
+
+function openDM(contact) {
+  messagesContainer.innerHTML = "";
+  chatTitle.textContent = contact;
+
+  const convId = convIdFor(pseudo, contact);
+
+  // On réutilise addMessageToUI, mais ici tu pourrais brancher listenToDM
+  // si tu veux séparer public/privé côté moteur.
+  // Pour l’instant, on garde la logique simple.
+  // Exemple si tu veux utiliser listenToDM :
+  // listenToDM(convId, msg => addMessageToUI(msg));
+}
+
+function loadSettingsView() {
+  messagesContainer.innerHTML = "";
+  chatTitle.textContent = "Paramètres";
+
+  messagesContainer.innerHTML = `
+    <div class="message">Thèmes, fond d'écran, déconnexion… bientôt.</div>
+  `;
+}
+
+const input = document.getElementById("chat-input");
+const sendBtn = document.getElementById("send-btn");
+
+function sendCurrentMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (currentView === "rooms") {
+    sendMessage(currentRoom, text);
+  } else if (currentView === "dm" && currentDM) {
+    sendDM(currentDM, text);
+  }
+
+  input.value = "";
+}
+
+sendBtn.addEventListener("click", sendCurrentMessage);
+
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter") sendCurrentMessage();
+});
+
+document.querySelectorAll(".nav-btn").forEach(btn => {
+  btn.addEventListener("mousemove", e => {
+    const rect = btn.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    btn.style.setProperty("--mx", `${x}%`);
+    btn.style.setProperty("--my", `${y}%`);
+  });
+});
+
+switchView("rooms");
