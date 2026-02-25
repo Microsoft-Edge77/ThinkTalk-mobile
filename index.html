@@ -9,21 +9,20 @@
     <style>
         :root { --accent: #00a2e8; --bg: #000; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; background-position: center; background-size: cover; background-attachment: fixed; }
+        body { background: var(--bg); color: #fff; height: 100vh; overflow: hidden; background-position: center; background-size: cover; }
         
-        /* BOUTON TROMBONE DANS LA BARRE DE CHAT */
-        .attach-btn {
-            width: 45px; height: 45px; background: #000; border: 2px solid var(--accent);
-            display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 5px;
-        }
-        .attach-btn svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-        .attach-btn:hover { background: rgba(255,255,255,0.1); }
-
         /* POP-UP ERREUR */
         #error-popup {
             display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
             background: #111; border: 2px solid var(--accent); padding: 20px; z-index: 10000; width: 280px; text-align: center;
         }
+
+        /* TROMBONE */
+        .attach-btn {
+            width: 45px; height: 45px; background: #000; border: 2px solid var(--accent);
+            display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 8px; flex-shrink: 0;
+        }
+        .attach-btn svg { width: 24px; height: 24px; stroke: var(--accent); fill: none; stroke-width: 2; }
 
         /* AUTH */
         #auth-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
@@ -31,38 +30,48 @@
         .auth-container h1 { font-weight: 100; font-size: 32px; color: var(--accent); margin-bottom: 25px; text-transform: uppercase; text-align: center; }
         .auth-container input { width: 100%; padding: 12px; background: #111; border: 1px solid #333; color: #fff; margin-bottom: 10px; outline: none; }
         .auth-btn { width: 100%; padding: 12px; background: var(--accent); border: none; color: #fff; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .auth-btn.secondary { background: transparent; border: 1px solid #444; margin-top: 10px; }
 
-        /* PC LAYOUT */
+        /* PARAMETRES (SIDEBAR PC & MENU MOBILE) */
+        .settings-group { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #222; }
+        .settings-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .accent-picker { width: 100%; height: 35px; border: 1px solid #333; background: none; cursor: pointer; }
+
+        /* LAYOUT PC */
         #pc-layout { display: none; height: 100vh; }
         #sidebar { width: 280px; border-right: 1px solid #222; padding: 15px; display: flex; flex-direction: column; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); }
         .pc-tabs { display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 5px; }
-        .pc-tab { font-size: 12px; font-weight: bold; cursor: pointer; color: #555; text-transform: uppercase; }
+        .pc-tab { font-size: 11px; font-weight: bold; cursor: pointer; color: #555; text-transform: uppercase; }
         .pc-tab.active { color: #fff; border-bottom: 2px solid var(--accent); }
 
         .chat-header { padding: 15px 20px; border-bottom: 1px solid #222; }
+        .chat-header h2 { color: var(--accent); font-weight: 100; }
+        
         .msg-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; }
-        .msg { background: rgba(255,255,255,0.07); padding: 10px; border-left: 4px solid #333; max-width: 90%; width: fit-content; }
+        .msg { background: rgba(255,255,255,0.07); padding: 10px; border-left: 3px solid #333; max-width: 85%; width: fit-content; }
         .msg.mine { border-left-color: var(--accent); align-self: flex-end; }
-        .msg-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: var(--accent); font-weight: bold; gap: 20px; }
-
-        .tiles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-        .tile { background: var(--accent); padding: 12px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; font-weight: bold; cursor: pointer; }
-        .tile.contact { background: #333; }
-        .search-bar { width: 100%; padding: 10px; background: #111; border: 1px solid #333; color: #fff; outline: none; margin-bottom: 10px; }
+        .msg-header { display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 4px; color: var(--accent); font-weight: bold; gap: 15px; }
 
         .input-area { display: flex; padding: 10px; background: #000; border-top: 1px solid #222; align-items: center; }
-        .input-area input { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; }
-        .btn-send { background: var(--accent); border: none; color: #fff; padding: 12px 20px; height: 45px; cursor: pointer; font-weight: bold; margin-left: 5px; }
-        .btn-action-metro { padding: 10px; font-size: 11px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #333; cursor: pointer; text-align: left; text-transform: uppercase; margin-bottom: 5px; width: 100%; }
+        .input-area input { flex: 1; padding: 12px; background: #111; border: 1px solid #333; color: #fff; outline: none; height: 45px; }
+        .btn-send { background: var(--accent); border: none; color: #fff; padding: 0 20px; height: 45px; cursor: pointer; font-weight: bold; margin-left: 5px; }
+        .btn-action-metro { padding: 10px; font-size: 10px; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid #333; cursor: pointer; text-align: left; text-transform: uppercase; margin-bottom: 5px; width: 100%; }
 
-        /* MOBILE */
+        /* MOBILE MENU */
+        #mobile-menu {
+            position: fixed; top: 0; right: -100%; width: 85%; height: 100%;
+            background: #000; z-index: 2000; transition: 0.3s; padding: 25px;
+            border-left: 2px solid var(--accent);
+        }
+        #mobile-menu.open { right: 0; }
+        .menu-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; }
+
+        /* MOBILE LAYOUT */
         #mobile-layout { display: none; height: 100vh; padding-top: 60px; }
-        .mobile-header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 900; border-bottom: 1px solid #222; }
-        #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.6s cubic-bezier(0.1, 0.7, 0.1, 1); }
+        .mobile-header { position: fixed; top: 0; width: 100%; height: 60px; background: #000; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 900; border-bottom: 1px solid #222; }
+        #panorama { display: flex; width: 300vw; height: 100%; transition: transform 0.5s ease; }
         .view { width: 100vw; height: 100%; padding: 15px; overflow-y: auto; padding-bottom: 150px; }
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid #222; display: flex; }
-        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #555; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; height: 65px; background: #000; border-top: 1px solid #222; display: flex; }
+        .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #555; }
         .nav-btn.active { color: #fff; border-bottom: 3px solid var(--accent); }
 
         @media (min-width: 851px) { #pc-layout { display: flex; } }
@@ -73,7 +82,25 @@
 
     <div id="error-popup">
         <p id="error-msg"></p>
-        <button class="auth-btn" style="margin-top:10px" onclick="closePopup()">OK</button>
+        <button class="auth-btn" style="margin-top:15px" onclick="closePopup()">OK</button>
+    </div>
+
+    <div class="menu-overlay" id="overlay" onclick="toggleMenu(false)"></div>
+    <div id="mobile-menu">
+        <h2 style="font-weight:100; color:var(--accent); margin-bottom:25px;">PARAMÈTRES</h2>
+        
+        <div class="settings-group">
+            <span class="settings-label">Apparence</span>
+            <input type="color" class="accent-picker" onchange="updateAccent(this.value)">
+        </div>
+
+        <div class="settings-group">
+            <span class="settings-label">Arrière-plan</span>
+            <button class="btn-action-metro" onclick="triggerFile()">CHANGER LE FOND</button>
+            <button class="btn-action-metro" onclick="resetBg()" style="color:#ff4d4d;">RESET FOND</button>
+        </div>
+
+        <button class="btn-action-metro" onclick="logout()" style="border-color: red; color: red; margin-top: 20px;">SE DÉCONNECTER</button>
     </div>
 
     <div id="auth-screen">
@@ -82,7 +109,7 @@
             <input type="text" id="auth-pseudo" placeholder="Pseudo">
             <input type="password" id="auth-code" placeholder="Code secret">
             <button class="auth-btn" onclick="handleAuth('login')">Se connecter</button>
-            <button class="auth-btn secondary" onclick="handleAuth('signup')">Créer un compte</button>
+            <button class="auth-btn" style="background:transparent; border:1px solid #444; margin-top:10px;" onclick="handleAuth('signup')">Créer un compte</button>
         </div>
     </div>
 
@@ -90,29 +117,34 @@
 
     <div id="pc-layout">
         <aside id="sidebar">
-            <button class="btn-action-metro" onclick="triggerFile('bg')">Changer le fond</button>
-            <button class="btn-action-metro" onclick="resetBg()" style="color:#ff4d4d; border-color:#500; margin-bottom:15px;">Reset fond</button>
+            <div class="settings-group">
+                <span class="settings-label">Couleur d'accent</span>
+                <input type="color" class="accent-picker" onchange="updateAccent(this.value)">
+            </div>
+            
+            <div class="settings-group">
+                <span class="settings-label">Fond d'écran</span>
+                <button class="btn-action-metro" onclick="triggerFile()">Changer le fond</button>
+                <button class="btn-action-metro" onclick="resetBg()" style="color:#ff4d4d;">Reset fond</button>
+            </div>
+
             <div class="pc-tabs">
                 <div class="pc-tab active" id="tab-pc-rooms" onclick="switchPcTab('rooms')">Salons</div>
                 <div class="pc-tab" id="tab-pc-contacts" onclick="switchPcTab('contacts')">Contacts</div>
             </div>
-            <div id="pc-contact-tools" style="display:none;">
-                <input type="text" class="search-bar" placeholder="Rechercher contact..." oninput="filterContacts(this.value)">
-                <button class="btn-action-metro" style="border-color: var(--accent); color: var(--accent);">+ AJOUTER UN CONTACT</button>
-            </div>
-            <div id="pc-content-list" style="flex:1; overflow-y:auto; margin-top:10px;"></div>
-            <button onclick="logout()" style="color:red; background:none; border:none; cursor:pointer; font-size:11px; margin-top:10px; text-align:left;">DÉCONNEXION</button>
+            <div id="pc-content-list" style="flex:1; overflow-y:auto; margin-bottom: 10px;"></div>
+
+            <button class="btn-action-metro" onclick="logout()" style="border-color: red; color: red;">SE DÉCONNECTER</button>
         </aside>
+
         <main style="flex:1; display:flex; flex-direction:column;">
-            <div class="chat-header">
-                <h2 id="chat-title-pc" style="font-weight:100;">#accueil</h2>
-            </div>
+            <div class="chat-header"><h2 id="chat-title-pc">#accueil</h2></div>
             <div id="msg-pc" class="msg-list"></div>
             <div class="input-area">
-                <div class="attach-btn" onclick="triggerFile('chat')">
+                <div class="attach-btn" onclick="triggerFile()">
                     <svg viewBox="0 0 24 24"><path d="M6 7.91V16a6 6 0 0 0 6 6 6 6 0 0 0 6-6V6a4 4 0 0 0-4-4 4 4 0 0 0-4 4v10a2 2 0 0 0 2 2 2 2 0 0 0 2-2V7.91"></path></svg>
                 </div>
-                <input type="text" id="in-pc" placeholder="Écrire..." onkeypress="if(event.key==='Enter') send('pc')">
+                <input type="text" id="in-pc" placeholder="Message..." onkeypress="if(event.key==='Enter') send('pc')">
                 <button class="btn-send" onclick="send('pc')">ENVOYER</button>
             </div>
         </main>
@@ -121,27 +153,24 @@
     <div id="mobile-layout">
         <div class="mobile-header">
             <span style="font-weight:bold; letter-spacing:1px; color:var(--accent);">THINKTALK</span>
-            <span onclick="logout()" style="color:red; font-size:12px">SORTIR</span>
+            <span onclick="toggleMenu(true)" style="color:var(--accent); font-size:22px; cursor:pointer;">⚙</span>
         </div>
         <div id="panorama">
             <section class="view">
-                <h1 style="font-size:40px; font-weight:100; color:var(--accent); margin-bottom:20px;">salons</h1>
+                <h1 style="font-size:32px; font-weight:100; color:var(--accent); margin-bottom:20px;">salons</h1>
                 <div id="mob-rooms" class="tiles-grid"></div>
             </section>
             <section class="view" style="padding:0; display:flex; flex-direction:column;">
-                <div class="chat-header">
-                    <h2 id="chat-title-mob" style="font-weight:100;">Chat</h2>
-                </div>
+                <div class="chat-header"><h2 id="chat-title-mob">chat</h2></div>
                 <div id="msg-mob" class="msg-list"></div>
             </section>
             <section class="view">
-                <h1 style="font-size:40px; font-weight:100; color:var(--accent); margin-bottom:20px;">contacts</h1>
-                <input type="text" class="search-bar" placeholder="Rechercher..." oninput="filterContacts(this.value)">
+                <h1 style="font-size:32px; font-weight:100; color:var(--accent); margin-bottom:20px;">contacts</h1>
                 <div id="mob-contacts" class="tiles-grid"></div>
             </section>
         </div>
-        <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:70px; width:100%;">
-            <div class="attach-btn" onclick="triggerFile('chat')">
+        <div class="input-area" id="mob-bar" style="display:none; position:fixed; bottom:65px; width:100%;">
+            <div class="attach-btn" onclick="triggerFile()">
                 <svg viewBox="0 0 24 24"><path d="M6 7.91V16a6 6 0 0 0 6 6 6 6 0 0 0 6-6V6a4 4 0 0 0-4-4 4 4 0 0 0-4 4v10a2 2 0 0 0 2 2 2 2 0 0 0 2-2V7.91"></path></svg>
             </div>
             <input type="text" id="in-mob" placeholder="Message..." onkeypress="if(event.key==='Enter') send('mob')">
@@ -167,20 +196,28 @@
         let user = localStorage.getItem("thinktalk_pseudo");
         let current = { id: 'general', type: 'room' };
         let activePcTab = 'rooms';
-        let fileContext = 'bg';
 
         function showPopup(msg) { document.getElementById('error-msg').textContent = msg; document.getElementById('error-popup').style.display = 'block'; }
         function closePopup() { document.getElementById('error-popup').style.display = 'none'; }
+        function toggleMenu(open) {
+            document.getElementById('mobile-menu').classList.toggle('open', open);
+            document.getElementById('overlay').style.display = open ? 'block' : 'none';
+        }
+
+        function updateAccent(color) {
+            document.documentElement.style.setProperty('--accent', color);
+            localStorage.setItem("thinktalk_accent", color);
+            document.querySelectorAll('.accent-picker').forEach(p => p.value = color);
+        }
 
         function handleAuth(type) {
             const pseudo = document.getElementById('auth-pseudo').value.trim().toLowerCase();
             const code = document.getElementById('auth-code').value.trim();
-            if(!pseudo || !code) return showPopup("Champs vides !");
+            if(!pseudo || !code) return showPopup("Champs requis");
             db.ref('users/' + pseudo).once('value').then(s => {
-                const userData = s.val();
                 if(type === 'login') {
-                    if(s.exists() && String(userData.code) === String(code)) loginSuccess(pseudo);
-                    else showPopup("Code secret incorrect");
+                    if(s.exists() && String(s.val().code) === String(code)) loginSuccess(pseudo);
+                    else showPopup("Identifiants incorrects");
                 } else {
                     if(s.exists()) showPopup("Pseudo déjà pris");
                     else db.ref('users/' + pseudo).set({ code: code }).then(() => loginSuccess(pseudo));
@@ -188,21 +225,23 @@
             });
         }
 
-        function loginSuccess(pseudo) { user = pseudo; localStorage.setItem("thinktalk_pseudo", user); document.getElementById('auth-screen').style.display = 'none'; startApp(); }
-        function startApp() { initBg(); loadLists(); setChat('general', 'room'); }
-        function initBg() { const bg = localStorage.getItem("thinktalk_bg"); document.body.style.backgroundImage = bg ? `url('${bg}')` : "none"; }
-        function resetBg() { localStorage.removeItem("thinktalk_bg"); initBg(); }
+        function loginSuccess(pseudo) { user = pseudo; localStorage.setItem("thinktalk_pseudo", user); location.reload(); }
 
-        function triggerFile(ctx) { fileContext = ctx; document.getElementById('file-selector').click(); }
+        function startApp() {
+            const savedAccent = localStorage.getItem("thinktalk_accent");
+            if(savedAccent) updateAccent(savedAccent);
+            initBg(); loadLists(); setChat('general', 'room');
+        }
+
+        function initBg() { const bg = localStorage.getItem("thinktalk_bg"); if(bg) document.body.style.backgroundImage = `url('${bg}')`; }
+        function triggerFile() { document.getElementById('file-selector').click(); }
         function processLocalFile(input) {
             const file = input.files[0]; if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                if(fileContext === 'bg') { localStorage.setItem("thinktalk_bg", e.target.result); initBg(); }
-                else { /* Logique d'envoi d'image en chat si besoin */ }
-            };
+            reader.onload = (e) => { localStorage.setItem("thinktalk_bg", e.target.result); initBg(); };
             reader.readAsDataURL(file);
         }
+        function resetBg() { localStorage.removeItem("thinktalk_bg"); document.body.style.backgroundImage = "none"; }
 
         function loadLists() {
             db.ref("rooms").on('value', s => {
@@ -215,18 +254,17 @@
                         const b=document.createElement('button'); b.className="btn-action-metro"; b.textContent="# "+id; b.onclick=()=>setChat(id,'room'); pc.appendChild(b);
                     }
                 };
-                addR('general');
-                s.forEach(r => { if(r.key!=='general') addR(r.key); });
+                addR('general'); s.forEach(r => { if(r.key!=='general') addR(r.key); });
             });
             db.ref("users").on('value', s => {
                 const mc = document.getElementById('mob-contacts'), pc = document.getElementById('pc-content-list');
                 if(mc) mc.innerHTML = ""; if(pc && activePcTab==='contacts') pc.innerHTML = "";
                 s.forEach(c => {
                     if(c.key === user.toLowerCase()) return;
-                    const t = document.createElement('div'); t.className="tile contact"; t.setAttribute('data-id', c.key); t.innerHTML = c.key;
+                    const t = document.createElement('div'); t.className="tile contact"; t.innerHTML = "@"+c.key;
                     t.onclick=()=>{ setChat(c.key,'dm'); if(window.innerWidth <= 850) goTo(1); }; if(mc) mc.appendChild(t);
                     if(pc && activePcTab==='contacts'){
-                        const b=document.createElement('button'); b.className="btn-action-metro"; b.setAttribute('data-id', c.key); b.textContent="@ "+c.key; b.onclick=()=>setChat(c.key,'dm'); pc.appendChild(b);
+                        const b=document.createElement('button'); b.className="btn-action-metro"; b.textContent="@ "+c.key; b.onclick=()=>setChat(c.key,'dm'); pc.appendChild(b);
                     }
                 });
             });
@@ -234,9 +272,6 @@
 
         function setChat(id, type) {
             current = { id, type };
-            const title = (type==='room'?'# ':'@ ')+id;
-            document.getElementById('chat-title-pc').textContent = title;
-            document.getElementById('chat-title-mob').textContent = title;
             const path = type === 'room' ? `messages/public/${id}` : `messages/dm/${[user, id].sort().join("__")}`;
             db.ref(path).off();
             db.ref(path).on('value', s => {
@@ -245,8 +280,8 @@
                 s.forEach(snap => {
                     const m = snap.val();
                     const html = `<div class="msg ${m.pseudo===user?'mine':''}">
-                        <div class="msg-header"><span>${m.pseudo}</span><span>${m.time||''}</span></div>
-                        <div class="msg-text">${m.text}</div>
+                        <div class="msg-header"><span>${m.pseudo}</span><span>${new Date(m.timestamp).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>
+                        <div class="msg-text">${m.text || ''}</div>
                     </div>`;
                     pc.insertAdjacentHTML('beforeend', html); mb.insertAdjacentHTML('beforeend', html);
                 });
@@ -258,34 +293,18 @@
             const i = document.getElementById(m==='pc'?'in-pc':'in-mob');
             const v = i.value.trim(); if(!v) return;
             const path = current.type === 'room' ? `messages/public/${current.id}` : `messages/dm/${[user, current.id].sort().join("__")}`;
-            db.ref(path).push({ pseudo: user, text: v, time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) });
+            db.ref(path).push({ pseudo: user, text: v, timestamp: firebase.database.ServerValue.TIMESTAMP });
             i.value = "";
         }
 
-        function switchPcTab(t) { 
-            activePcTab = t; 
-            document.getElementById('tab-pc-rooms').classList.toggle('active', t==='rooms');
-            document.getElementById('tab-pc-contacts').classList.toggle('active', t==='contacts');
-            document.getElementById('pc-contact-tools').style.display = (t==='contacts') ? 'block' : 'none';
-            loadLists(); 
-        }
-
+        function switchPcTab(t) { activePcTab = t; loadLists(); }
         function goTo(x) { 
             document.getElementById('panorama').style.transform = `translateX(-${x*100}vw)`; 
             document.querySelectorAll('.nav-btn').forEach((b,i) => b.classList.toggle('active', i===x)); 
             document.getElementById('mob-bar').style.display = (x===1) ? 'flex' : 'none'; 
         }
 
-        function filterContacts(q) {
-            const query = q.toLowerCase();
-            document.querySelectorAll('#mob-contacts .tile').forEach(t => t.style.display = t.getAttribute('data-id').includes(query) ? 'flex' : 'none');
-            document.querySelectorAll('#pc-content-list .btn-action-metro').forEach(b => {
-                const id = b.getAttribute('data-id');
-                if(id) b.style.display = id.includes(query) ? 'block' : 'none';
-            });
-        }
-
-        window.onload = () => { if(user) { document.getElementById('auth-screen').style.display='none'; startApp(); } else { initBg(); } }
+        window.onload = () => { if(user) { document.getElementById('auth-screen').style.display='none'; startApp(); } }
         function logout() { localStorage.clear(); location.reload(); }
     </script>
 </body>
