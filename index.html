@@ -262,7 +262,7 @@
 
                 div.onclick = (e) => {
                     if(isLongPress) return;
-                    selectedMsgId = d.id;
+                    selectedMsgId = d.id; 
                     if(isImg) {
                         targetX = e.clientX; targetY = e.clientY;
                         setTimeout(() => {
@@ -310,7 +310,7 @@
     document.getElementById('file-input').onchange = (e) => { if(e.target.files[0]) sendImage(e.target.files[0]); };
     document.getElementById('send-btn').onclick = () => { const i = document.getElementById('chat-input'); if(i.value.trim()){ sendMessage(i.value); i.value = ""; } };
 
-    // ROOMS LOGIC & LIVE TILES
+    // ROOMS LOGIC (LIVE TILES)
     document.getElementById('btn-confirm-create').onclick = async () => {
         const n = document.getElementById('new-room-name').value;
         const c = document.getElementById('new-room-code').value;
@@ -342,12 +342,7 @@
                 lastMsgHtml = `<div style="font-size:10px; opacity:0.4; margin-top:5px;"><i>Contenu privé</i></div>`;
             }
 
-            tile.innerHTML = `
-                ${delBtn}
-                <span style="font-weight:bold; color:var(--accent)"># ${r.name} ${r.code ? '🔒' : ''}</span>
-                ${lastMsgHtml}
-            `;
-
+            tile.innerHTML = `${delBtn}<span style="font-weight:bold; color:var(--accent)"># ${r.name} ${r.code ? '🔒' : ''}</span>${lastMsgHtml}`;
             tile.onclick = () => {
                 if(r.code) {
                     document.getElementById('pop-room-auth').style.display = 'flex';
@@ -366,7 +361,7 @@
         if(confirm("Supprimer ce salon ?")) await deleteDoc(doc(db, "rooms", id));
     };
 
-    // MISC
+    // MISC & MESSAGES
     document.getElementById('btn-msg-del').onclick = async () => { 
         if(selectedMsgId) { 
             try { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } catch(e) { alert("Erreur de suppression"); }
@@ -394,19 +389,17 @@
         if(btn) btn.classList.add('active');
     };
 
+    // CONTACTS LOGIC (LIVE TILES)
     function initContacts() {
         onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser)), (snap) => {
-            const grid = document.getElementById('contacts-grid'); 
-            grid.innerHTML = "";
+            const grid = document.getElementById('contacts-grid'); grid.innerHTML = "";
             snap.forEach(async (d) => {
                 const contactData = d.data();
-                const tile = document.createElement('div'); 
-                tile.className = "tile"; 
+                const tile = document.createElement('div'); tile.className = "tile";
                 
                 let lastMsgHtml = "";
                 const qMsg = query(collection(db, "messages"), where("room", "==", contactData.name), orderBy("timestamp", "desc"), limit(1));
                 const msgSnap = await getDocs(qMsg);
-                
                 if(!msgSnap.empty) {
                     const lastM = msgSnap.docs[0].data();
                     const text = lastM.text && lastM.text.startsWith("data:image") ? "📷 Image" : (lastM.text || "");
@@ -417,11 +410,7 @@
                     lastMsgHtml = `<div style="font-size:10px; opacity:0.4; margin-top:5px;"><i>Aucun message</i></div>`;
                 }
 
-                tile.innerHTML = `
-                    <span style="font-weight:bold; color:var(--accent)">@ ${contactData.name}</span>
-                    ${lastMsgHtml}
-                `;
-                
+                tile.innerHTML = `<span style="font-weight:bold; color:var(--accent)">@ ${contactData.name}</span>${lastMsgHtml}`;
                 tile.onclick = () => {
                     switchTab('chat');
                     enterRoom(contactData.name);
@@ -433,7 +422,10 @@
 
     document.getElementById('add-contact-now').onclick = async () => {
         const n = document.getElementById('contact-name-input').value;
-        if(n) { await addDoc(collection(db, "contacts"), { name: n, owner: currentUser }); document.getElementById('contact-name-input').value=""; }
+        if(n) { 
+            await addDoc(collection(db, "contacts"), { name: n, owner: currentUser }); 
+            document.getElementById('contact-name-input').value = ""; 
+        }
     };
 </script>
 </body>
