@@ -19,24 +19,18 @@
       box-sizing: border-box; 
       margin: 0; 
       padding: 0; 
-      /* Police Segoe UI pour le look Windows Phone */
-      font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      font-family: "Segoe UI", Tahoma, sans-serif; /* Look Windows Phone */
     }
 
     html, body {
-      width: 100%;
-      height: 100%;
-      background: var(--bg);
-      color: var(--text);
+      width: 100%; height: 100%;
+      background: var(--bg); color: var(--text);
       overflow: hidden;
     }
 
-    /* Poussière de fond animée */
+    /* Ton design de fond original */
     .dust-layer {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
       background:
         radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.18) 0, transparent 55%),
         radial-gradient(circle at 80% 10%, rgba(236, 72, 153, 0.16) 0, transparent 55%),
@@ -52,51 +46,21 @@
       100% { transform: translate3d(-6px, 10px, 0) scale(1.02); }
     }
 
-    .app-root {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      padding-bottom: 56px;
-    }
+    .app-root { position: relative; z-index: 1; width: 100%; height: 100%; display: flex; flex-direction: column; padding-bottom: 56px; }
 
-    .top-bar {
-      height: 48px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-    }
-
-    .top-title {
-      font-size: 0.9rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 600;
-      color: var(--text-soft);
-    }
+    .top-bar { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; }
+    .top-title { font-size: 0.9rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-soft); }
 
     .hamburger-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 999px;
+      width: 32px; height: 32px; border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.5);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-soft);
-      cursor: pointer;
+      background: rgba(15, 23, 42, 0.9); color: var(--text-soft);
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
     }
 
-    /* Tab Logic */
+    /* Sections onglets */
     .tab-view { flex: 1; position: relative; overflow: hidden; }
-    .tab-section {
-      position: absolute;
-      inset: 0;
-      display: none;
-      padding: 8px 12px;
-      overflow-y: auto;
-    }
+    .tab-section { position: absolute; inset: 0; display: none; padding: 8px 12px 8px; overflow-y: auto; }
     .tab-section.active { display: block; animation: tabAppear 260ms var(--transition-snap); }
 
     @keyframes tabAppear {
@@ -104,206 +68,195 @@
       100% { opacity: 1; transform: scale(1); }
     }
 
-    /* Search & Tiles */
-    .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
-    .search-input {
-      flex: 1; height: 36px; border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.5);
-      background: rgba(15, 23, 42, 0.7);
-      color: var(--text); padding: 0 12px; font-size: 0.8rem; outline: none;
-    }
-
+    /* Grille de tuiles originale */
     .tiles-grid { column-count: 2; column-gap: 10px; }
     .tile {
-      display: inline-block; width: 100%; margin-bottom: 10px;
-      border-radius: 18px; padding: 12px;
-      background: radial-gradient(circle at 0 0, var(--accent-soft), transparent 55%), rgba(15, 23, 42, 0.96);
+      display: inline-block; width: 100%; margin: 0 0 10px;
+      border-radius: 18px; padding: 12px 12px 10px;
+      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%), rgba(15, 23, 42, 0.96);
       border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.9);
       cursor: pointer; break-inside: avoid;
     }
 
-    /* Chat UI */
+    .tile-title { font-size: 0.9rem; margin-bottom: 4px; }
+    .tile-sub { font-size: 0.75rem; color: var(--text-soft); }
+
+    /* Chat Tab Style Original */
     .chat-body {
-      height: calc(100% - 110px);
-      border-radius: 16px; border: 1px solid var(--border-subtle);
-      background: rgba(15,23,42,0.85); padding: 10px;
-      overflow-y: auto; margin-bottom: 8px;
-      display: flex; flex-direction: column; gap: 8px;
+      height: calc(100% - 100px); border-radius: 16px; border: 1px solid var(--border-subtle);
+      background: rgba(15,23,42,0.85); padding: 10px; overflow-y: auto; margin-bottom: 8px;
     }
-    .msg-bubble {
-      padding: 10px; border-radius: 12px; max-width: 85%;
-      background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--accent);
-    }
+    .chat-empty { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-soft); font-size: 0.85rem; text-align: center;}
 
-    .chat-input-row { display: flex; gap: 8px; align-items: center; }
+    .chat-input-row { display: flex; align-items: center; gap: 8px; }
+    .chat-input { flex: 1; }
     .chat-input textarea {
-      flex: 1; height: 40px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(15, 23, 42, 0.96); color: var(--text); padding: 8px; resize: none; outline: none;
+      width: 100%; min-height: 40px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.96); color: var(--text); padding: 8px 10px; outline: none; resize: none;
     }
 
-    /* Nav */
+    .send-btn { padding: 9px 14px; border-radius: 999px; border: none; background: var(--accent); color: white; cursor: pointer; text-transform: uppercase; font-size: 0.7rem; }
+
+    /* Nav bar originale */
     .bottom-nav {
-      position: fixed; bottom: 0; left: 0; right: 0; height: 56px;
-      display: flex; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(20px);
+      position: fixed; left: 0; right: 0; bottom: 0; height: 56px;
+      padding: 6px 16px; display: flex; align-items: center; justify-content: space-between;
+      background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(22px);
       border-top: 1px solid rgba(148, 163, 184, 0.4); z-index: 10;
     }
-    .bottom-nav-btn {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      color: var(--text-soft); font-size: 0.75rem; text-transform: uppercase; cursor: pointer;
-    }
-    .bottom-nav-btn.active { color: var(--text); font-weight: bold; border-top: 2px solid var(--accent); }
+    .bottom-nav-btn { flex: 1; text-align: center; color: var(--text-soft); font-size: 0.75rem; text-transform: uppercase; cursor: pointer; }
+    .bottom-nav-btn.active { color: var(--text); font-weight: bold; }
 
-    .menu-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
-      display: none; align-items: center; justify-content: center; z-index: 100;
-    }
+    /* Overlay menu */
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(25px); display: none; align-items: center; justify-content: center; z-index: 50; }
     .menu-overlay.active { display: flex; }
-    .menu-panel { width: 280px; background: #0f172a; border: 1px solid var(--accent); border-radius: 20px; padding: 20px; }
+    .menu-panel { width: 280px; border-radius: 18px; border: 1px solid var(--accent); background: rgba(15,23,42,0.96); padding: 20px; }
   </style>
 </head>
 <body>
 
-  <div class="dust-layer" id="dustLayer"></div>
+<div class="dust-layer"></div>
 
-  <div class="app-root">
-    <div class="top-bar">
-      <div class="top-title">ThinkTalk</div>
-      <button class="hamburger-btn" id="hamburgerBtn">☰</button>
-    </div>
-
-    <div class="tab-view">
-      <section class="tab-section active" id="tab-home">
-        <div class="search-row">
-          <input type="text" id="searchRooms" class="search-input" placeholder="Rechercher un salon..." />
-          <button class="action-btn" style="padding: 8px 15px; border-radius: 20px; background: var(--accent); border:none; color:white; cursor:pointer;">+</button>
-        </div>
-        <div class="tiles-grid" id="roomsGrid">
-          <div class="tile" data-label="Général">
-            <div class="tile-title"># Général</div>
-            <div class="tile-sub">Public</div>
-          </div>
-          <div class="tile" data-label="Dev">
-            <div class="tile-title"># Dev Lab</div>
-            <div class="tile-sub">Code & Design</div>
-          </div>
-        </div>
-      </section>
-
-      <section class="tab-section" id="tab-chat">
-        <div style="margin-bottom:10px; color:var(--accent); font-weight:bold" id="chatTargetLabel"># Aucun salon</div>
-        <div class="chat-body" id="chatBody">
-          <div id="chatEmpty" style="margin:auto; color:var(--text-soft)">Sélectionne un salon pour parler</div>
-        </div>
-        <div class="chat-input-row">
-          <textarea id="chatInput" placeholder="Message..."></textarea>
-          <button id="sendBtn" style="background:var(--accent); border:none; color:white; padding:10px 15px; border-radius:10px; cursor:pointer;">OK</button>
-        </div>
-      </section>
-
-      <section class="tab-section" id="tab-contacts">
-        <div class="search-row">
-          <input type="text" id="searchContacts" class="search-input" placeholder="Chercher un contact..." />
-        </div>
-        <div class="tiles-grid" id="contactsGrid">
-          <div class="tile" data-label="Zao">@ Zao</div>
-          <div class="tile" data-label="Admin">@ Admin</div>
-        </div>
-      </section>
-    </div>
-
-    <nav class="bottom-nav" id="bottomNav">
-      <div class="bottom-nav-btn active" data-tab="home">Accueil</div>
-      <div class="bottom-nav-btn" data-tab="chat">Chat</div>
-      <div class="bottom-nav-btn" data-tab="contacts">Contacts</div>
-    </nav>
+<div class="app-root">
+  <div class="top-bar">
+    <div class="top-title">ThinkTalk</div>
+    <button class="hamburger-btn" id="hamburgerBtn">☰</button>
   </div>
 
-  <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-panel">
-      <h3 style="margin-bottom:15px">Paramètres</h3>
-      <button onclick="location.reload()" style="width:100%; padding:10px; margin-bottom:10px">Actualiser</button>
-      <button id="closeMenu" style="width:100%; padding:10px">Fermer</button>
-    </div>
+  <div class="tab-view">
+    <section class="tab-section active" id="tab-home">
+      <div style="display:flex; gap:8px; margin-bottom:15px;">
+        <input type="text" id="searchRooms" style="flex:1; background:rgba(15,23,42,0.7); border:1px solid var(--border-subtle); border-radius:20px; color:white; padding:8px 15px;" placeholder="Salon..." />
+        <button id="addRoomBtn" style="background:var(--accent); border:none; color:white; border-radius:20px; padding:0 15px; cursor:pointer;">+</button>
+      </div>
+      <div class="tiles-grid" id="roomsGrid">
+        </div>
+    </section>
+
+    <section class="tab-section" id="tab-chat">
+      <div id="chatTargetLabel" style="margin-bottom:10px; text-transform:uppercase; color:var(--text-soft); font-size:0.8rem;">Aucun salon</div>
+      <div class="chat-body" id="chatBody">
+        <div class="chat-empty" id="chatEmpty">Sélectionne un salon pour commencer</div>
+      </div>
+      <div class="chat-input-row">
+        <div class="chat-input"><textarea id="chatInput" placeholder="Écrire..."></textarea></div>
+        <button class="send-btn" id="sendBtn">Envoyer</button>
+      </div>
+    </section>
+
+    <section class="tab-section" id="tab-contacts">
+      <div class="tiles-grid" id="contactsGrid">
+        </div>
+    </section>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-btn active" data-tab="home">Accueil</div>
+    <div class="bottom-nav-btn" data-tab="chat">Chat</div>
+    <div class="bottom-nav-btn" data-tab="contacts">Contacts</div>
+  </nav>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M",
-      authDomain: "thinktalk-b3c85.firebaseapp.com",
-      projectId: "thinktalk-b3c85",
-      storageBucket: "thinktalk-b3c85.firebasestorage.app",
-      messagingSenderId: "752141817301",
-      appId: "1:752141817301:web:28fecaf81db27eb51d595c"
-    };
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-panel">
+    <h2 style="margin-bottom:15px; font-size:1rem;">PARAMÈTRES</h2>
+    <button id="closeMenu" style="width:100%; padding:10px; background:transparent; border:1px solid white; color:white; border-radius:10px;">Fermer</button>
+  </div>
+</div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // Navigation
-    const tabs = document.querySelectorAll('.tab-section');
-    const navBtns = document.querySelectorAll('.bottom-nav-btn');
-    let currentRoom = "";
+  const firebaseConfig = {
+    apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M",
+    authDomain: "thinktalk-b3c85.firebaseapp.com",
+    projectId: "thinktalk-b3c85",
+    storageBucket: "thinktalk-b3c85.firebasestorage.app",
+    messagingSenderId: "752141817301",
+    appId: "1:752141817301:web:28fecaf81db27eb51d595c"
+  };
 
-    function showTab(id) {
-      tabs.forEach(t => t.classList.remove('active'));
-      navBtns.forEach(b => b.classList.remove('active'));
-      document.getElementById('tab-' + id).classList.add('active');
-      document.querySelector(`[data-tab="${id}"]`).classList.add('active');
-    }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    navBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+  // --- NAVIGATION ---
+  const navBtns = document.querySelectorAll('.bottom-nav-btn');
+  const tabs = document.querySelectorAll('.tab-section');
+  let currentRoom = "";
 
-    // Sélection salon
-    document.querySelectorAll('.tile').forEach(tile => {
-      tile.addEventListener('click', () => {
-        currentRoom = tile.dataset.label;
+  function switchTab(id) {
+    tabs.forEach(t => t.classList.toggle('active', t.id === 'tab-'+id));
+    navBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  }
+
+  navBtns.forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+  // --- GESTION SALONS (Firestore) ---
+  const roomsGrid = document.getElementById('roomsGrid');
+  
+  // Charger les salons en temps réel
+  onSnapshot(collection(db, "rooms"), (snapshot) => {
+    roomsGrid.innerHTML = "";
+    snapshot.forEach(doc => {
+      const room = doc.data();
+      const tile = document.createElement('div');
+      tile.className = "tile";
+      tile.innerHTML = `<div class="tile-title"># ${room.name}</div><div class="tile-sub">Salon actif</div>`;
+      tile.onclick = () => {
+        currentRoom = room.name;
         document.getElementById('chatTargetLabel').textContent = "# " + currentRoom;
         document.getElementById('chatEmpty').style.display = 'none';
-        showTab('chat');
+        switchTab('chat');
         listenMessages(currentRoom);
-      });
+      };
+      roomsGrid.appendChild(tile);
     });
+  });
 
-    // Envoi Message
-    const sendBtn = document.getElementById('sendBtn');
-    const chatInput = document.getElementById('chatInput');
+  // Ajouter un salon
+  document.getElementById('addRoomBtn').onclick = async () => {
+    const name = prompt("Nom du nouveau salon ?");
+    if(name) await addDoc(collection(db, "rooms"), { name: name });
+  };
 
-    sendBtn.addEventListener('click', async () => {
-      if (!chatInput.value.trim() || !currentRoom) return;
-      await addDoc(collection(db, "messages"), {
-        text: chatInput.value,
-        room: currentRoom,
-        timestamp: serverTimestamp(),
-        user: "Moi"
+  // --- CHAT (Firestore) ---
+  const sendBtn = document.getElementById('sendBtn');
+  const chatInput = document.getElementById('chatInput');
+  const chatBody = document.getElementById('chatBody');
+  let unsubMessages = null;
+
+  function listenMessages(roomName) {
+    if(unsubMessages) unsubMessages();
+    const q = query(collection(db, "messages"), where("room", "==", roomName), orderBy("timestamp", "asc"));
+    unsubMessages = onSnapshot(q, (snapshot) => {
+      chatBody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const m = doc.data();
+        const div = document.createElement('div');
+        div.style = "margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px;";
+        div.innerHTML = `<div style="color:var(--accent); font-size:0.7rem;">Moi</div><div>${m.text}</div>`;
+        chatBody.appendChild(div);
       });
-      chatInput.value = "";
+      chatBody.scrollTop = chatBody.scrollHeight;
     });
+  }
 
-    // Écoute temps réel
-    let unsubscribe = null;
-    function listenMessages(room) {
-      if (unsubscribe) unsubscribe();
-      const q = query(collection(db, "messages"), where("room", "==", room), orderBy("timestamp", "asc"));
-      unsubscribe = onSnapshot(q, (snapshot) => {
-        const chatBody = document.getElementById('chatBody');
-        chatBody.innerHTML = "";
-        snapshot.forEach(doc => {
-          const m = doc.data();
-          const div = document.createElement('div');
-          div.className = "msg-bubble";
-          div.innerHTML = `<small style="color:var(--accent)">${m.user}</small><br>${m.text}`;
-          chatBody.appendChild(div);
-        });
-        chatBody.scrollTop = chatBody.scrollHeight;
-      });
-    }
+  sendBtn.onclick = async () => {
+    if(!chatInput.value.trim() || !currentRoom) return;
+    await addDoc(collection(db, "messages"), {
+      text: chatInput.value,
+      room: currentRoom,
+      timestamp: serverTimestamp()
+    });
+    chatInput.value = "";
+  };
 
-    // Menu
-    document.getElementById('hamburgerBtn').addEventListener('click', () => document.getElementById('menuOverlay').classList.add('active'));
-    document.getElementById('closeMenu').addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('active'));
-  </script>
+  // Menu Hamburger
+  document.getElementById('hamburgerBtn').onclick = () => document.getElementById('menuOverlay').classList.add('active');
+  document.getElementById('closeMenu').onclick = () => document.getElementById('menuOverlay').classList.remove('active');
+
+</script>
 </body>
 </html>
