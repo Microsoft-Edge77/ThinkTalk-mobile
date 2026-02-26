@@ -135,7 +135,7 @@
             </div>
         </section>
         <section id="view-contacts" class="view-section">
-            <div class="action-row"><input type="text" id="contact-name-input" class="search-box" placeholder="nom du contact..."><button class="btn-add" id="add-contact-now">+</button></div>
+            <div class="action-row"><input type="text" id="contact-name-input" class="search-box" placeholder="nom du contact..."><button class="btn-add" id="btn-add-contact">+</button></div>
             <div class="tiles-grid" id="contacts-grid"></div>
         </section>
     </div>
@@ -207,11 +207,9 @@
                 const userQuery = query(collection(db, "users"), where("pseudo", "==", currentUser));
                 const userSnap = await getDocs(userQuery);
                 userSnap.forEach(d => batch.delete(d.ref));
-
                 const roomQuery = query(collection(db, "rooms"), where("creator", "==", currentUser));
                 const roomSnap = await getDocs(roomQuery);
                 roomSnap.forEach(d => batch.delete(d.ref));
-
                 await batch.commit();
                 logout();
             } catch (e) { showPopupAlert("Erreur lors de la suppression."); }
@@ -220,7 +218,13 @@
 
     window.onload = () => {
         const u = localStorage.getItem('tt_user');
-        if(u) { currentUser = u; document.getElementById('auth-screen').style.display='none'; document.getElementById('main-app').style.display='flex'; initContacts(); enterRoom("général"); }
+        if(u) { 
+            currentUser = u; 
+            document.getElementById('auth-screen').style.display='none'; 
+            document.getElementById('main-app').style.display='flex'; 
+            initContacts(); 
+            enterRoom("général"); 
+        }
     };
 
     // AUTH
@@ -247,7 +251,9 @@
 
     // CHAT ENGINE
     window.enterRoom = (name) => {
-        curRoom = name; document.getElementById('chat-header').innerText = "# " + name; 
+        curRoom = name; 
+        document.getElementById('chat-header').innerText = "# " + name; 
+        switchTab('chat');
         if(unsubChat) unsubChat();
         const q = query(collection(db, "messages"), where("room", "==", name), orderBy("timestamp", "asc"));
         unsubChat = onSnapshot(q, (snap) => {
@@ -333,34 +339,36 @@
 
     window.deleteRoom = async (id, e) => { e.stopPropagation(); if(confirm("Supprimer ce salon ?")) { try { await deleteDoc(doc(db, "rooms", id)); } catch(e) { showPopupAlert("Interdit."); } } };
 
-    // MESSAGE OPTIONS
-    document.getElementById('btn-msg-del').onclick = async () => { if(selectedMsgId) { try { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } catch(e) { alert("Erreur"); } } };
-    document.getElementById('btn-msg-edit').onclick = () => { document.getElementById('pop-msg-options').style.display='none'; document.getElementById('pop-edit-msg').style.display='flex'; };
-    document.getElementById('btn-save-edit').onclick = async () => { const n = document.getElementById('edit-msg-input').value.trim(); if(n && selectedMsgId) { try { await updateDoc(doc(db, "messages", selectedMsgId), { text: n }); closePopups(); } catch(e) { alert("Erreur"); } } };
-
-    // CONTACTS LOGIC (NOUVEAU)
-    document.getElementById('add-contact-now').onclick = async () => {
+    // CONTACTS LOGIC
+    document.getElementById('btn-add-contact').onclick = async () => {
         const nameInput = document.getElementById('contact-name-input');
         const name = nameInput.value.trim();
         if (name && currentUser) {
             try {
-                // Vérifier si le contact existe déjà pour cet utilisateur
                 const qCheck = query(collection(db, "contacts"), where("owner", "==", currentUser), where("name", "==", name));
                 const snapCheck = await getDocs(qCheck);
-                
                 if (snapCheck.empty) {
-                    await addDoc(collection(db, "contacts"), {
-                        name: name,
-                        owner: currentUser,
-                        timestamp: serverTimestamp()
-                    });
+                    await addDoc(collection(db, "contacts"), { name: name, owner: currentUser, timestamp: serverTimestamp() });
                     nameInput.value = "";
-                } else {
-                    showPopupAlert("Contact déjà présent.");
-                }
-            } catch (e) { showPopupAlert("Erreur lors de l'ajout."); }
+                } else { showPopupAlert("Déjà dans la liste."); }
+            } catch (e) { showPopupAlert("Erreur."); }
         }
     };
+
+    function initContacts() {
+        onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser), orderBy("timestamp", "desc")), (snap) => {
+            const grid = document.getElementById('contacts-grid'); grid.innerHTML = "";
+            snap.forEach(d => {
+                const c = d.data();
+                const tile = document.createElement('div'); tile.className = "tile tile-1x1";
+                tile.innerHTML = `<button class="btn-del-room" onclick="deleteContact('${d.id}', event)">X</button><span>@ ${c.name}</span>`;
+                tile.onclick = () => enterRoom(c.name); 
+                grid.appendChild(tile);
+            });
+        });
+    }
+
+    window.deleteContact = async (id, e) => { e.stopPropagation(); if(confirm("Supprimer ce contact ?")) { await deleteDoc(doc(db, "contacts", id)); } };
 
     window.switchTab = (t) => {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
@@ -368,28 +376,6 @@
         document.getElementById('view-'+t).classList.add('active');
         const btn = document.querySelector(`[onclick="switchTab('${t}')"]`);
         if(btn) btn.classList.add('active');
-    };
-
-    function initContacts() {
-        onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser), orderBy("timestamp", "desc")), (snap) => {
-            const grid = document.getElementById('contacts-grid'); grid.innerHTML = "";
-            snap.forEach(d => {
-                const contactData = d.data();
-                const tile = document.createElement('div'); 
-                tile.className = "tile tile-1x1";
-                // On peut supprimer un contact en restant appuyé (ou en cliquant sur une petite croix)
-                tile.innerHTML = `<button class="btn-del-room" onclick="deleteContact('${d.id}', event)">X</button><span>@ ${contactData.name}</span>`;
-                tile.onclick = () => enterRoom(contactData.name); 
-                grid.appendChild(tile);
-            });
-        });
-    }
-
-    window.deleteContact = async (id, e) => {
-        e.stopPropagation();
-        if(confirm("Supprimer ce contact ?")) {
-            try { await deleteDoc(doc(db, "contacts", id)); } catch(e) { showPopupAlert("Erreur."); }
-        }
     };
 </script>
 </body>
