@@ -63,12 +63,30 @@
     </div>
 </div>
 
+<div class="popup-overlay" id="pop-edit-msg">
+    <div class="popup-card">
+        <h3>modifier le message</h3>
+        <input type="text" id="edit-msg-input" class="input-box">
+        <button class="btn-full" id="btn-save-edit">enregistrer</button>
+        <button class="btn-full btn-secondary" onclick="closePopups()">annuler</button>
+    </div>
+</div>
+
 <div class="popup-overlay" id="pop-del-account">
     <div class="popup-card">
         <h3 style="color:#a30000; margin-bottom:10px">suppression</h3>
         <p style="font-size: 0.8rem; margin-bottom:15px">entrez votre code pour confirmer la suppression définitive :</p>
         <input type="password" id="del-confirm-code" class="input-box" placeholder="code de sécurité">
         <button class="btn-full btn-danger" id="btn-final-del-acc">confirmer</button>
+        <button class="btn-full btn-secondary" onclick="closePopups()">annuler</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="pop-confirm-del">
+    <div class="popup-card">
+        <h3 id="del-title">supprimer ?</h3>
+        <p id="del-text">cette action est irréversible.</p>
+        <button class="btn-full btn-danger" id="btn-final-del-generic">supprimer</button>
         <button class="btn-full btn-secondary" onclick="closePopups()">annuler</button>
     </div>
 </div>
@@ -127,7 +145,7 @@
     const firebaseConfig = { apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M", authDomain: "thinktalk-b3c85.firebaseapp.com", projectId: "thinktalk-b3c85", storageBucket: "thinktalk-b3c85.firebasestorage.app", messagingSenderId: "752141817301", appId: "1:752141817301:web:28fecaf81db27eb51d595c" };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    let currentUser = null, currentCode = null, curRoom = "général", unsubChat = null, selectedMsgId = null;
+    let currentUser = null, currentCode = null, curRoom = "général", unsubChat = null, selectedMsgId = null, contactIdToDelete = null;
 
     // DUST ANIMATION
     const canvas = document.getElementById('canvas-dust'), ctx = canvas.getContext('2d');
@@ -151,7 +169,7 @@
     window.logout = () => { localStorage.clear(); location.reload(); };
 
     // DELETE ACCOUNT
-    window.askDeleteAccount = () => { if(confirm("Êtes-vous sûr de quitter définitivement ThinkTalk ?")) document.getElementById('pop-del-account').style.display = 'flex'; };
+    window.askDeleteAccount = () => { document.getElementById('pop-del-account').style.display = 'flex'; };
     document.getElementById('btn-final-del-acc').onclick = async () => {
         if(document.getElementById('del-confirm-code').value === currentCode) {
             const q = query(collection(db, "users"), where("pseudo", "==", currentUser));
@@ -236,24 +254,38 @@
     };
 
     document.getElementById('btn-msg-del').onclick = async () => { if(selectedMsgId) { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } };
-    document.getElementById('btn-msg-edit').onclick = async () => {
-        const nVal = prompt("Modifier le message :");
-        if(nVal && selectedMsgId) { await updateDoc(doc(db, "messages", selectedMsgId), { text: nVal }); closePopups(); }
+    
+    document.getElementById('btn-msg-edit').onclick = () => {
+        if(selectedMsgId) {
+            document.getElementById('pop-msg-options').style.display = 'none';
+            document.getElementById('pop-edit-msg').style.display = 'flex';
+        }
+    };
+
+    document.getElementById('btn-save-edit').onclick = async () => {
+        const nVal = document.getElementById('edit-msg-input').value;
+        if(nVal && selectedMsgId) { 
+            await updateDoc(doc(db, "messages", selectedMsgId), { text: nVal }); 
+            document.getElementById('edit-msg-input').value = "";
+            closePopups(); 
+        }
     };
 
     const sendMessage = async (val) => {
         if(!val || !currentUser) return;
-        if(val.startsWith("data:image")) {
-            const img = new Image(); img.src = val;
-            img.onload = async () => {
-                const cvs = document.createElement('canvas'); const x = cvs.getContext('2d');
-                cvs.width = 400; cvs.height = img.height * (400/img.width);
-                x.drawImage(img, 0, 0, cvs.width, cvs.height);
-                await addDoc(collection(db, "messages"), { text: cvs.toDataURL("image/jpeg", 0.6), room: curRoom, sender: currentUser, timestamp: serverTimestamp() });
-            };
-        } else {
-            await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() });
-        }
+        try {
+            if(val.startsWith("data:image")) {
+                const img = new Image(); img.src = val;
+                img.onload = async () => {
+                    const cvs = document.createElement('canvas'); const x = cvs.getContext('2d');
+                    cvs.width = 400; cvs.height = img.height * (400/img.width);
+                    x.drawImage(img, 0, 0, cvs.width, cvs.height);
+                    await addDoc(collection(db, "messages"), { text: cvs.toDataURL("image/jpeg", 0.6), room: curRoom, sender: currentUser, timestamp: serverTimestamp() });
+                };
+            } else {
+                await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() });
+            }
+        } catch(e) { console.error(e); showPopupAlert("Erreur d'envoi. Vérifiez vos règles Firebase ou l'index."); }
     };
 
     document.getElementById('send-btn').onclick = () => { const i = document.getElementById('chat-input'); if(i.value.trim()){ sendMessage(i.value); i.value = ""; } };
@@ -269,7 +301,20 @@
     };
 
     // CONTACTS
-    window.delContact = async (id) => { if(confirm("Supprimer ce contact ?")) await deleteDoc(doc(db, "contacts", id)); };
+    window.delContact = (id) => { 
+        contactIdToDelete = id;
+        document.getElementById('del-title').innerText = "supprimer contact";
+        document.getElementById('del-text').innerText = "Voulez-vous vraiment retirer ce contact ?";
+        document.getElementById('pop-confirm-del').style.display = 'flex';
+    };
+
+    document.getElementById('btn-final-del-generic').onclick = async () => {
+        if(contactIdToDelete) {
+            await deleteDoc(doc(db, "contacts", contactIdToDelete));
+            contactIdToDelete = null;
+            closePopups();
+        }
+    };
     
     function initContacts() {
         onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser)), (snap) => {
@@ -289,7 +334,7 @@
         if(!res.empty && n !== currentUser) { 
             await addDoc(collection(db, "contacts"), { name: n, owner: currentUser }); 
             document.getElementById('contact-name-input').value = ""; 
-        } else showPopupAlert("Utilisateur introuvable ou invalide.");
+        } else showPopupAlert("Utilisateur introuvable.");
     };
 </script>
 </body>
