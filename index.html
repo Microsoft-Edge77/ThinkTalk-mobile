@@ -116,7 +116,7 @@
             </div>
             <div class="dropdown-menu" id="main-menu">
                 <div class="dropdown-item" onclick="logout()">déconnexion</div>
-                <div class="dropdown-item" style="color:#ff4444" onclick="showPopupAlert('Fonction bientôt disponible')">supprimer compte</div>
+                <div class="dropdown-item" style="color:#ff4444" onclick="deleteMyAccount()">supprimer compte</div>
             </div>
         </div>
     </div>
@@ -148,7 +148,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, getDocs, deleteDoc, doc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M", authDomain: "thinktalk-b3c85.firebaseapp.com", projectId: "thinktalk-b3c85", storageBucket: "thinktalk-b3c85.firebasestorage.app", messagingSenderId: "752141817301", appId: "1:752141817301:web:28fecaf81db27eb51d595c" };
     const app = initializeApp(firebaseConfig);
@@ -199,21 +199,57 @@
     window.toggleMenu = () => { const m = document.getElementById('main-menu'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; };
     window.logout = () => { localStorage.clear(); location.reload(); };
 
+    // DELETE ACCOUNT & CLEANUP
+    window.deleteMyAccount = async () => {
+        if(confirm("Action irréversible : supprimer ton compte et tes salons ?")) {
+            try {
+                const batch = writeBatch(db);
+                
+                // 1. Trouver l'utilisateur
+                const userQuery = query(collection(db, "users"), where("pseudo", "==", currentUser));
+                const userSnap = await getDocs(userQuery);
+                userSnap.forEach(d => batch.delete(d.ref));
+
+                // 2. Trouver et supprimer ses salons
+                const roomQuery = query(collection(db, "rooms"), where("creator", "==", currentUser));
+                const roomSnap = await getDocs(roomQuery);
+                roomSnap.forEach(d => batch.delete(d.ref));
+
+                await batch.commit();
+                logout();
+            } catch (e) {
+                showPopupAlert("Erreur lors de la suppression.");
+            }
+        }
+    };
+
     window.onload = () => {
         const u = localStorage.getItem('tt_user');
         if(u) { currentUser = u; document.getElementById('auth-screen').style.display='none'; document.getElementById('main-app').style.display='flex'; initContacts(); enterRoom("général"); }
     };
 
-    // AUTH
+    // AUTH CORRIGÉ
     document.getElementById('btn-register').onclick = async () => {
-        const p = document.getElementById('auth-pseudo').value, c = document.getElementById('auth-code').value;
-        if(p && c) { await addDoc(collection(db, "users"), { pseudo: p, code: c }); showPopupAlert("Compte créé !"); }
+        const p = document.getElementById('auth-pseudo').value.trim(), c = document.getElementById('auth-code').value.trim();
+        if(!p || !c) return showPopupAlert("Champs vides !");
+        
+        try {
+            const check = query(collection(db, "users"), where("pseudo", "==", p));
+            const snap = await getDocs(check);
+            if(!snap.empty) return showPopupAlert("Pseudo déjà pris.");
+            
+            await addDoc(collection(db, "users"), { pseudo: p, code: c });
+            showPopupAlert("Compte créé !");
+        } catch (e) { showPopupAlert("Erreur réseau."); }
     };
+
     document.getElementById('btn-login').onclick = async () => {
-        const p = document.getElementById('auth-pseudo').value, c = document.getElementById('auth-code').value;
-        const q = query(collection(db, "users"), where("pseudo", "==", p), where("code", "==", c));
-        const res = await getDocs(q);
-        if(!res.empty) { localStorage.setItem('tt_user', p); location.reload(); } else showPopupAlert("Erreur.");
+        const p = document.getElementById('auth-pseudo').value.trim(), c = document.getElementById('auth-code').value.trim();
+        try {
+            const q = query(collection(db, "users"), where("pseudo", "==", p), where("code", "==", c));
+            const res = await getDocs(q);
+            if(!res.empty) { localStorage.setItem('tt_user', p); location.reload(); } else showPopupAlert("Identifiants incorrects.");
+        } catch (e) { showPopupAlert("Erreur de connexion."); }
     };
 
     // CHAT ENGINE
@@ -262,7 +298,7 @@
 
                 div.onclick = (e) => {
                     if(isLongPress) return;
-                    selectedMsgId = d.id; // On s'assure que l'ID est bien capturé
+                    selectedMsgId = d.id;
                     if(isImg) {
                         targetX = e.clientX; targetY = e.clientY;
                         setTimeout(() => {
@@ -283,8 +319,10 @@
 
     // SEND LOGIC
     const sendMessage = async (val) => {
-        if(!val || !currentUser) return;
-        await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() });
+        if(!val.trim() || !currentUser) return;
+        try {
+            await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() });
+        } catch(e) { console.error(e); }
     };
 
     const sendImage = (file) => {
@@ -312,11 +350,15 @@
 
     // ROOMS LOGIC
     document.getElementById('btn-confirm-create').onclick = async () => {
-        const n = document.getElementById('new-room-name').value;
-        const c = document.getElementById('new-room-code').value;
+        const n = document.getElementById('new-room-name').value.trim();
+        const c = document.getElementById('new-room-code').value.trim();
         if(n) { 
-            await addDoc(collection(db, "rooms"), { name: n, code: c || null, creator: currentUser }); 
-            closePopups(); 
+            try {
+                await addDoc(collection(db, "rooms"), { name: n, code: c || null, creator: currentUser }); 
+                closePopups();
+                document.getElementById('new-room-name').value = "";
+                document.getElementById('new-room-code').value = "";
+            } catch(e) { showPopupAlert("Erreur de création."); }
         }
     };
 
@@ -342,10 +384,12 @@
 
     window.deleteRoom = async (id, e) => {
         e.stopPropagation();
-        if(confirm("Supprimer ce salon ?")) await deleteDoc(doc(db, "rooms", id));
+        if(confirm("Supprimer ce salon ?")) {
+            try { await deleteDoc(doc(db, "rooms", id)); } catch(e) { showPopupAlert("Action interdite."); }
+        }
     };
 
-    // MISC & CORRECTIONS MESSAGES
+    // MESSAGE OPTIONS
     document.getElementById('btn-msg-del').onclick = async () => { 
         if(selectedMsgId) { 
             try {
@@ -361,10 +405,12 @@
     };
 
     document.getElementById('btn-save-edit').onclick = async () => {
-        const n = document.getElementById('edit-msg-input').value;
+        const n = document.getElementById('edit-msg-input').value.trim();
         if(n && selectedMsgId) { 
-            await updateDoc(doc(db, "messages", selectedMsgId), { text: n }); 
-            closePopups(); 
+            try {
+                await updateDoc(doc(db, "messages", selectedMsgId), { text: n }); 
+                closePopups(); 
+            } catch(e) { alert("Erreur de modification."); }
         }
     };
 
