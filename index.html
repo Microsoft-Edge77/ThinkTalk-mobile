@@ -11,20 +11,19 @@
 
     #canvas-dust { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
     
-    /* ÉCRAN DE CONNEXION OBLIGATOIRE */
+    /* AUTH SCREEN */
     #auth-screen {
         position: fixed; inset: 0; z-index: 5000; background: #000;
         display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px;
     }
-    .auth-logo { font-size: 3.5rem; font-weight: 100; color: var(--accent); margin-bottom: 40px; animation: materialize 1.5s; }
+    .auth-logo { font-size: 3.5rem; font-weight: 100; color: var(--accent); margin-bottom: 40px; animation: materialize 1s; }
 
-    /* STRUCTURE APP */
+    /* APP STRUCTURE */
     .app-root { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; display: none; }
     .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; height: 70px; }
     .top-title { font-size: 2.2rem; font-weight: 100; color: var(--accent); }
     .hamburger { font-size: 28px; cursor: pointer; padding: 5px; color: #fff; }
 
-    /* COMPOSANTS UI */
     .view-container { flex: 1; position: relative; overflow-y: auto; padding: 10px; padding-bottom: 80px; }
     .view-section { display: none; width: 100%; }
     .view-section.active { display: block; }
@@ -32,12 +31,11 @@
     .search-box { flex: 1; background: #000; border: 1px solid #333; padding: 12px; color: #fff; outline: none; }
     .btn-add { background: var(--accent); border: none; color: #fff; padding: 0 20px; font-size: 1.5rem; cursor: pointer; }
 
-    /* TUILES */
+    /* TILES */
     .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 110px; gap: 12px; }
     .tile { 
         background: rgba(20, 20, 20, 0.85); border: 1px solid rgba(255,255,255,0.1); 
-        padding: 15px; display: flex; flex-direction: column; justify-content: flex-end;
-        cursor: pointer; 
+        padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; 
     }
     .tile-1x1 { grid-column: span 1; grid-row: span 1; }
     .tile-2x1 { grid-column: span 2; grid-row: span 1; }
@@ -48,16 +46,16 @@
     .msg-block { margin-bottom: 12px; animation: materialize 0.6s forwards; }
     .msg-text { background: rgba(255,255,255,0.05); padding: 10px; border-left: 3px solid var(--accent); }
 
-    /* POPUPS & OVERLAYS */
+    /* POPUPS SYSTEM */
     .popup-overlay { 
-        position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; 
+        position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 6000; 
         display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px);
     }
-    .popup-card { background: #000; border: 1px solid var(--accent); width: 100%; max-width: 300px; padding: 20px; animation: materialize 0.5s forwards; }
+    .popup-card { background: #000; border: 1px solid var(--accent); width: 100%; max-width: 300px; padding: 20px; animation: materialize 0.4s forwards; }
     
     @keyframes materialize { from { filter: blur(15px); opacity: 0; transform: scale(0.9); } to { filter: blur(0); opacity: 1; transform: scale(1); } }
 
-    /* NAV */
+    /* UI ELEMENTS */
     .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 56px; display: flex; background: #000; border-top: 1px solid #222; }
     .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.9rem; cursor: pointer; }
     .nav-btn.active { color: #fff; font-weight: bold; border-top: 2px solid var(--accent); }
@@ -70,6 +68,22 @@
 <body>
 
 <canvas id="canvas-dust"></canvas>
+
+<div class="popup-overlay" id="pop-alert">
+    <div class="popup-card">
+        <p id="alert-text" style="margin-bottom:20px; text-align:center;"></p>
+        <button class="btn-full" onclick="closePopups()">ok</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="pop-join-code">
+    <div class="popup-card">
+        <h3>code requis</h3>
+        <input type="password" id="input-join-pass" class="input-box" placeholder="entrez le code...">
+        <button class="btn-full" id="btn-confirm-join">entrer</button>
+        <button class="btn-full btn-secondary" onclick="closePopups()">annuler</button>
+    </div>
+</div>
 
 <div id="auth-screen">
     <div class="auth-logo">thinktalk</div>
@@ -157,6 +171,7 @@
     const db = getFirestore(app);
 
     let currentUser = null;
+    let pendingRoom = null;
 
     // DUST ENGINE
     const canvas = document.getElementById('canvas-dust');
@@ -168,34 +183,38 @@
     for(let i=0;i<60;i++)particles.push(new P());
     function anim(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p=>{p.u();p.d()}); requestAnimationFrame(anim) } anim();
 
+    // POPUP UTILS
+    window.showPopupAlert = (msg) => {
+        document.getElementById('alert-text').innerText = msg;
+        document.getElementById('pop-alert').style.display = 'flex';
+    };
+
     // AUTH LOGIC
     document.getElementById('btn-register').onclick = async () => {
         const p = document.getElementById('auth-pseudo').value.trim();
         const c = document.getElementById('auth-code').value.trim();
-        if(!p || !c) return alert("Remplis tout !");
+        if(!p || !c) return showPopupAlert("Remplis tout !");
         
         const q = query(collection(db, "users"), where("pseudo", "==", p));
         const check = await getDocs(q);
-        if(!check.empty) return alert("Pseudo déjà pris !");
+        if(!check.empty) return showPopupAlert("Pseudo déjà pris !");
 
         await addDoc(collection(db, "users"), { pseudo: p, code: c });
-        alert("Compte créé ! Connecte-toi.");
+        showPopupAlert("Compte créé !");
     };
 
     document.getElementById('btn-login').onclick = async () => {
         const p = document.getElementById('auth-pseudo').value.trim();
         const c = document.getElementById('auth-code').value.trim();
-        
         const q = query(collection(db, "users"), where("pseudo", "==", p), where("code", "==", c));
         const check = await getDocs(q);
-        
         if(!check.empty) {
             currentUser = p;
             document.getElementById('auth-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'flex';
             document.getElementById('user-display').innerText = "@" + p;
         } else {
-            alert("Pseudo ou code incorrect.");
+            showPopupAlert("Erreur pseudo/code.");
         }
     };
 
@@ -212,7 +231,7 @@
     window.openMenu = () => document.getElementById('pop-menu').style.display = 'flex';
     window.closePopups = () => document.querySelectorAll('.popup-overlay').forEach(p=>p.style.display='none');
 
-    // FIRESTORE : SALONS
+    // FIRESTORE : ROOMS
     onSnapshot(collection(db, "rooms"), (snap) => {
         const grid = document.getElementById('rooms-grid');
         grid.innerHTML = "";
@@ -223,7 +242,7 @@
             const sizes = ['tile-1x1', 'tile-2x1', 'tile-2x2'];
             tile.className = `tile ${sizes[i % 3]}`;
             tile.innerHTML = `<span># ${r.name}</span>`;
-            tile.onclick = () => joinRoom(r.name, r.code);
+            tile.onclick = () => tryJoinRoom(r.name, r.code);
             grid.appendChild(tile);
             i++;
         });
@@ -240,8 +259,28 @@
     // CHAT ENGINE
     let curRoom = "";
     let unsubChat = null;
-    function joinRoom(name, code) {
-        if(code && prompt("Code salon :") !== code) return;
+
+    function tryJoinRoom(name, code) {
+        if(code) {
+            pendingRoom = { name, code };
+            document.getElementById('pop-join-code').style.display = 'flex';
+        } else {
+            enterRoom(name);
+        }
+    }
+
+    document.getElementById('btn-confirm-join').onclick = () => {
+        const pass = document.getElementById('input-join-pass').value;
+        if(pass === pendingRoom.code) {
+            document.getElementById('input-join-pass').value = "";
+            closePopups();
+            enterRoom(pendingRoom.name);
+        } else {
+            showPopupAlert("Code incorrect.");
+        }
+    };
+
+    function enterRoom(name) {
         curRoom = name;
         document.getElementById('chat-header').innerText = "# " + name;
         switchTab('chat');
@@ -275,6 +314,22 @@
     };
 
     document.getElementById('btn-logout').onclick = () => { location.reload(); };
+
+    // CONTACTS
+    onSnapshot(collection(db, "contacts"), (snap) => {
+        const grid = document.getElementById('contacts-grid');
+        grid.innerHTML = "";
+        snap.forEach(doc => {
+            const c = doc.data();
+            grid.innerHTML += `<div class="tile tile-1x1"><span>@ ${c.name}</span></div>`;
+        });
+    });
+
+    document.getElementById('btn-add-contact').onclick = async () => {
+        const name = document.getElementById('contact-name-input').value.trim();
+        if(name) await addDoc(collection(db, "contacts"), { name });
+        document.getElementById('contact-name-input').value = "";
+    };
 
 </script>
 </body>
