@@ -29,7 +29,7 @@
         .search-box { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 12px; color: #fff; outline: none; }
         .btn-add { background: var(--accent); border: none; color: #fff; padding: 0 20px; font-size: 1.5rem; cursor: pointer; }
         .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 110px; gap: 12px; }
-        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(4px); }
+        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(4px); overflow: hidden; }
         
         .btn-del-room { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.5); color: white; border: none; width: 20px; height: 20px; font-size: 12px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
 
@@ -148,7 +148,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, getDocs, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, getDocs, deleteDoc, doc, updateDoc, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M", authDomain: "thinktalk-b3c85.firebaseapp.com", projectId: "thinktalk-b3c85", storageBucket: "thinktalk-b3c85.firebasestorage.app", messagingSenderId: "752141817301", appId: "1:752141817301:web:28fecaf81db27eb51d595c" };
     const app = initializeApp(firebaseConfig);
@@ -262,7 +262,7 @@
 
                 div.onclick = (e) => {
                     if(isLongPress) return;
-                    selectedMsgId = d.id; // On s'assure que l'ID est bien capturé
+                    selectedMsgId = d.id;
                     if(isImg) {
                         targetX = e.clientX; targetY = e.clientY;
                         setTimeout(() => {
@@ -310,7 +310,7 @@
     document.getElementById('file-input').onchange = (e) => { if(e.target.files[0]) sendImage(e.target.files[0]); };
     document.getElementById('send-btn').onclick = () => { const i = document.getElementById('chat-input'); if(i.value.trim()){ sendMessage(i.value); i.value = ""; } };
 
-    // ROOMS LOGIC
+    // ROOMS LOGIC & LIVE TILES
     document.getElementById('btn-confirm-create').onclick = async () => {
         const n = document.getElementById('new-room-name').value;
         const c = document.getElementById('new-room-code').value;
@@ -322,11 +322,32 @@
 
     onSnapshot(collection(db, "rooms"), (snap) => {
         const grid = document.getElementById('rooms-grid'); grid.innerHTML = "";
-        snap.forEach(d => {
+        snap.forEach(async (d) => {
             const r = d.data();
-            const tile = document.createElement('div'); tile.className = "tile tile-1x1"; 
+            const tile = document.createElement('div'); tile.className = "tile"; 
             let delBtn = r.creator === currentUser ? `<button class="btn-del-room" onclick="deleteRoom('${d.id}', event)">X</button>` : "";
-            tile.innerHTML = `${delBtn}<span># ${r.name} ${r.code ? '🔒' : ''}</span>`;
+            
+            let lastMsgHtml = "";
+            if(!r.code) {
+                const qMsg = query(collection(db, "messages"), where("room", "==", r.name), orderBy("timestamp", "desc"), limit(1));
+                const msgSnap = await getDocs(qMsg);
+                if(!msgSnap.empty) {
+                    const lastM = msgSnap.docs[0].data();
+                    const text = lastM.text && lastM.text.startsWith("data:image") ? "📷 Image" : (lastM.text || "");
+                    lastMsgHtml = `<div style="font-size:11px; opacity:0.6; margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%">
+                                    <b>${lastM.sender}:</b> ${text}
+                                   </div>`;
+                }
+            } else {
+                lastMsgHtml = `<div style="font-size:10px; opacity:0.4; margin-top:5px;"><i>Contenu privé</i></div>`;
+            }
+
+            tile.innerHTML = `
+                ${delBtn}
+                <span style="font-weight:bold; color:var(--accent)"># ${r.name} ${r.code ? '🔒' : ''}</span>
+                ${lastMsgHtml}
+            `;
+
             tile.onclick = () => {
                 if(r.code) {
                     document.getElementById('pop-room-auth').style.display = 'flex';
@@ -345,13 +366,10 @@
         if(confirm("Supprimer ce salon ?")) await deleteDoc(doc(db, "rooms", id));
     };
 
-    // MISC & CORRECTIONS MESSAGES
+    // MISC
     document.getElementById('btn-msg-del').onclick = async () => { 
         if(selectedMsgId) { 
-            try {
-                await deleteDoc(doc(db, "messages", selectedMsgId)); 
-                closePopups(); 
-            } catch(e) { alert("Erreur de suppression"); }
+            try { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } catch(e) { alert("Erreur de suppression"); }
         } 
     };
 
@@ -378,14 +396,45 @@
 
     function initContacts() {
         onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser)), (snap) => {
-            const grid = document.getElementById('contacts-grid'); grid.innerHTML = "";
-            snap.forEach(d => {
-                const tile = document.createElement('div'); tile.className = "tile tile-1x1";
-                tile.innerHTML = `<span>@ ${d.data().name}</span>`;
-                tile.onclick = () => enterRoom(d.data().name); grid.appendChild(tile);
+            const grid = document.getElementById('contacts-grid'); 
+            grid.innerHTML = "";
+            snap.forEach(async (d) => {
+                const contactData = d.data();
+                const tile = document.createElement('div'); 
+                tile.className = "tile"; 
+                
+                let lastMsgHtml = "";
+                const qMsg = query(collection(db, "messages"), where("room", "==", contactData.name), orderBy("timestamp", "desc"), limit(1));
+                const msgSnap = await getDocs(qMsg);
+                
+                if(!msgSnap.empty) {
+                    const lastM = msgSnap.docs[0].data();
+                    const text = lastM.text && lastM.text.startsWith("data:image") ? "📷 Image" : (lastM.text || "");
+                    lastMsgHtml = `<div style="font-size:11px; opacity:0.6; margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%">
+                                    <b>${lastM.sender}:</b> ${text}
+                                   </div>`;
+                } else {
+                    lastMsgHtml = `<div style="font-size:10px; opacity:0.4; margin-top:5px;"><i>Aucun message</i></div>`;
+                }
+
+                tile.innerHTML = `
+                    <span style="font-weight:bold; color:var(--accent)">@ ${contactData.name}</span>
+                    ${lastMsgHtml}
+                `;
+                
+                tile.onclick = () => {
+                    switchTab('chat');
+                    enterRoom(contactData.name);
+                };
+                grid.appendChild(tile);
             });
         });
     }
+
+    document.getElementById('add-contact-now').onclick = async () => {
+        const n = document.getElementById('contact-name-input').value;
+        if(n) { await addDoc(collection(db, "contacts"), { name: n, owner: currentUser }); document.getElementById('contact-name-input').value=""; }
+    };
 </script>
 </body>
 </html>
