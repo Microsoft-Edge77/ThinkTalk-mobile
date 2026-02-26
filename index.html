@@ -7,41 +7,28 @@
   <style>
     :root {
       --bg: #000000;
-      --bg-elevated: #05070b;
       --accent: #3b82f6;
       --accent-soft: rgba(59, 130, 246, 0.35);
       --text: #f9fafb;
       --text-soft: #9ca3af;
       --border-subtle: rgba(148, 163, 184, 0.25);
-      --acrylic: rgba(15, 23, 42, 0.72);
-      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.75);
-      --radius: 18px;
-      --transition-fast: 180ms ease-out;
       --transition-snap: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow: hidden;
     }
 
-    body {
-      position: relative;
-    }
+    body { position: relative; }
 
-    /* --- VAPOROUS DUST BACKGROUND --- */
+    /* Poussière de fond */
 
     .dust-layer {
       position: fixed;
@@ -59,140 +46,12 @@
     }
 
     @keyframes dustFloat {
-      0% {
-        transform: translate3d(-12px, 8px, 0) scale(1);
-      }
-      50% {
-        transform: translate3d(10px, -12px, 0) scale(1.05);
-      }
-      100% {
-        transform: translate3d(-6px, 10px, 0) scale(1.02);
-      }
+      0% { transform: translate3d(-12px, 8px, 0) scale(1); }
+      50% { transform: translate3d(10px, -12px, 0) scale(1.05); }
+      100% { transform: translate3d(-6px, 10px, 0) scale(1.02); }
     }
 
-    /* --- INITIAL BLACK SCREEN + CENTERED CTA --- */
-
-    .initial-screen {
-      position: fixed;
-      inset: 0;
-      background: #000000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 20;
-      overflow: hidden;
-    }
-
-    .initial-dust {
-      position: absolute;
-      inset: -20%;
-      background:
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.35) 0, transparent 55%),
-        radial-gradient(circle at 80% 10%, rgba(236, 72, 153, 0.32) 0, transparent 55%),
-        radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.32) 0, transparent 55%),
-        radial-gradient(circle at 90% 70%, rgba(129, 140, 248, 0.35) 0, transparent 55%);
-      filter: blur(26px);
-      mix-blend-mode: screen;
-      opacity: 0.9;
-      animation: initialDust 18s infinite alternate ease-in-out;
-    }
-
-    @keyframes initialDust {
-      0% {
-        transform: translate3d(-20px, 10px, 0) scale(1);
-      }
-      50% {
-        transform: translate3d(16px, -18px, 0) scale(1.08);
-      }
-      100% {
-        transform: translate3d(-10px, 16px, 0) scale(1.03);
-      }
-    }
-
-    .initial-content {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-    }
-
-    .initial-title {
-      font-size: 1.4rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-      margin-bottom: 18px;
-    }
-
-    .initial-buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .initial-btn {
-      position: relative;
-      padding: 12px 22px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.35), transparent 55%),
-        rgba(15, 23, 42, 0.9);
-      color: var(--text);
-      font-size: 0.9rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      transition: transform 160ms var(--transition-snap),
-        box-shadow 160ms ease-out,
-        border-color 160ms ease-out,
-        background 160ms ease-out;
-    }
-
-    .initial-btn:hover {
-      transform: translateY(-2px) scale(1.02);
-      border-color: var(--accent);
-      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.95);
-    }
-
-    .initial-btn:active {
-      transform: translateY(1px) scale(0.98);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
-    }
-
-    /* Disintegration / zoom-out animation */
-
-    .initial-screen.disintegrate {
-      animation: disintegrate 650ms var(--transition-snap) forwards;
-    }
-
-    @keyframes disintegrate {
-      0% {
-        opacity: 1;
-        transform: scale(1);
-        filter: blur(0);
-        clip-path: circle(100% at 50% 50%);
-      }
-      40% {
-        opacity: 0.9;
-        transform: scale(1.04);
-        filter: blur(2px);
-        clip-path: circle(60% at 50% 50%);
-      }
-      100% {
-        opacity: 0;
-        transform: scale(1.12);
-        filter: blur(10px);
-        clip-path: circle(0% at 50% 50%);
-        pointer-events: none;
-      }
-    }
-
-    /* --- MAIN APP LAYOUT --- */
+    /* Layout principal */
 
     .app-root {
       position: relative;
@@ -200,143 +59,129 @@
       width: 100%;
       height: 100%;
       display: flex;
-      flex-direction: row;
-      opacity: 0;
-      transform: scale(0.96);
-      pointer-events: none;
-      transition: opacity 260ms var(--transition-snap),
-        transform 260ms var(--transition-snap);
-    }
-
-    .app-root.visible {
-      opacity: 1;
-      transform: scale(1);
-      pointer-events: auto;
-    }
-
-    /* Desktop layout */
-
-    .sidebar {
-      width: 260px;
-      min-width: 220px;
-      max-width: 320px;
-      border-right: 1px solid var(--border-subtle);
-      background: linear-gradient(
-          135deg,
-          rgba(15, 23, 42, 0.96),
-          rgba(15, 23, 42, 0.82)
-        );
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      box-shadow: 12px 0 40px rgba(0, 0, 0, 0.85);
-      display: flex;
       flex-direction: column;
-      padding: 14px 12px;
-      gap: 10px;
+      padding-bottom: 56px; /* pour la bottom-nav */
     }
 
-    .sidebar-header {
+    .top-bar {
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 4px 10px;
+      padding: 0 14px;
     }
 
-    .sidebar-title {
+    .top-title {
       font-size: 0.9rem;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--text-soft);
     }
 
-    .pseudo-pill {
-      padding: 6px 10px;
+    .hamburger-btn {
+      width: 32px;
+      height: 32px;
       border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.5);
-      font-size: 0.75rem;
-      color: var(--text-soft);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
       background: rgba(15, 23, 42, 0.9);
-    }
-
-    .pseudo-pill span {
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .sidebar-section-label {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
       color: var(--text-soft);
-      margin: 4px 4px 6px;
-    }
-
-    .list {
-      flex: 1;
-      overflow-y: auto;
-      padding-right: 4px;
-      padding-left: 2px;
-    }
-
-    .list-item {
-      padding: 9px 10px;
-      border-radius: 12px;
-      margin-bottom: 4px;
-      cursor: pointer;
       display: flex;
-      flex-direction: column;
-      gap: 2px;
-      border: 1px solid transparent;
-      background: linear-gradient(
-          135deg,
-          rgba(15, 23, 42, 0.96),
-          rgba(15, 23, 42, 0.86)
-        );
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
       transition: transform 140ms var(--transition-snap),
-        border-color 140ms ease-out,
-        background 140ms ease-out;
+        box-shadow 140ms ease-out,
+        border-color 140ms ease-out;
     }
 
-    .list-item:hover {
-      transform: translateY(-1px) scale(1.01);
-      border-color: var(--accent-soft);
-      background: linear-gradient(
-          135deg,
-          rgba(15, 23, 42, 0.98),
-          rgba(15, 23, 42, 0.9)
-        );
-    }
-
-    .list-item.active {
+    .hamburger-btn:hover {
+      transform: translateY(-1px) scale(1.03);
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.4);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.9);
     }
 
-    .list-item-title {
-      font-size: 0.86rem;
+    /* Sections onglets */
+
+    .tab-view {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tab-section {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: 8px 12px 8px;
+      overflow-y: auto;
+    }
+
+    .tab-section.active {
+      display: block;
+      animation: tabAppear 260ms var(--transition-snap);
+    }
+
+    @keyframes tabAppear {
+      0% { opacity: 0; transform: scale(0.96); }
+      60% { opacity: 1; transform: scale(1.02); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Barre de recherche + bouton */
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .search-input {
+      flex: 1;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.7);
       color: var(--text);
+      padding: 0 12px;
+      font-size: 0.8rem;
+      outline: none;
     }
 
-    .list-item-sub {
-      font-size: 0.72rem;
+    .search-input::placeholder {
       color: var(--text-soft);
     }
 
-    /* Masonry / Live Tiles (mobile & also used in desktop "Accueil" mode) */
+    .action-btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background:
+        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
+        rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 14px 35px rgba(0,0,0,0.85);
+      transition: transform 140ms var(--transition-snap),
+        box-shadow 140ms ease-out,
+        border-color 140ms ease-out;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px) scale(1.03);
+      border-color: var(--accent);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.95);
+    }
+
+    /* Live Tiles */
 
     .tiles-grid {
-      width: 100%;
-      height: 100%;
-      padding: 12px;
       column-count: 2;
       column-gap: 10px;
-      overflow-y: auto;
     }
 
     .tile {
@@ -345,11 +190,11 @@
       margin: 0 0 10px;
       border-radius: 18px;
       padding: 12px 12px 10px;
-      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.35), transparent 55%),
+      background:
+        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
         rgba(15, 23, 42, 0.96);
       border: 1px solid rgba(148, 163, 184, 0.4);
-      box-shadow: var(--shadow-soft);
+      box-shadow: 0 18px 45px rgba(0,0,0,0.9);
       cursor: pointer;
       break-inside: avoid;
       transition: transform 160ms var(--transition-snap),
@@ -360,19 +205,7 @@
     .tile:hover {
       transform: translateY(-3px) scale(1.02);
       border-color: var(--accent);
-      box-shadow: 0 26px 60px rgba(15, 23, 42, 0.95);
-    }
-
-    .tile.large {
-      min-height: 120px;
-    }
-
-    .tile.medium {
-      min-height: 90px;
-    }
-
-    .tile.small {
-      min-height: 60px;
+      box-shadow: 0 26px 60px rgba(15,23,42,0.95);
     }
 
     .tile-title {
@@ -385,169 +218,63 @@
       color: var(--text-soft);
     }
 
-    /* Chat area */
-
-    .chat-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      padding: 14px 16px 12px;
-    }
+    /* Chat tab */
 
     .chat-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       margin-bottom: 10px;
     }
 
-    .chat-title-block {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .chat-title {
-      font-size: 0.95rem;
+    .chat-target {
+      font-size: 0.9rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: var(--text-soft);
     }
 
-    .chat-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
-
     .chat-body {
-      flex: 1;
+      height: calc(100% - 90px);
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(15,23,42,0.85);
+      padding: 10px;
       overflow-y: auto;
-      padding-right: 4px;
-      padding-bottom: 6px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      margin-bottom: 8px;
     }
 
-    .message-row {
-      display: flex;
-      margin-bottom: 4px;
-      animation: msgSlideUp 220ms var(--transition-snap);
-    }
-
-    .message-row.me {
-      justify-content: flex-end;
-    }
-
-    .message-bubble {
-      max-width: 72%;
-      padding: 8px 10px;
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.96);
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      font-size: 0.82rem;
-      line-height: 1.35;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .message-row.me .message-bubble {
-      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.4), transparent 55%),
-        rgba(15, 23, 42, 0.98);
-      border-color: rgba(59, 130, 246, 0.7);
-    }
-
-    .message-meta {
-      font-size: 0.68rem;
-      color: var(--text-soft);
-      margin-top: 2px;
-      text-align: right;
-    }
-
-    @keyframes msgSlideUp {
-      0% {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-      }
-      60% {
-        opacity: 1;
-        transform: translateY(-2px) scale(1.02);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    /* Images in messages */
-
-    .message-image {
+    .chat-empty {
       width: 100%;
-      max-height: 220px;
-      object-fit: cover;
-      border-radius: 0;
-      cursor: pointer;
-      display: block;
-    }
-
-    .image-dust-overlay {
-      position: absolute;
-      inset: 0;
-      background:
-        radial-gradient(circle at 10% 20%, rgba(250, 250, 250, 0.35) 0, transparent 55%),
-        radial-gradient(circle at 80% 80%, rgba(250, 250, 250, 0.25) 0, transparent 55%);
-      mix-blend-mode: screen;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 260ms ease-out;
-    }
-
-    .message-bubble.image-clicked .image-dust-overlay {
-      opacity: 1;
-    }
-
-    .image-fullscreen {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.96);
+      height: 100%;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 40;
-      animation: zoomIn 260ms var(--transition-snap);
+      color: var(--text-soft);
+      font-size: 0.85rem;
     }
 
-    .image-fullscreen img {
-      max-width: 92vw;
-      max-height: 92vh;
-      border-radius: 0;
-      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.95);
+    .chat-empty-dust {
+      position: absolute;
+      inset: -20%;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.35) 0, transparent 55%),
+        radial-gradient(circle at 80% 10%, rgba(236, 72, 153, 0.32) 0, transparent 55%),
+        radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.32) 0, transparent 55%),
+        radial-gradient(circle at 90% 70%, rgba(129, 140, 248, 0.35) 0, transparent 55%);
+      filter: blur(26px);
+      mix-blend-mode: screen;
+      opacity: 0.9;
+      animation: dustFloat 18s infinite alternate ease-in-out;
     }
 
-    @keyframes zoomIn {
-      0% {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      60% {
-        opacity: 1;
-        transform: scale(1.03);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
+    .chat-empty-text {
+      position: relative;
+      z-index: 1;
     }
-
-    /* Input area */
 
     .chat-input-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding-top: 8px;
-      border-top: 1px solid var(--border-subtle);
     }
 
     .attach-btn {
@@ -561,27 +288,10 @@
       justify-content: center;
       cursor: pointer;
       font-size: 18px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
-      transition: transform 140ms var(--transition-snap),
-        box-shadow 140ms ease-out,
-        background 140ms ease-out;
-    }
-
-    .attach-btn:hover {
-      transform: translateY(-1px) scale(1.03);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
-      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
-        #000000;
-    }
-
-    .attach-btn:active {
-      transform: translateY(1px) scale(0.97);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.9);
     }
 
     .chat-input {
       flex: 1;
-      position: relative;
     }
 
     .chat-input textarea {
@@ -596,87 +306,23 @@
       padding: 8px 10px;
       font-size: 0.85rem;
       outline: none;
-      box-shadow: inset 0 0 0 1px transparent;
-      transition: border-color 140ms ease-out,
-        box-shadow 140ms ease-out,
-        background 140ms ease-out;
-    }
-
-    .chat-input textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.6);
-      background: rgba(15, 23, 42, 0.98);
     }
 
     .send-btn {
-      padding: 9px 16px;
+      padding: 9px 14px;
       border-radius: 999px;
       border: none;
-      background: radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.4), transparent 55%),
+      background:
+        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.4), transparent 55%),
         rgba(15, 23, 42, 0.98);
       color: var(--text);
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       cursor: pointer;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
-      transition: transform 140ms var(--transition-snap),
-        box-shadow 140ms ease-out,
-        opacity 140ms ease-out;
     }
 
-    .send-btn:disabled {
-      opacity: 0.4;
-      cursor: default;
-      box-shadow: none;
-    }
-
-    .send-btn:not(:disabled):hover {
-      transform: translateY(-1px) scale(1.03);
-      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.95);
-    }
-
-    .send-btn:not(:disabled):active {
-      transform: translateY(1px) scale(0.97);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.95);
-    }
-
-    /* Spell suggestion bubble */
-
-    .spell-bubble {
-      position: absolute;
-      bottom: 46px;
-      left: 10px;
-      max-width: 220px;
-      padding: 6px 10px;
-      border-radius: 10px;
-      background: #000000;
-      border: 1px solid var(--accent);
-      color: var(--text-soft);
-      font-size: 0.72rem;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.95);
-      transform-origin: bottom left;
-      animation: bubblePop 220ms var(--transition-snap);
-      display: none;
-      z-index: 5;
-    }
-
-    @keyframes bubblePop {
-      0% {
-        opacity: 0;
-        transform: scale(0.7) translateY(6px);
-      }
-      60% {
-        opacity: 1;
-        transform: scale(1.05) translateY(-2px);
-      }
-      100% {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-      }
-    }
-
-    /* Bottom nav (mobile) */
+    /* Bottom nav */
 
     .bottom-nav {
       position: fixed;
@@ -685,7 +331,7 @@
       bottom: 0;
       height: 56px;
       padding: 6px 16px;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: space-between;
       background: rgba(15, 23, 42, 0.88);
@@ -716,574 +362,337 @@
       transform: translateY(-1px);
     }
 
-    /* Responsive */
+    /* Menu hamburger overlay */
 
-    @media (max-width: 900px) {
-      .app-root {
-        flex-direction: column;
-      }
-
-      .sidebar {
-        display: none;
-      }
-
-      .chat-area {
-        padding-bottom: 64px;
-      }
-
-      .bottom-nav {
-        display: flex;
-      }
+    .menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
     }
 
-    @media (min-width: 901px) {
-      .tiles-grid.mobile-only {
-        display: none;
-      }
+    .menu-overlay.active {
+      display: flex;
+      animation: menuAppear 260ms var(--transition-snap);
+    }
+
+    @keyframes menuAppear {
+      0% { opacity: 0; transform: scale(0.9); }
+      60% { opacity: 1; transform: scale(1.03); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    .menu-panel {
+      width: 280px;
+      border-radius: 18px;
+      border: 1px solid var(--accent);
+      background: rgba(15,23,42,0.96);
+      padding: 18px 16px 14px;
+      box-shadow: 0 26px 60px rgba(0,0,0,0.95);
+    }
+
+    .menu-title {
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .menu-item {
+      margin-bottom: 10px;
+      font-size: 0.8rem;
+    }
+
+    .menu-item label {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text-soft);
+    }
+
+    .menu-item input[type="color"],
+    .menu-item input[type="file"] {
+      width: 100%;
+      font-size: 0.8rem;
+    }
+
+    .menu-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .menu-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15,23,42,0.96);
+      color: var(--text);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+    }
+
+    .menu-btn.danger {
+      border-color: rgba(248, 113, 113, 0.8);
+      color: #fecaca;
     }
   </style>
 </head>
 <body>
   <div class="dust-layer"></div>
 
-  <!-- Initial black screen -->
-  <div class="initial-screen" id="initialScreen">
-    <div class="initial-dust"></div>
-    <div class="initial-content">
-      <div class="initial-title">Neon Dust Interface</div>
-      <div class="initial-buttons">
-        <button class="initial-btn" id="btnSelectRoom">Sélectionner un Salon</button>
-        <button class="initial-btn" id="btnSelectContact">Sélectionner un Contact</button>
+  <div class="app-root">
+    <div class="top-bar">
+      <div class="top-title">Neon Dust Chat</div>
+      <button class="hamburger-btn" id="hamburgerBtn">☰</button>
+    </div>
+
+    <div class="tab-view">
+      <!-- Onglet Accueil (Salons) -->
+      <section class="tab-section active" id="tab-home">
+        <div class="search-row">
+          <input
+            type="text"
+            id="searchRooms"
+            class="search-input"
+            placeholder="Rechercher un salon…"
+          />
+          <button class="action-btn" id="createRoomBtn">Créer</button>
+        </div>
+        <div class="tiles-grid" id="roomsGrid">
+          <div class="tile" data-label="Général">
+            <div class="tile-title"># Général</div>
+            <div class="tile-sub">Salon public</div>
+          </div>
+          <div class="tile" data-label="ThinkTalk">
+            <div class="tile-title"># ThinkTalk</div>
+            <div class="tile-sub">Salon privé</div>
+          </div>
+          <div class="tile" data-label="Dev Lab">
+            <div class="tile-title"># Dev Lab</div>
+            <div class="tile-sub">Salon public</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Onglet Chat -->
+      <section class="tab-section" id="tab-chat">
+        <div class="chat-header">
+          <div class="chat-target" id="chatTargetLabel">
+            Aucun salon sélectionné
+          </div>
+        </div>
+        <div class="chat-body" id="chatBody">
+          <div class="chat-empty" id="chatEmpty">
+            <div class="chat-empty-dust"></div>
+            <div class="chat-empty-text">
+              Sélectionne un salon ou un contact pour commencer.
+            </div>
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <button class="attach-btn">📎</button>
+          <div class="chat-input">
+            <textarea placeholder="Écrire un message…"></textarea>
+          </div>
+          <button class="send-btn">Envoyer</button>
+        </div>
+      </section>
+
+      <!-- Onglet Contacts -->
+      <section class="tab-section" id="tab-contacts">
+        <div class="search-row">
+          <input
+            type="text"
+            id="searchContacts"
+            class="search-input"
+            placeholder="Rechercher un contact…"
+          />
+          <button class="action-btn" id="addContactBtn">Ajouter</button>
+        </div>
+        <div class="tiles-grid" id="contactsGrid">
+          <div class="tile" data-label="Zao">
+            <div class="tile-title">@ Zao</div>
+            <div class="tile-sub">Message direct</div>
+          </div>
+          <div class="tile" data-label="Copilot">
+            <div class="tile-title">@ Copilot</div>
+            <div class="tile-sub">Message direct</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav" id="bottomNav">
+    <div class="bottom-nav-btn active" data-tab="home">Accueil</div>
+    <div class="bottom-nav-btn" data-tab="chat">Chat</div>
+    <div class="bottom-nav-btn" data-tab="contacts">Contacts</div>
+  </nav>
+
+  <!-- Menu hamburger overlay -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-panel">
+      <div class="menu-title">Paramètres</div>
+
+      <div class="menu-item">
+        <label for="bgFile">Changer de fond</label>
+        <input type="file" id="bgFile" accept="image/*" />
+      </div>
+
+      <div class="menu-item">
+        <label for="accentColor">Couleur d'accent</label>
+        <input type="color" id="accentColor" value="#3b82f6" />
+      </div>
+
+      <div class="menu-actions">
+        <button class="menu-btn" id="resetBtn">Reset</button>
+        <button class="menu-btn danger" id="logoutBtn">Déconnexion</button>
       </div>
     </div>
   </div>
 
-  <!-- Main app -->
-  <div class="app-root" id="appRoot">
-    <!-- Desktop sidebar -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-title">Salons & Contacts</div>
-        <button class="pseudo-pill" id="pseudoBtn">
-          <span id="pseudoLabel">Pseudo ?</span>
-        </button>
-      </div>
-
-      <div>
-        <div class="sidebar-section-label">Salons publics</div>
-        <div class="list" id="roomList"></div>
-      </div>
-
-      <div>
-        <div class="sidebar-section-label">Contacts (DM)</div>
-        <div class="list" id="contactList"></div>
-      </div>
-    </aside>
-
-    <!-- Chat / Tiles area -->
-    <main class="chat-area" id="chatArea">
-      <header class="chat-header">
-        <div class="chat-title-block">
-          <div class="chat-title" id="chatTitle">Aucun salon</div>
-          <div class="chat-subtitle" id="chatSubtitle">
-            Sélectionne un salon ou un contact pour commencer.
-          </div>
-        </div>
-      </header>
-
-      <!-- Mobile "Accueil" tiles -->
-      <div class="tiles-grid mobile-only" id="tilesGrid" style="display:none;"></div>
-
-      <!-- Chat body -->
-      <section class="chat-body" id="chatBody"></section>
-
-      <!-- Input row -->
-      <footer class="chat-input-row">
-        <button class="attach-btn" id="attachBtn">📎</button>
-        <input type="file" id="fileInput" accept="image/*" style="display:none;" />
-        <div class="chat-input">
-          <textarea
-            id="messageInput"
-            placeholder="Écrire un message…"
-            spellcheck="true"
-          ></textarea>
-          <div class="spell-bubble" id="spellBubble"></div>
-        </div>
-        <button class="send-btn" id="sendBtn" disabled>Envoyer</button>
-      </footer>
-    </main>
-  </div>
-
-  <!-- Bottom nav (mobile) -->
-  <nav class="bottom-nav" id="bottomNav">
-    <div class="bottom-nav-btn active" data-tab="home">Accueil</div>
-    <div class="bottom-nav-btn" data-tab="chat">Chat</div>
-    <div class="bottom-nav-btn" data-tab="profile">Profil</div>
-  </nav>
-
-  <!-- Fullscreen image viewer -->
-  <div class="image-fullscreen" id="imageFullscreen" style="display:none;">
-    <img id="fullscreenImg" src="" alt="Image" />
-  </div>
-
-  <!-- Firebase + App logic -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-  <script type="module">
-    // --- Firebase init (v9 compat) ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M",
-      authDomain: "thinktalk-b3c85.firebaseapp.com",
-      projectId: "thinktalk-b3c85",
-      storageBucket: "thinktalk-b3c85.firebasestorage.app",
-      messagingSenderId: "752141817301",
-      appId: "1:752141817301:web:28fecaf81db27eb51d595c",
-      measurementId: "G-78QR24ZJC6"
-    };
-
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // --- DOM refs ---
-    const initialScreen = document.getElementById("initialScreen");
-    const btnSelectRoom = document.getElementById("btnSelectRoom");
-    const btnSelectContact = document.getElementById("btnSelectContact");
-    const appRoot = document.getElementById("appRoot");
-    const chatTitle = document.getElementById("chatTitle");
-    const chatSubtitle = document.getElementById("chatSubtitle");
-    const chatBody = document.getElementById("chatBody");
-    const messageInput = document.getElementById("messageInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const attachBtn = document.getElementById("attachBtn");
-    const fileInput = document.getElementById("fileInput");
-    const spellBubble = document.getElementById("spellBubble");
-    const roomList = document.getElementById("roomList");
-    const contactList = document.getElementById("contactList");
-    const pseudoBtn = document.getElementById("pseudoBtn");
-    const pseudoLabel = document.getElementById("pseudoLabel");
-    const tilesGrid = document.getElementById("tilesGrid");
+  <script>
+    // Gestion des onglets
     const bottomNav = document.getElementById("bottomNav");
-    const imageFullscreen = document.getElementById("imageFullscreen");
-    const fullscreenImg = document.getElementById("fullscreenImg");
+    const tabSections = {
+      home: document.getElementById("tab-home"),
+      chat: document.getElementById("tab-chat"),
+      contacts: document.getElementById("tab-contacts"),
+    };
+    const chatTargetLabel = document.getElementById("chatTargetLabel");
+    const chatEmpty = document.getElementById("chatEmpty");
 
-    // --- State ---
-    let currentUser = null;
-    let currentMode = null; // "room" | "dm"
-    let currentTargetId = null; // roomId or dmId
-    let unsubscribeMessages = null;
-
-    // --- Pseudo management ---
-    function loadPseudo() {
-      const stored = localStorage.getItem("ndc_pseudo");
-      if (stored && stored.trim()) {
-        currentUser = stored.trim();
-        pseudoLabel.textContent = stored.trim();
-      } else {
-        askPseudo();
-      }
-    }
-
-    function askPseudo() {
-      const value = prompt("Choisis ton pseudo :");
-      if (!value || !value.trim()) return askPseudo();
-      currentUser = value.trim();
-      localStorage.setItem("ndc_pseudo", currentUser);
-      pseudoLabel.textContent = currentUser;
-    }
-
-    pseudoBtn.addEventListener("click", () => {
-      askPseudo();
-    });
-
-    // --- Initial screen transitions ---
-    function showAppRoot() {
-      appRoot.classList.add("visible");
-    }
-
-    function startFrom(type) {
-      // type: "room" | "contact"
-      initialScreen.classList.add("disintegrate");
-      setTimeout(() => {
-        initialScreen.style.display = "none";
-        showAppRoot();
-        if (window.innerWidth <= 900) {
-          // mobile: show tiles (Accueil)
-          showMobileTab("home");
-        }
-      }, 650);
-    }
-
-    btnSelectRoom.addEventListener("click", () => startFrom("room"));
-    btnSelectContact.addEventListener("click", () => startFrom("contact"));
-
-    // --- Mobile bottom nav ---
-    function showMobileTab(tab) {
-      const buttons = bottomNav.querySelectorAll(".bottom-nav-btn");
-      buttons.forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tab);
+    function switchTab(tabName) {
+      Object.keys(tabSections).forEach((key) => {
+        tabSections[key].classList.toggle("active", key === tabName);
+      });
+      bottomNav.querySelectorAll(".bottom-nav-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.tab === tabName);
       });
 
-      if (tab === "home") {
-        tilesGrid.style.display = "block";
-        chatBody.style.display = "none";
-      } else if (tab === "chat") {
-        // If no chat selected, go back to initial screen style
-        if (!currentTargetId) {
-          // simulate "reset"
-          initialScreen.style.display = "flex";
-          initialScreen.classList.remove("disintegrate");
-          appRoot.classList.remove("visible");
-        } else {
-          tilesGrid.style.display = "none";
-          chatBody.style.display = "flex";
-        }
-      } else if (tab === "profile") {
-        alert("Profil / paramètres à définir (pseudo, thème, etc.).");
+      if (tabName === "chat" && chatTargetLabel.textContent.includes("Aucun")) {
+        chatEmpty.style.display = "flex";
       }
     }
 
     bottomNav.addEventListener("click", (e) => {
       const btn = e.target.closest(".bottom-nav-btn");
       if (!btn) return;
-      const tab = btn.dataset.tab;
-      showMobileTab(tab);
+      switchTab(btn.dataset.tab);
     });
 
-    // --- Spell suggestion (fake but stylized) ---
-    let spellTimeout = null;
-    messageInput.addEventListener("input", () => {
-      const value = messageInput.value;
-      sendBtn.disabled = !value.trim();
+    // Filtre de recherche salons
+    const searchRooms = document.getElementById("searchRooms");
+    const roomsGrid = document.getElementById("roomsGrid");
 
-      if (spellTimeout) clearTimeout(spellTimeout);
-      spellTimeout = setTimeout(() => {
-        const words = value.split(/\s+/).filter(Boolean);
-        const last = words[words.length - 1] || "";
-        // Simple heuristic: if word is long and has no vowel, show suggestion
-        const hasVowel = /[aeiouyàâäéèêëîïôöùûü]/i.test(last);
-        if (last.length > 7 && !hasVowel) {
-          spellBubble.textContent = `Tu voulais peut-être écrire autre chose que "${last}" ?`;
-          spellBubble.style.display = "block";
-        } else {
-          spellBubble.style.display = "none";
-        }
-      }, 400);
+    searchRooms.addEventListener("input", () => {
+      const q = searchRooms.value.toLowerCase();
+      roomsGrid.querySelectorAll(".tile").forEach((tile) => {
+        const label = tile.dataset.label.toLowerCase();
+        tile.style.display = label.includes(q) ? "inline-block" : "none";
+      });
     });
 
-    // --- Firestore structure ---
-    // Collection "rooms": { name }
-    // Collection "messages": { type: "room"|"dm", targetId, from, text, imageData, createdAt }
+    // Filtre de recherche contacts
+    const searchContacts = document.getElementById("searchContacts");
+    const contactsGrid = document.getElementById("contactsGrid");
 
-    async function ensureDefaultRooms() {
-      const snapshot = await db.collection("rooms").limit(1).get();
-      if (!snapshot.empty) return;
-      const defaults = [
-        { id: "general", name: "Général" },
-        { id: "thinktalk", name: "ThinkTalk" },
-        { id: "dev", name: "Dev Lab" }
-      ];
-      const batch = db.batch();
-      defaults.forEach((r) => {
-        const ref = db.collection("rooms").doc(r.id);
-        batch.set(ref, { name: r.name });
+    searchContacts.addEventListener("input", () => {
+      const q = searchContacts.value.toLowerCase();
+      contactsGrid.querySelectorAll(".tile").forEach((tile) => {
+        const label = tile.dataset.label.toLowerCase();
+        tile.style.display = label.includes(q) ? "inline-block" : "none";
       });
-      await batch.commit();
-    }
-
-    async function loadRooms() {
-      await ensureDefaultRooms();
-      const snapshot = await db.collection("rooms").orderBy("name").get();
-      roomList.innerHTML = "";
-      tilesGrid.innerHTML = "";
-
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const roomId = doc.id;
-
-        // Sidebar item
-        const item = document.createElement("div");
-        item.className = "list-item";
-        item.dataset.roomId = roomId;
-        item.innerHTML = `
-          <div class="list-item-title"># ${data.name}</div>
-          <div class="list-item-sub">Salon public</div>
-        `;
-        item.addEventListener("click", (e) => {
-          materializeFromPointer(e, () => {
-            selectRoom(roomId, data.name);
-          });
-        });
-        roomList.appendChild(item);
-
-        // Mobile tile
-        const tile = document.createElement("div");
-        tile.className = "tile medium";
-        tile.dataset.roomId = roomId;
-        tile.innerHTML = `
-          <div class="tile-title"># ${data.name}</div>
-          <div class="tile-sub">Salon public</div>
-        `;
-        tile.addEventListener("click", (e) => {
-          materializeFromPointer(e, () => {
-            selectRoom(roomId, data.name);
-            showMobileTab("chat");
-          });
-        });
-        tilesGrid.appendChild(tile);
-      });
-    }
-
-    function dmIdFor(a, b) {
-      return [a, b].sort((x, y) => x.localeCompare(y)).join("__");
-    }
-
-    async function loadContacts() {
-      // Very simple: list of pseudo from messages (DM type)
-      const snapshot = await db
-        .collection("messages")
-        .where("type", "==", "dm")
-        .limit(100)
-        .get();
-
-      const contacts = new Set();
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.from && data.to && currentUser) {
-          if (data.from === currentUser) contacts.add(data.to);
-          if (data.to === currentUser) contacts.add(data.from);
-        }
-      });
-
-      contactList.innerHTML = "";
-      contacts.forEach((pseudo) => {
-        const item = document.createElement("div");
-        item.className = "list-item";
-        item.dataset.contact = pseudo;
-        item.innerHTML = `
-          <div class="list-item-title">@ ${pseudo}</div>
-          <div class="list-item-sub">Message direct</div>
-        `;
-        item.addEventListener("click", (e) => {
-          materializeFromPointer(e, () => {
-            selectDM(pseudo);
-          });
-        });
-        contactList.appendChild(item);
-      });
-    }
-
-    // --- Materialization from pointer (pop-up from cursor/finger) ---
-    function materializeFromPointer(event, callback) {
-      const x = event.clientX ?? window.innerWidth / 2;
-      const y = event.clientY ?? window.innerHeight / 2;
-
-      const overlay = document.createElement("div");
-      overlay.style.position = "fixed";
-      overlay.style.left = "0";
-      overlay.style.top = "0";
-      overlay.style.right = "0";
-      overlay.style.bottom = "0";
-      overlay.style.pointerEvents = "none";
-      overlay.style.zIndex = "15";
-      overlay.style.background =
-        "radial-gradient(circle at " +
-        x +
-        "px " +
-        y +
-        "px, rgba(15,23,42,0.95) 0, transparent 55%)";
-      overlay.style.opacity = "0";
-      overlay.style.transform = "scale(0.8)";
-      overlay.style.transition =
-        "opacity 220ms " +
-        "cubic-bezier(0.68, -0.55, 0.27, 1.55)" +
-        ", transform 220ms cubic-bezier(0.68, -0.55, 0.27, 1.55)";
-
-      document.body.appendChild(overlay);
-      requestAnimationFrame(() => {
-        overlay.style.opacity = "1";
-        overlay.style.transform = "scale(1.05)";
-      });
-
-      setTimeout(() => {
-        overlay.style.opacity = "0";
-        overlay.style.transform = "scale(1)";
-        setTimeout(() => {
-          document.body.removeChild(overlay);
-        }, 200);
-      }, 220);
-
-      if (callback) callback();
-    }
-
-    // --- Select room / DM ---
-    function clearActiveListItems() {
-      document.querySelectorAll(".list-item.active").forEach((el) => {
-        el.classList.remove("active");
-      });
-    }
-
-    function selectRoom(roomId, roomName) {
-      currentMode = "room";
-      currentTargetId = roomId;
-      chatTitle.textContent = "# " + roomName;
-      chatSubtitle.textContent = "Salon public — messages partagés.";
-      tilesGrid.style.display = window.innerWidth <= 900 ? "none" : tilesGrid.style.display;
-      chatBody.style.display = "flex";
-
-      clearActiveListItems();
-      const active = roomList.querySelector(`[data-room-id="${roomId}"]`);
-      if (active) active.classList.add("active");
-
-      subscribeMessages();
-    }
-
-    function selectDM(otherPseudo) {
-      if (!currentUser) return;
-      currentMode = "dm";
-      currentTargetId = dmIdFor(currentUser, otherPseudo);
-      chatTitle.textContent = "@ " + otherPseudo;
-      chatSubtitle.textContent = "Message direct privé.";
-      chatBody.style.display = "flex";
-
-      clearActiveListItems();
-      const active = contactList.querySelector(`[data-contact="${otherPseudo}"]`);
-      if (active) active.classList.add("active");
-
-      subscribeMessages();
-    }
-
-    // --- Subscribe to messages for current target ---
-    function subscribeMessages() {
-      if (!currentMode || !currentTargetId) return;
-      if (unsubscribeMessages) {
-        unsubscribeMessages();
-        unsubscribeMessages = null;
-      }
-
-      chatBody.innerHTML = "";
-
-      unsubscribeMessages = db
-        .collection("messages")
-        .where("type", "==", currentMode)
-        .where("targetId", "==", currentTargetId)
-        .orderBy("createdAt", "asc")
-        .onSnapshot((snapshot) => {
-          chatBody.innerHTML = "";
-          snapshot.forEach((doc) => {
-            const data = doc.data();
-            renderMessage(data);
-          });
-          chatBody.scrollTop = chatBody.scrollHeight;
-        });
-    }
-
-    function renderMessage(data) {
-      const row = document.createElement("div");
-      row.className = "message-row" + (data.from === currentUser ? " me" : "");
-
-      const bubble = document.createElement("div");
-      bubble.className = "message-bubble";
-
-      if (data.imageData) {
-        bubble.style.padding = "0";
-        bubble.innerHTML = `
-          <div class="image-dust-overlay"></div>
-          <img class="message-image" src="${data.imageData}" alt="Image" />
-        `;
-        const img = bubble.querySelector("img");
-        const overlay = bubble.querySelector(".image-dust-overlay");
-        img.addEventListener("click", () => {
-          bubble.classList.add("image-clicked");
-          setTimeout(() => {
-            fullscreenImg.src = data.imageData;
-            imageFullscreen.style.display = "flex";
-            bubble.classList.remove("image-clicked");
-          }, 220);
-        });
-      } else {
-        bubble.textContent = data.text || "";
-      }
-
-      const meta = document.createElement("div");
-      meta.className = "message-meta";
-      const date = data.createdAt?.toDate
-        ? data.createdAt.toDate()
-        : new Date();
-      const time = date.toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-      meta.textContent = `${data.from || "?"} • ${time}`;
-
-      row.appendChild(bubble);
-      row.appendChild(meta);
-      chatBody.appendChild(row);
-    }
-
-    // --- Send message ---
-    async function sendMessage(text, imageData) {
-      if (!currentUser || !currentMode || !currentTargetId) return;
-      const payload = {
-        type: currentMode,
-        targetId: currentTargetId,
-        from: currentUser,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      };
-      if (imageData) {
-        payload.imageData = imageData;
-      } else {
-        payload.text = text;
-      }
-      await db.collection("messages").add(payload);
-    }
-
-    sendBtn.addEventListener("click", async () => {
-      const text = messageInput.value.trim();
-      if (!text) return;
-      await sendMessage(text, null);
-      messageInput.value = "";
-      sendBtn.disabled = true;
-      spellBubble.style.display = "none";
     });
 
-    messageInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        if (!sendBtn.disabled) sendBtn.click();
+    // Sélection d'un salon / contact -> ouvre Chat
+    function attachTileSelection(grid, type) {
+      grid.addEventListener("click", (e) => {
+        const tile = e.target.closest(".tile");
+        if (!tile) return;
+        const label = tile.dataset.label || tile.textContent.trim();
+        chatTargetLabel.textContent =
+          type === "room" ? "# " + label : "@ " + label;
+        chatEmpty.style.display = "none";
+        switchTab("chat");
+      });
+    }
+
+    attachTileSelection(roomsGrid, "room");
+    attachTileSelection(contactsGrid, "dm");
+
+    // Menu hamburger
+    const hamburgerBtn = document.getElementById("hamburgerBtn");
+    const menuOverlay = document.getElementById("menuOverlay");
+    const bgFile = document.getElementById("bgFile");
+    const accentColor = document.getElementById("accentColor");
+    const resetBtn = document.getElementById("resetBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const dustLayer = document.querySelector(".dust-layer");
+
+    hamburgerBtn.addEventListener("click", () => {
+      menuOverlay.classList.add("active");
+    });
+
+    menuOverlay.addEventListener("click", (e) => {
+      if (e.target === menuOverlay) {
+        menuOverlay.classList.remove("active");
       }
     });
 
-    // --- Attach image ---
-    attachBtn.addEventListener("click", () => {
-      fileInput.click();
-    });
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files[0];
+    // Changer de fond
+    bgFile.addEventListener("change", () => {
+      const file = bgFile.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = async (e) => {
-        const dataUrl = e.target.result;
-        await sendMessage("", dataUrl);
+      reader.onload = (e) => {
+        dustLayer.style.backgroundImage = `url(${e.target.result})`;
+        dustLayer.style.backgroundSize = "cover";
+        dustLayer.style.backgroundPosition = "center";
+        dustLayer.style.filter = "blur(10px) brightness(0.7)";
       };
       reader.readAsDataURL(file);
-      fileInput.value = "";
     });
 
-    // --- Fullscreen image close ---
-    imageFullscreen.addEventListener("click", () => {
-      imageFullscreen.style.display = "none";
-      fullscreenImg.src = "";
+    // Changer couleur d'accent
+    accentColor.addEventListener("input", () => {
+      document.documentElement.style.setProperty("--accent", accentColor.value);
+      document.documentElement.style.setProperty(
+        "--accent-soft",
+        accentColor.value + "55"
+      );
     });
 
-    // --- Init ---
-    async function init() {
-      loadPseudo();
-      await loadRooms();
-      await loadContacts();
-    }
+    // Reset
+    resetBtn.addEventListener("click", () => {
+      dustLayer.style.background = `
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.18) 0, transparent 55%),
+        radial-gradient(circle at 80% 10%, rgba(236, 72, 153, 0.16) 0, transparent 55%),
+        radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.16) 0, transparent 55%),
+        radial-gradient(circle at 90% 70%, rgba(129, 140, 248, 0.18) 0, transparent 55%)
+      `;
+      dustLayer.style.filter = "blur(18px)";
+      document.documentElement.style.setProperty("--accent", "#3b82f6");
+      document.documentElement.style.setProperty("--accent-soft", "rgba(59,130,246,0.35)");
+      accentColor.value = "#3b82f6";
+    });
 
-    init();
+    // Déconnexion (ici juste un placeholder)
+    logoutBtn.addEventListener("click", () => {
+      // Ici tu videras localStorage + retour à ton écran de login
+      console.log("Déconnexion demandée");
+      menuOverlay.classList.remove("active");
+    });
   </script>
 </body>
 </html>
