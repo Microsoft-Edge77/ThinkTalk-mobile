@@ -15,21 +15,23 @@
       --transition-snap: cubic-bezier(0.68, -0.55, 0.27, 1.55);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      /* Police Segoe UI pour le look Windows Phone */
+      font-family: "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
 
     html, body {
       width: 100%;
       height: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow: hidden;
     }
 
-    body { position: relative; }
-
-    /* Poussière de fond */
-
+    /* Poussière de fond animée */
     .dust-layer {
       position: fixed;
       inset: 0;
@@ -47,11 +49,8 @@
 
     @keyframes dustFloat {
       0% { transform: translate3d(-12px, 8px, 0) scale(1); }
-      50% { transform: translate3d(10px, -12px, 0) scale(1.05); }
       100% { transform: translate3d(-6px, 10px, 0) scale(1.02); }
     }
-
-    /* Layout principal */
 
     .app-root {
       position: relative;
@@ -60,7 +59,7 @@
       height: 100%;
       display: flex;
       flex-direction: column;
-      padding-bottom: 56px; /* pour la bottom-nav */
+      padding-bottom: 56px;
     }
 
     .top-bar {
@@ -75,6 +74,7 @@
       font-size: 0.9rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
+      font-weight: 600;
       color: var(--text-soft);
     }
 
@@ -85,614 +85,225 @@
       border: 1px solid rgba(148, 163, 184, 0.5);
       background: rgba(15, 23, 42, 0.9);
       color: var(--text-soft);
-      display: flex;
-      align-items: center;
-      justify-content: center;
       cursor: pointer;
-      font-size: 16px;
-      transition: transform 140ms var(--transition-snap),
-        box-shadow 140ms ease-out,
-        border-color 140ms ease-out;
     }
 
-    .hamburger-btn:hover {
-      transform: translateY(-1px) scale(1.03);
-      border-color: var(--accent);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.9);
-    }
-
-    /* Sections onglets */
-
-    .tab-view {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-
+    /* Tab Logic */
+    .tab-view { flex: 1; position: relative; overflow: hidden; }
     .tab-section {
       position: absolute;
       inset: 0;
       display: none;
-      padding: 8px 12px 8px;
+      padding: 8px 12px;
       overflow-y: auto;
     }
-
-    .tab-section.active {
-      display: block;
-      animation: tabAppear 260ms var(--transition-snap);
-    }
+    .tab-section.active { display: block; animation: tabAppear 260ms var(--transition-snap); }
 
     @keyframes tabAppear {
       0% { opacity: 0; transform: scale(0.96); }
-      60% { opacity: 1; transform: scale(1.02); }
       100% { opacity: 1; transform: scale(1); }
     }
 
-    /* Barre de recherche + bouton */
-
-    .search-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
+    /* Search & Tiles */
+    .search-row { display: flex; gap: 8px; margin-bottom: 10px; }
     .search-input {
-      flex: 1;
-      height: 36px;
-      border-radius: 999px;
+      flex: 1; height: 36px; border-radius: 999px;
       border: 1px solid rgba(148, 163, 184, 0.5);
       background: rgba(15, 23, 42, 0.7);
-      color: var(--text);
-      padding: 0 12px;
-      font-size: 0.8rem;
-      outline: none;
+      color: var(--text); padding: 0 12px; font-size: 0.8rem; outline: none;
     }
 
-    .search-input::placeholder {
-      color: var(--text-soft);
-    }
-
-    .action-btn {
-      padding: 8px 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background:
-        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
-        rgba(15, 23, 42, 0.9);
-      color: var(--text);
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 14px 35px rgba(0,0,0,0.85);
-      transition: transform 140ms var(--transition-snap),
-        box-shadow 140ms ease-out,
-        border-color 140ms ease-out;
-    }
-
-    .action-btn:hover {
-      transform: translateY(-1px) scale(1.03);
-      border-color: var(--accent);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.95);
-    }
-
-    /* Live Tiles */
-
-    .tiles-grid {
-      column-count: 2;
-      column-gap: 10px;
-    }
-
+    .tiles-grid { column-count: 2; column-gap: 10px; }
     .tile {
-      display: inline-block;
-      width: 100%;
-      margin: 0 0 10px;
-      border-radius: 18px;
-      padding: 12px 12px 10px;
-      background:
-        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.35), transparent 55%),
-        rgba(15, 23, 42, 0.96);
+      display: inline-block; width: 100%; margin-bottom: 10px;
+      border-radius: 18px; padding: 12px;
+      background: radial-gradient(circle at 0 0, var(--accent-soft), transparent 55%), rgba(15, 23, 42, 0.96);
       border: 1px solid rgba(148, 163, 184, 0.4);
-      box-shadow: 0 18px 45px rgba(0,0,0,0.9);
-      cursor: pointer;
-      break-inside: avoid;
-      transition: transform 160ms var(--transition-snap),
-        box-shadow 160ms ease-out,
-        border-color 160ms ease-out;
+      cursor: pointer; break-inside: avoid;
     }
 
-    .tile:hover {
-      transform: translateY(-3px) scale(1.02);
-      border-color: var(--accent);
-      box-shadow: 0 26px 60px rgba(15,23,42,0.95);
-    }
-
-    .tile-title {
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-    }
-
-    .tile-sub {
-      font-size: 0.75rem;
-      color: var(--text-soft);
-    }
-
-    /* Chat tab */
-
-    .chat-header {
-      margin-bottom: 10px;
-    }
-
-    .chat-target {
-      font-size: 0.9rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--text-soft);
-    }
-
+    /* Chat UI */
     .chat-body {
-      height: calc(100% - 90px);
-      border-radius: 16px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(15,23,42,0.85);
-      padding: 10px;
-      overflow-y: auto;
-      margin-bottom: 8px;
+      height: calc(100% - 110px);
+      border-radius: 16px; border: 1px solid var(--border-subtle);
+      background: rgba(15,23,42,0.85); padding: 10px;
+      overflow-y: auto; margin-bottom: 8px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .msg-bubble {
+      padding: 10px; border-radius: 12px; max-width: 85%;
+      background: rgba(59, 130, 246, 0.1); border-left: 3px solid var(--accent);
     }
 
-    .chat-empty {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-soft);
-      font-size: 0.85rem;
-    }
-
-    .chat-empty-dust {
-      position: absolute;
-      inset: -20%;
-      background:
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.35) 0, transparent 55%),
-        radial-gradient(circle at 80% 10%, rgba(236, 72, 153, 0.32) 0, transparent 55%),
-        radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.32) 0, transparent 55%),
-        radial-gradient(circle at 90% 70%, rgba(129, 140, 248, 0.35) 0, transparent 55%);
-      filter: blur(26px);
-      mix-blend-mode: screen;
-      opacity: 0.9;
-      animation: dustFloat 18s infinite alternate ease-in-out;
-    }
-
-    .chat-empty-text {
-      position: relative;
-      z-index: 1;
-    }
-
-    .chat-input-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .attach-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      border: 1px solid var(--accent);
-      background: #000000;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 18px;
-    }
-
-    .chat-input {
-      flex: 1;
-    }
-
+    .chat-input-row { display: flex; gap: 8px; align-items: center; }
     .chat-input textarea {
-      width: 100%;
-      min-height: 40px;
-      max-height: 90px;
-      resize: none;
-      border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(15, 23, 42, 0.96);
-      color: var(--text);
-      padding: 8px 10px;
-      font-size: 0.85rem;
-      outline: none;
+      flex: 1; height: 40px; border-radius: 12px; border: 1px solid rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.96); color: var(--text); padding: 8px; resize: none; outline: none;
     }
 
-    .send-btn {
-      padding: 9px 14px;
-      border-radius: 999px;
-      border: none;
-      background:
-        radial-gradient(circle at 0 0, rgba(59, 130, 246, 0.4), transparent 55%),
-        rgba(15, 23, 42, 0.98);
-      color: var(--text);
-      font-size: 0.75rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    /* Bottom nav */
-
+    /* Nav */
     .bottom-nav {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 56px;
-      padding: 6px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      border-top: 1px solid rgba(148, 163, 184, 0.4);
-      z-index: 10;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 56px;
+      display: flex; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(148, 163, 184, 0.4); z-index: 10;
     }
-
     .bottom-nav-btn {
-      flex: 1;
-      text-align: center;
-      color: var(--text-soft);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      cursor: pointer;
-      padding: 4px 0;
-      border-radius: 999px;
-      transition: color 140ms ease-out,
-        background 140ms ease-out,
-        transform 140ms var(--transition-snap);
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      color: var(--text-soft); font-size: 0.75rem; text-transform: uppercase; cursor: pointer;
     }
-
-    .bottom-nav-btn.active {
-      color: var(--text);
-      background: rgba(15, 23, 42, 0.96);
-      transform: translateY(-1px);
-    }
-
-    /* Menu hamburger overlay */
+    .bottom-nav-btn.active { color: var(--text); font-weight: bold; border-top: 2px solid var(--accent); }
 
     .menu-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(20px);
+      display: none; align-items: center; justify-content: center; z-index: 100;
     }
-
-    .menu-overlay.active {
-      display: flex;
-      animation: menuAppear 260ms var(--transition-snap);
-    }
-
-    @keyframes menuAppear {
-      0% { opacity: 0; transform: scale(0.9); }
-      60% { opacity: 1; transform: scale(1.03); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    .menu-panel {
-      width: 280px;
-      border-radius: 18px;
-      border: 1px solid var(--accent);
-      background: rgba(15,23,42,0.96);
-      padding: 18px 16px 14px;
-      box-shadow: 0 26px 60px rgba(0,0,0,0.95);
-    }
-
-    .menu-title {
-      font-size: 0.9rem;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-soft);
-    }
-
-    .menu-item {
-      margin-bottom: 10px;
-      font-size: 0.8rem;
-    }
-
-    .menu-item label {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--text-soft);
-    }
-
-    .menu-item input[type="color"],
-    .menu-item input[type="file"] {
-      width: 100%;
-      font-size: 0.8rem;
-    }
-
-    .menu-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .menu-btn {
-      flex: 1;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      background: rgba(15,23,42,0.96);
-      color: var(--text);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-    }
-
-    .menu-btn.danger {
-      border-color: rgba(248, 113, 113, 0.8);
-      color: #fecaca;
-    }
+    .menu-overlay.active { display: flex; }
+    .menu-panel { width: 280px; background: #0f172a; border: 1px solid var(--accent); border-radius: 20px; padding: 20px; }
   </style>
 </head>
 <body>
-  <div class="dust-layer"></div>
+
+  <div class="dust-layer" id="dustLayer"></div>
 
   <div class="app-root">
     <div class="top-bar">
-      <div class="top-title">Neon Dust Chat</div>
+      <div class="top-title">ThinkTalk</div>
       <button class="hamburger-btn" id="hamburgerBtn">☰</button>
     </div>
 
     <div class="tab-view">
-      <!-- Onglet Accueil (Salons) -->
       <section class="tab-section active" id="tab-home">
         <div class="search-row">
-          <input
-            type="text"
-            id="searchRooms"
-            class="search-input"
-            placeholder="Rechercher un salon…"
-          />
-          <button class="action-btn" id="createRoomBtn">Créer</button>
+          <input type="text" id="searchRooms" class="search-input" placeholder="Rechercher un salon..." />
+          <button class="action-btn" style="padding: 8px 15px; border-radius: 20px; background: var(--accent); border:none; color:white; cursor:pointer;">+</button>
         </div>
         <div class="tiles-grid" id="roomsGrid">
           <div class="tile" data-label="Général">
             <div class="tile-title"># Général</div>
-            <div class="tile-sub">Salon public</div>
+            <div class="tile-sub">Public</div>
           </div>
-          <div class="tile" data-label="ThinkTalk">
-            <div class="tile-title"># ThinkTalk</div>
-            <div class="tile-sub">Salon privé</div>
-          </div>
-          <div class="tile" data-label="Dev Lab">
+          <div class="tile" data-label="Dev">
             <div class="tile-title"># Dev Lab</div>
-            <div class="tile-sub">Salon public</div>
+            <div class="tile-sub">Code & Design</div>
           </div>
         </div>
       </section>
 
-      <!-- Onglet Chat -->
       <section class="tab-section" id="tab-chat">
-        <div class="chat-header">
-          <div class="chat-target" id="chatTargetLabel">
-            Aucun salon sélectionné
-          </div>
-        </div>
+        <div style="margin-bottom:10px; color:var(--accent); font-weight:bold" id="chatTargetLabel"># Aucun salon</div>
         <div class="chat-body" id="chatBody">
-          <div class="chat-empty" id="chatEmpty">
-            <div class="chat-empty-dust"></div>
-            <div class="chat-empty-text">
-              Sélectionne un salon ou un contact pour commencer.
-            </div>
-          </div>
+          <div id="chatEmpty" style="margin:auto; color:var(--text-soft)">Sélectionne un salon pour parler</div>
         </div>
         <div class="chat-input-row">
-          <button class="attach-btn">📎</button>
-          <div class="chat-input">
-            <textarea placeholder="Écrire un message…"></textarea>
-          </div>
-          <button class="send-btn">Envoyer</button>
+          <textarea id="chatInput" placeholder="Message..."></textarea>
+          <button id="sendBtn" style="background:var(--accent); border:none; color:white; padding:10px 15px; border-radius:10px; cursor:pointer;">OK</button>
         </div>
       </section>
 
-      <!-- Onglet Contacts -->
       <section class="tab-section" id="tab-contacts">
         <div class="search-row">
-          <input
-            type="text"
-            id="searchContacts"
-            class="search-input"
-            placeholder="Rechercher un contact…"
-          />
-          <button class="action-btn" id="addContactBtn">Ajouter</button>
+          <input type="text" id="searchContacts" class="search-input" placeholder="Chercher un contact..." />
         </div>
         <div class="tiles-grid" id="contactsGrid">
-          <div class="tile" data-label="Zao">
-            <div class="tile-title">@ Zao</div>
-            <div class="tile-sub">Message direct</div>
-          </div>
-          <div class="tile" data-label="Copilot">
-            <div class="tile-title">@ Copilot</div>
-            <div class="tile-sub">Message direct</div>
-          </div>
+          <div class="tile" data-label="Zao">@ Zao</div>
+          <div class="tile" data-label="Admin">@ Admin</div>
         </div>
       </section>
     </div>
+
+    <nav class="bottom-nav" id="bottomNav">
+      <div class="bottom-nav-btn active" data-tab="home">Accueil</div>
+      <div class="bottom-nav-btn" data-tab="chat">Chat</div>
+      <div class="bottom-nav-btn" data-tab="contacts">Contacts</div>
+    </nav>
   </div>
 
-  <!-- Bottom nav -->
-  <nav class="bottom-nav" id="bottomNav">
-    <div class="bottom-nav-btn active" data-tab="home">Accueil</div>
-    <div class="bottom-nav-btn" data-tab="chat">Chat</div>
-    <div class="bottom-nav-btn" data-tab="contacts">Contacts</div>
-  </nav>
-
-  <!-- Menu hamburger overlay -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-panel">
-      <div class="menu-title">Paramètres</div>
-
-      <div class="menu-item">
-        <label for="bgFile">Changer de fond</label>
-        <input type="file" id="bgFile" accept="image/*" />
-      </div>
-
-      <div class="menu-item">
-        <label for="accentColor">Couleur d'accent</label>
-        <input type="color" id="accentColor" value="#3b82f6" />
-      </div>
-
-      <div class="menu-actions">
-        <button class="menu-btn" id="resetBtn">Reset</button>
-        <button class="menu-btn danger" id="logoutBtn">Déconnexion</button>
-      </div>
+      <h3 style="margin-bottom:15px">Paramètres</h3>
+      <button onclick="location.reload()" style="width:100%; padding:10px; margin-bottom:10px">Actualiser</button>
+      <button id="closeMenu" style="width:100%; padding:10px">Fermer</button>
     </div>
   </div>
 
-  <script>
-    // Gestion des onglets
-    const bottomNav = document.getElementById("bottomNav");
-    const tabSections = {
-      home: document.getElementById("tab-home"),
-      chat: document.getElementById("tab-chat"),
-      contacts: document.getElementById("tab-contacts"),
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M",
+      authDomain: "thinktalk-b3c85.firebaseapp.com",
+      projectId: "thinktalk-b3c85",
+      storageBucket: "thinktalk-b3c85.firebasestorage.app",
+      messagingSenderId: "752141817301",
+      appId: "1:752141817301:web:28fecaf81db27eb51d595c"
     };
-    const chatTargetLabel = document.getElementById("chatTargetLabel");
-    const chatEmpty = document.getElementById("chatEmpty");
 
-    function switchTab(tabName) {
-      Object.keys(tabSections).forEach((key) => {
-        tabSections[key].classList.toggle("active", key === tabName);
-      });
-      bottomNav.querySelectorAll(".bottom-nav-btn").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-      if (tabName === "chat" && chatTargetLabel.textContent.includes("Aucun")) {
-        chatEmpty.style.display = "flex";
-      }
+    // Navigation
+    const tabs = document.querySelectorAll('.tab-section');
+    const navBtns = document.querySelectorAll('.bottom-nav-btn');
+    let currentRoom = "";
+
+    function showTab(id) {
+      tabs.forEach(t => t.classList.remove('active'));
+      navBtns.forEach(b => b.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      document.querySelector(`[data-tab="${id}"]`).classList.add('active');
     }
 
-    bottomNav.addEventListener("click", (e) => {
-      const btn = e.target.closest(".bottom-nav-btn");
-      if (!btn) return;
-      switchTab(btn.dataset.tab);
-    });
+    navBtns.forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
 
-    // Filtre de recherche salons
-    const searchRooms = document.getElementById("searchRooms");
-    const roomsGrid = document.getElementById("roomsGrid");
-
-    searchRooms.addEventListener("input", () => {
-      const q = searchRooms.value.toLowerCase();
-      roomsGrid.querySelectorAll(".tile").forEach((tile) => {
-        const label = tile.dataset.label.toLowerCase();
-        tile.style.display = label.includes(q) ? "inline-block" : "none";
+    // Sélection salon
+    document.querySelectorAll('.tile').forEach(tile => {
+      tile.addEventListener('click', () => {
+        currentRoom = tile.dataset.label;
+        document.getElementById('chatTargetLabel').textContent = "# " + currentRoom;
+        document.getElementById('chatEmpty').style.display = 'none';
+        showTab('chat');
+        listenMessages(currentRoom);
       });
     });
 
-    // Filtre de recherche contacts
-    const searchContacts = document.getElementById("searchContacts");
-    const contactsGrid = document.getElementById("contactsGrid");
+    // Envoi Message
+    const sendBtn = document.getElementById('sendBtn');
+    const chatInput = document.getElementById('chatInput');
 
-    searchContacts.addEventListener("input", () => {
-      const q = searchContacts.value.toLowerCase();
-      contactsGrid.querySelectorAll(".tile").forEach((tile) => {
-        const label = tile.dataset.label.toLowerCase();
-        tile.style.display = label.includes(q) ? "inline-block" : "none";
+    sendBtn.addEventListener('click', async () => {
+      if (!chatInput.value.trim() || !currentRoom) return;
+      await addDoc(collection(db, "messages"), {
+        text: chatInput.value,
+        room: currentRoom,
+        timestamp: serverTimestamp(),
+        user: "Moi"
       });
+      chatInput.value = "";
     });
 
-    // Sélection d'un salon / contact -> ouvre Chat
-    function attachTileSelection(grid, type) {
-      grid.addEventListener("click", (e) => {
-        const tile = e.target.closest(".tile");
-        if (!tile) return;
-        const label = tile.dataset.label || tile.textContent.trim();
-        chatTargetLabel.textContent =
-          type === "room" ? "# " + label : "@ " + label;
-        chatEmpty.style.display = "none";
-        switchTab("chat");
+    // Écoute temps réel
+    let unsubscribe = null;
+    function listenMessages(room) {
+      if (unsubscribe) unsubscribe();
+      const q = query(collection(db, "messages"), where("room", "==", room), orderBy("timestamp", "asc"));
+      unsubscribe = onSnapshot(q, (snapshot) => {
+        const chatBody = document.getElementById('chatBody');
+        chatBody.innerHTML = "";
+        snapshot.forEach(doc => {
+          const m = doc.data();
+          const div = document.createElement('div');
+          div.className = "msg-bubble";
+          div.innerHTML = `<small style="color:var(--accent)">${m.user}</small><br>${m.text}`;
+          chatBody.appendChild(div);
+        });
+        chatBody.scrollTop = chatBody.scrollHeight;
       });
     }
 
-    attachTileSelection(roomsGrid, "room");
-    attachTileSelection(contactsGrid, "dm");
-
-    // Menu hamburger
-    const hamburgerBtn = document.getElementById("hamburgerBtn");
-    const menuOverlay = document.getElementById("menuOverlay");
-    const bgFile = document.getElementById("bgFile");
-    const accentColor = document.getElementById("accentColor");
-    const resetBtn = document.getElementById("resetBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const dustLayer = document.querySelector(".dust-layer");
-
-    hamburgerBtn.addEventListener("click", () => {
-      menuOverlay.classList.add("active");
-    });
-
-    menuOverlay.addEventListener("click", (e) => {
-      if (e.target === menuOverlay) {
-        menuOverlay.classList.remove("active");
-      }
-    });
-
-    // Changer de fond
-    bgFile.addEventListener("change", () => {
-      const file = bgFile.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        dustLayer.style.backgroundImage = `url(${e.target.result})`;
-        dustLayer.style.backgroundSize = "cover";
-        dustLayer.style.backgroundPosition = "center";
-        dustLayer.style.filter = "blur(10px) brightness(0.7)";
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Changer couleur d'accent
-    accentColor.addEventListener("input", () => {
-      document.documentElement.style.setProperty("--accent", accentColor.value);
-      document.documentElement.style.setProperty(
-        "--accent-soft",
-        accentColor.value + "55"
-      );
-    });
-
-    // Reset
-    resetBtn.addEventListener("click", () => {
-      dustLayer.style.background = `
-        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.18) 0, transparent 55%),
-        radial-gradient(circle at 80% 10%, rgba(236, 72, 153, 0.16) 0, transparent 55%),
-        radial-gradient(circle at 20% 80%, rgba(56, 189, 248, 0.16) 0, transparent 55%),
-        radial-gradient(circle at 90% 70%, rgba(129, 140, 248, 0.18) 0, transparent 55%)
-      `;
-      dustLayer.style.filter = "blur(18px)";
-      document.documentElement.style.setProperty("--accent", "#3b82f6");
-      document.documentElement.style.setProperty("--accent-soft", "rgba(59,130,246,0.35)");
-      accentColor.value = "#3b82f6";
-    });
-
-    // Déconnexion (ici juste un placeholder)
-    logoutBtn.addEventListener("click", () => {
-      // Ici tu videras localStorage + retour à ton écran de login
-      console.log("Déconnexion demandée");
-      menuOverlay.classList.remove("active");
-    });
+    // Menu
+    document.getElementById('hamburgerBtn').addEventListener('click', () => document.getElementById('menuOverlay').classList.add('active'));
+    document.getElementById('closeMenu').addEventListener('click', () => document.getElementById('menuOverlay').classList.remove('active'));
   </script>
 </body>
 </html>
