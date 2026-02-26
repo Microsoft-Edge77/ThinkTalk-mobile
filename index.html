@@ -14,14 +14,11 @@
         .app-root { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; display: none; }
         .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; height: 70px; }
         .top-title { font-size: 2.2rem; font-weight: 100; color: var(--accent); }
-        
         .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 5px; }
         .hamburger span { display: block; width: 25px; height: 2px; background: #fff; transition: 0.3s; }
-        
         .dropdown-menu { display: none; position: absolute; top: 40px; right: 0; background: #000; border: 1px solid var(--accent); width: 180px; z-index: 1000; animation: materialize 0.3s forwards; }
         .dropdown-item { padding: 12px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #222; }
         .dropdown-item:hover { background: var(--accent); }
-        
         .view-container { flex: 1; position: relative; overflow-y: auto; padding: 10px; padding-bottom: 80px; }
         .view-section { display: none; width: 100%; }
         .view-section.active { display: block; }
@@ -29,10 +26,8 @@
         .search-box { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 12px; color: #fff; outline: none; }
         .btn-add { background: var(--accent); border: none; color: #fff; padding: 0 20px; font-size: 1.5rem; cursor: pointer; }
         .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 110px; gap: 12px; }
-        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(4px); }
-        
-        .btn-del-room { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.5); color: white; border: none; width: 20px; height: 20px; font-size: 12px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
-
+        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(4px); min-height: 110px; }
+        .btn-del-room { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.5); color: white; border: none; width: 20px; height: 20px; font-size: 12px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; border-radius: 2px; }
         #chat-messages { height: calc(100vh - 220px); overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
         .msg-block { align-self: flex-start; max-width: 90%; animation: materialize 0.8s ease-out forwards; cursor: pointer; display: flex; flex-direction: column; }
         .msg-content-wrapper { display: flex; align-items: flex-end; gap: 8px; }
@@ -40,15 +35,11 @@
         .msg-block.own .msg-text { background: rgba(0,120,215,0.15); border-left-color: #555; }
         .msg-info { font-size: 9px; color: #666; white-space: nowrap; margin-bottom: 4px; }
         .msg-img { max-width: 200px; border-radius: 4px; margin-top: 5px; cursor: zoom-in; }
-
         .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 6000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(10px); }
         .popup-card { background: #000; border: 1px solid var(--accent); width: 100%; max-width: 300px; padding: 20px; animation: materialize 0.5s forwards; }
-        
         #fullscreen-view { position: fixed; inset: 0; z-index: 7000; background: rgba(0,0,0,0.95); display: none; align-items: center; justify-content: center; cursor: zoom-out; }
         #fullscreen-img { max-width: 95%; max-height: 95%; border: 1px solid var(--accent); }
-
         @keyframes materialize { from { filter: blur(15px); opacity: 0; transform: scale(0.9); } to { filter: blur(0); opacity: 1; transform: scale(1); } }
-        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 56px; display: flex; background: #000; border-top: 1px solid #222; }
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.9rem; cursor: pointer; }
         .nav-btn.active { color: #fff; font-weight: bold; border-top: 2px solid var(--accent); }
@@ -61,24 +52,19 @@
 <body>
 <canvas id="canvas-dust"></canvas>
 <input type="file" id="file-input" accept="image/*" style="display:none">
-
 <div id="fullscreen-view" onclick="this.style.display='none'"><img id="fullscreen-img"></div>
-
 <div class="popup-overlay" id="pop-alert"><div class="popup-card"><p id="alert-text"></p><button class="btn-full" onclick="closePopups()">ok</button></div></div>
-
 <div class="popup-overlay" id="pop-create"><div class="popup-card">
     <h3>nouveau salon</h3>
     <input type="text" id="new-room-name" placeholder="nom..." class="input-box">
     <input type="password" id="new-room-code" placeholder="code privé (optionnel)" class="input-box">
     <button class="btn-full" id="btn-confirm-create">créer</button>
 </div></div>
-
 <div class="popup-overlay" id="pop-room-auth"><div class="popup-card">
     <h3>salon privé</h3>
     <input type="password" id="room-auth-input" placeholder="code d'accès" class="input-box">
     <button class="btn-full" id="btn-room-enter">entrer</button>
 </div></div>
-
 <div class="popup-overlay" id="pop-msg-options">
     <div class="popup-card">
         <h3 style="color:var(--accent); margin-bottom:15px">option message</h3>
@@ -87,7 +73,6 @@
         <button class="btn-full btn-secondary" onclick="closePopups()">retour</button>
     </div>
 </div>
-
 <div class="popup-overlay" id="pop-edit-msg">
     <div class="popup-card">
         <h3>modifier</h3>
@@ -96,7 +81,6 @@
         <button class="btn-full btn-secondary" onclick="closePopups()">annuler</button>
     </div>
 </div>
-
 <div id="auth-screen">
     <div class="auth-logo">thinktalk</div>
     <div style="width: 100%; max-width: 300px;">
@@ -106,7 +90,6 @@
         <button class="btn-full btn-secondary" id="btn-register">créer un compte</button>
     </div>
 </div>
-
 <div class="app-root" id="main-app">
     <div class="top-bar">
         <div id="top-label" class="top-title">thinktalk</div>
@@ -135,7 +118,10 @@
             </div>
         </section>
         <section id="view-contacts" class="view-section">
-            <div class="action-row"><input type="text" id="contact-name-input" class="search-box" placeholder="nom du contact..."><button class="btn-add" id="btn-add-contact">+</button></div>
+            <div class="action-row">
+                <input type="text" id="contact-name-input" class="search-box" placeholder="nom du contact...">
+                <button class="btn-add" id="btn-do-add-contact">+</button>
+            </div>
             <div class="tiles-grid" id="contacts-grid"></div>
         </section>
     </div>
@@ -161,221 +147,127 @@
     let particles = [];
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     window.onresize = resize; resize();
-    
     class Particle {
         constructor(){ this.init() }
-        init(){
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 1.2;
-            this.vy = (Math.random() - 0.5) * 1.2;
-            this.s = Math.random() * 2;
-        }
+        init(){ this.x = Math.random() * canvas.width; this.y = Math.random() * canvas.height; this.vx = (Math.random() - 0.5) * 1.2; this.vy = (Math.random() - 0.5) * 1.2; this.s = Math.random() * 2; }
         update(){
-            if(targetX && targetY) {
-                let dx = targetX - this.x;
-                let dy = targetY - this.y;
-                let dist = Math.sqrt(dx*dx + dy*dy);
-                if(dist < 300) { this.x += dx * 0.08; this.y += dy * 0.08; }
-            }
+            if(targetX && targetY) { let dx = targetX - this.x; let dy = targetY - this.y; let dist = Math.sqrt(dx*dx + dy*dy); if(dist < 300) { this.x += dx * 0.08; this.y += dy * 0.08; } }
             this.x += this.vx; this.y += this.vy;
             if(this.x<0 || this.x>canvas.width || this.y<0 || this.y>canvas.height) this.init();
         }
-        draw(){
-            ctx.fillStyle = "rgba(0,120,215,0.5)";
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.s, 0, Math.PI*2); ctx.fill();
-        }
+        draw(){ ctx.fillStyle = "rgba(0,120,215,0.5)"; ctx.beginPath(); ctx.arc(this.x, this.y, this.s, 0, Math.PI*2); ctx.fill(); }
     }
     for(let i=0; i<120; i++) particles.push(new Particle());
-    function anim(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        particles.forEach(p => { p.update(); p.draw() });
-        requestAnimationFrame(anim);
-    } anim();
+    function anim(){ ctx.clearRect(0,0,canvas.width,canvas.height); particles.forEach(p => { p.update(); p.draw() }); requestAnimationFrame(anim); } anim();
 
-    // UTILS
     window.showPopupAlert = (msg) => { document.getElementById('alert-text').innerText = msg; document.getElementById('pop-alert').style.display = 'flex'; };
     window.closePopups = () => { document.querySelectorAll('.popup-overlay').forEach(p=>p.style.display='none'); document.getElementById('main-menu').style.display = 'none'; };
     window.toggleMenu = () => { const m = document.getElementById('main-menu'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; };
     window.logout = () => { localStorage.clear(); location.reload(); };
 
-    // DELETE ACCOUNT & CLEANUP
     window.deleteMyAccount = async () => {
-        if(confirm("Action irréversible : supprimer ton compte et tes salons ?")) {
+        if(confirm("Supprimer ton compte et tes salons ?")) {
             try {
                 const batch = writeBatch(db);
-                const userQuery = query(collection(db, "users"), where("pseudo", "==", currentUser));
-                const userSnap = await getDocs(userQuery);
-                userSnap.forEach(d => batch.delete(d.ref));
-                const roomQuery = query(collection(db, "rooms"), where("creator", "==", currentUser));
-                const roomSnap = await getDocs(roomQuery);
-                roomSnap.forEach(d => batch.delete(d.ref));
-                await batch.commit();
-                logout();
-            } catch (e) { showPopupAlert("Erreur lors de la suppression."); }
+                const uSnap = await getDocs(query(collection(db, "users"), where("pseudo", "==", currentUser)));
+                uSnap.forEach(d => batch.delete(d.ref));
+                const rSnap = await getDocs(query(collection(db, "rooms"), where("creator", "==", currentUser)));
+                rSnap.forEach(d => batch.delete(d.ref));
+                await batch.commit(); logout();
+            } catch (e) { showPopupAlert("Erreur."); }
         }
     };
 
     window.onload = () => {
         const u = localStorage.getItem('tt_user');
-        if(u) { 
-            currentUser = u; 
-            document.getElementById('auth-screen').style.display='none'; 
-            document.getElementById('main-app').style.display='flex'; 
-            initContacts(); 
-            enterRoom("général"); 
-        }
+        if(u) { currentUser = u; document.getElementById('auth-screen').style.display='none'; document.getElementById('main-app').style.display='flex'; enterRoom("général"); initContacts(); }
     };
 
     // AUTH
     document.getElementById('btn-register').onclick = async () => {
         const p = document.getElementById('auth-pseudo').value.trim(), c = document.getElementById('auth-code').value.trim();
         if(!p || !c) return showPopupAlert("Champs vides !");
-        try {
-            const check = query(collection(db, "users"), where("pseudo", "==", p));
-            const snap = await getDocs(check);
-            if(!snap.empty) return showPopupAlert("Pseudo déjà pris.");
-            await addDoc(collection(db, "users"), { pseudo: p, code: c });
-            showPopupAlert("Compte créé !");
-        } catch (e) { showPopupAlert("Erreur réseau."); }
+        const snap = await getDocs(query(collection(db, "users"), where("pseudo", "==", p)));
+        if(!snap.empty) return showPopupAlert("Déjà pris.");
+        await addDoc(collection(db, "users"), { pseudo: p, code: c }); showPopupAlert("Compte créé !");
     };
-
     document.getElementById('btn-login').onclick = async () => {
         const p = document.getElementById('auth-pseudo').value.trim(), c = document.getElementById('auth-code').value.trim();
-        try {
-            const q = query(collection(db, "users"), where("pseudo", "==", p), where("code", "==", c));
-            const res = await getDocs(q);
-            if(!res.empty) { localStorage.setItem('tt_user', p); location.reload(); } else showPopupAlert("Identifiants incorrects.");
-        } catch (e) { showPopupAlert("Erreur de connexion."); }
+        const res = await getDocs(query(collection(db, "users"), where("pseudo", "==", p), where("code", "==", c)));
+        if(!res.empty) { localStorage.setItem('tt_user', p); location.reload(); } else showPopupAlert("Erreur.");
     };
 
     // CHAT ENGINE
     window.enterRoom = (name) => {
-        curRoom = name; 
-        document.getElementById('chat-header').innerText = "# " + name; 
-        switchTab('chat');
+        curRoom = name; document.getElementById('chat-header').innerText = "# " + name; 
         if(unsubChat) unsubChat();
-        const q = query(collection(db, "messages"), where("room", "==", name), orderBy("timestamp", "asc"));
-        unsubChat = onSnapshot(q, (snap) => {
+        unsubChat = onSnapshot(query(collection(db, "messages"), where("room", "==", name), orderBy("timestamp", "asc")), (snap) => {
             const box = document.getElementById('chat-messages'); box.innerHTML = "";
             snap.forEach(d => {
-                const m = d.data();
-                const isImg = m.text && m.text.startsWith("data:image");
-                const date = m.timestamp ? m.timestamp.toDate() : new Date();
-                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                const div = document.createElement('div');
-                div.className = "msg-block" + (m.sender === currentUser ? " own" : "");
-                const content = isImg ? `<img src="${m.text}" class="msg-img">` : (m.text || "");
-                div.innerHTML = `<div style="font-size:10px; color:var(--accent); margin-bottom:2px">${m.sender}</div><div class="msg-content-wrapper"><div class="msg-text">${content}</div><div class="msg-info">${timeStr}</div></div>`;
-                let pressTimer;
-                let isLongPress = false;
-                const startPress = () => { isLongPress = false; pressTimer = setTimeout(() => { if(m.sender === currentUser) { isLongPress = true; selectedMsgId = d.id; document.getElementById('pop-msg-options').style.display = 'flex'; if(navigator.vibrate) navigator.vibrate(50); } }, 700); };
-                const endPress = () => clearTimeout(pressTimer);
-                div.onmousedown = div.ontouchstart = startPress;
-                div.onmouseup = div.onmouseleave = div.ontouchend = endPress;
-                div.onclick = (e) => {
-                    if(isLongPress) return;
-                    selectedMsgId = d.id;
-                    if(isImg) {
-                        targetX = e.clientX; targetY = e.clientY;
-                        setTimeout(() => { document.getElementById('fullscreen-img').src = m.text; document.getElementById('fullscreen-view').style.display = 'flex'; targetX = targetY = null; }, 400);
-                    } else if(m.sender === currentUser) {
-                        document.getElementById('edit-msg-input').value = m.text || "";
-                        document.getElementById('pop-edit-msg').style.display = 'flex';
-                    }
-                };
+                const m = d.data(); const isImg = m.text && m.text.startsWith("data:image");
+                const timeStr = (m.timestamp ? m.timestamp.toDate() : new Date()).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+                const div = document.createElement('div'); div.className = "msg-block" + (m.sender === currentUser ? " own" : "");
+                div.innerHTML = `<div style="font-size:10px; color:var(--accent); margin-bottom:2px">${m.sender}</div><div class="msg-content-wrapper"><div class="msg-text">${isImg ? `<img src="${m.text}" class="msg-img">` : m.text}</div><div class="msg-info">${timeStr}</div></div>`;
+                div.onclick = (e) => { selectedMsgId = d.id; if(isImg) { document.getElementById('fullscreen-img').src = m.text; document.getElementById('fullscreen-view').style.display='flex'; } else if(m.sender===currentUser) { document.getElementById('edit-msg-input').value = m.text; document.getElementById('pop-edit-msg').style.display='flex'; } };
                 box.appendChild(div);
             });
             box.scrollTop = box.scrollHeight;
         });
     };
 
-    // SEND LOGIC
-    const sendMessage = async (val) => {
-        if(!val.trim() || !currentUser) return;
-        try { await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() }); } catch(e) { console.error(e); }
-    };
-
-    const sendImage = (file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const cvs = document.createElement('canvas');
-                const max = 500;
-                let w = img.width, h = img.height;
-                if (w > h && w > max) { h *= max / w; w = max; } else if (h > max) { w *= max / h; h = max; }
-                cvs.width = w; cvs.height = h;
-                cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                sendMessage(cvs.toDataURL("image/jpeg", 0.6));
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
-
+    const sendMessage = async (val) => { if(val.trim() && currentUser) await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() }); };
+    document.getElementById('send-btn').onclick = () => { const i = document.getElementById('chat-input'); if(i.value){ sendMessage(i.value); i.value = ""; } };
     document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
-    document.getElementById('file-input').onchange = (e) => { if(e.target.files[0]) sendImage(e.target.files[0]); };
-    document.getElementById('send-btn').onclick = () => { const i = document.getElementById('chat-input'); if(i.value.trim()){ sendMessage(i.value); i.value = ""; } };
-
-    // ROOMS LOGIC
-    document.getElementById('btn-confirm-create').onclick = async () => {
-        const n = document.getElementById('new-room-name').value.trim();
-        const c = document.getElementById('new-room-code').value.trim();
-        if(n) { try { await addDoc(collection(db, "rooms"), { name: n, code: c || null, creator: currentUser }); closePopups(); document.getElementById('new-room-name').value = ""; document.getElementById('new-room-code').value = ""; } catch(e) { showPopupAlert("Erreur."); } }
+    document.getElementById('file-input').onchange = (e) => {
+        const reader = new FileReader(); reader.onload = (ev) => sendMessage(ev.target.result);
+        if(e.target.files[0]) reader.readAsDataURL(e.target.files[0]);
     };
 
+    // ROOMS
     onSnapshot(collection(db, "rooms"), (snap) => {
         const grid = document.getElementById('rooms-grid'); grid.innerHTML = "";
         snap.forEach(d => {
-            const r = d.data();
-            const tile = document.createElement('div'); tile.className = "tile tile-1x1"; 
-            let delBtn = r.creator === currentUser ? `<button class="btn-del-room" onclick="deleteRoom('${d.id}', event)">X</button>` : "";
-            tile.innerHTML = `${delBtn}<span># ${r.name} ${r.code ? '🔒' : ''}</span>`;
-            tile.onclick = () => { if(r.code) { document.getElementById('pop-room-auth').style.display = 'flex'; document.getElementById('btn-room-enter').onclick = () => { if(document.getElementById('room-auth-input').value === r.code) { enterRoom(r.name); closePopups(); } else alert("Code incorrect"); }; } else enterRoom(r.name); };
-            grid.appendChild(tile);
+            const r = d.data(); const tile = document.createElement('div'); tile.className = "tile";
+            tile.innerHTML = (r.creator===currentUser ? `<button class="btn-del-room" onclick="deleteRoom('${d.id}', event)">X</button>` : "") + `<span># ${r.name} ${r.code ? '🔒' : ''}</span>`;
+            tile.onclick = () => enterRoom(r.name); grid.appendChild(tile);
         });
     });
+    window.deleteRoom = async (id, e) => { e.stopPropagation(); if(confirm("Supprimer ?")) await deleteDoc(doc(db, "rooms", id)); };
 
-    window.deleteRoom = async (id, e) => { e.stopPropagation(); if(confirm("Supprimer ce salon ?")) { try { await deleteDoc(doc(db, "rooms", id)); } catch(e) { showPopupAlert("Interdit."); } } };
-
-    // CONTACTS LOGIC
-    document.getElementById('btn-add-contact').onclick = async () => {
-        const nameInput = document.getElementById('contact-name-input');
-        const name = nameInput.value.trim();
-        if (name && currentUser) {
-            try {
-                const qCheck = query(collection(db, "contacts"), where("owner", "==", currentUser), where("name", "==", name));
-                const snapCheck = await getDocs(qCheck);
-                if (snapCheck.empty) {
-                    await addDoc(collection(db, "contacts"), { name: name, owner: currentUser, timestamp: serverTimestamp() });
-                    nameInput.value = "";
-                } else { showPopupAlert("Déjà dans la liste."); }
-            } catch (e) { showPopupAlert("Erreur."); }
-        }
-    };
-
+    // CONTACTS (LOGIQUE CORRIGÉE)
     function initContacts() {
+        const contactGrid = document.getElementById('contacts-grid');
         onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser), orderBy("timestamp", "desc")), (snap) => {
-            const grid = document.getElementById('contacts-grid'); grid.innerHTML = "";
+            contactGrid.innerHTML = "";
             snap.forEach(d => {
                 const c = d.data();
-                const tile = document.createElement('div'); tile.className = "tile tile-1x1";
+                const tile = document.createElement('div');
+                tile.className = "tile";
                 tile.innerHTML = `<button class="btn-del-room" onclick="deleteContact('${d.id}', event)">X</button><span>@ ${c.name}</span>`;
-                tile.onclick = () => enterRoom(c.name); 
-                grid.appendChild(tile);
+                tile.onclick = () => { enterRoom(c.name); switchTab('chat'); };
+                contactGrid.appendChild(tile);
             });
         });
     }
 
-    window.deleteContact = async (id, e) => { e.stopPropagation(); if(confirm("Supprimer ce contact ?")) { await deleteDoc(doc(db, "contacts", id)); } };
+    document.getElementById('btn-do-add-contact').onclick = async () => {
+        const input = document.getElementById('contact-name-input');
+        const val = input.value.trim();
+        if(val && currentUser) {
+            try {
+                await addDoc(collection(db, "contacts"), { name: val, owner: currentUser, timestamp: serverTimestamp() });
+                input.value = "";
+            } catch(e) { showPopupAlert("Erreur d'ajout."); }
+        }
+    };
+
+    window.deleteContact = async (id, e) => { e.stopPropagation(); if(confirm("Retirer ce contact ?")) await deleteDoc(doc(db, "contacts", id)); };
 
     window.switchTab = (t) => {
         document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('view-'+t).classList.add('active');
-        const btn = document.querySelector(`[onclick="switchTab('${t}')"]`);
-        if(btn) btn.classList.add('active');
+        document.querySelector(`[onclick="switchTab('${t}')"]`).classList.add('active');
     };
 </script>
 </body>
