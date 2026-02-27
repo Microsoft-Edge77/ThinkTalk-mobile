@@ -7,11 +7,12 @@
     <style>
         :root { --accent: #0078d7; --bg: #000; --text: #fff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; position: fixed; width: 100%; }
+        /* BUG 1 FIX: Remplacement de fixed par absolute pour mieux gérer les barres mobiles */
+        body { background: var(--bg); color: var(--text); overflow: hidden; height: 100svh; position: absolute; width: 100%; }
         #canvas-dust { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
         #auth-screen { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
         .auth-logo { font-size: 3.5rem; font-weight: 100; color: var(--accent); margin-bottom: 40px; }
-        .app-root { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; display: none; }
+        .app-root { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; display: none; }
         .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; height: 70px; }
         .top-title { font-size: 2.2rem; font-weight: 100; color: var(--accent); }
         
@@ -29,7 +30,8 @@
         .search-box { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 12px; color: #fff; outline: none; }
         .btn-add { background: var(--accent); border: none; color: #fff; padding: 0 20px; font-size: 1.5rem; cursor: pointer; }
         .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: 110px; gap: 12px; }
-        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(4px); }
+        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(4px); transition: transform 0.1s; }
+        .tile:active { transform: scale(0.95); }
         
         .btn-del-room { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.5); color: white; border: none; width: 20px; height: 20px; font-size: 12px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
 
@@ -65,6 +67,13 @@
 <div id="fullscreen-view" onclick="this.style.display='none'"><img id="fullscreen-img"></div>
 
 <div class="popup-overlay" id="pop-alert"><div class="popup-card"><p id="alert-text"></p><button class="btn-full" onclick="closePopups()">ok</button></div></div>
+
+<div class="popup-overlay" id="pop-confirm"><div class="popup-card">
+    <h3 id="confirm-title" style="margin-bottom:10px">confirmation</h3>
+    <p id="confirm-text" style="font-size:0.9rem; margin-bottom:20px"></p>
+    <button class="btn-full" id="btn-confirm-yes">oui</button>
+    <button class="btn-full btn-secondary" onclick="closePopups()">non</button>
+</div></div>
 
 <div class="popup-overlay" id="pop-create"><div class="popup-card">
     <h3>nouveau salon</h3>
@@ -116,13 +125,13 @@
             </div>
             <div class="dropdown-menu" id="main-menu">
                 <div class="dropdown-item" onclick="logout()">déconnexion</div>
-                <div class="dropdown-item" style="color:#ff4444" onclick="deleteMyAccount()">supprimer compte</div>
+                <div class="dropdown-item" style="color:#ff4444" id="trigger-delete-account">supprimer compte</div>
             </div>
         </div>
     </div>
     <div class="view-container">
         <section id="view-home" class="view-section active">
-            <div class="action-row"><input type="text" class="search-box" placeholder="rechercher..."><button class="btn-add" onclick="document.getElementById('pop-create').style.display='flex'">+</button></div>
+            <div class="action-row"><input type="text" id="rooms-search" class="search-box" placeholder="rechercher..."><button class="btn-add" onclick="document.getElementById('pop-create').style.display='flex'">+</button></div>
             <div class="tiles-grid" id="rooms-grid"></div>
         </section>
         <section id="view-chat" class="view-section">
@@ -156,7 +165,7 @@
     let currentUser = null, curRoom = "général", unsubChat = null, selectedMsgId = null;
     let targetX = null, targetY = null;
 
-    // DUST ANIMATION
+    // MODIF 3 & BUG 2 FIX: Points plus nombreux (300), plus rapides (vx*3) et couleur dynamique
     const canvas = document.getElementById('canvas-dust'), ctx = canvas.getContext('2d');
     let particles = [];
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -167,55 +176,63 @@
         init(){
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
-            this.vx = (Math.random() - 0.5) * 1.2;
-            this.vy = (Math.random() - 0.5) * 1.2;
-            this.s = Math.random() * 2;
+            this.vx = (Math.random() - 0.5) * 3.5; // Plus rapide
+            this.vy = (Math.random() - 0.5) * 3.5; 
+            this.s = Math.random() * 3; // Plus gros / lumineux
         }
         update(){
             if(targetX && targetY) {
                 let dx = targetX - this.x;
                 let dy = targetY - this.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                if(dist < 300) { this.x += dx * 0.08; this.y += dy * 0.08; }
+                if(dist < 300) { this.x += dx * 0.15; this.y += dy * 0.15; }
             }
             this.x += this.vx; this.y += this.vy;
             if(this.x<0 || this.x>canvas.width || this.y<0 || this.y>canvas.height) this.init();
         }
         draw(){
-            ctx.fillStyle = "rgba(0,120,215,0.5)";
+            // BUG 2: Utilisation de la couleur accent dynamique
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent') + "cc";
+            ctx.shadowBlur = 10; ctx.shadowColor = ctx.fillStyle;
             ctx.beginPath(); ctx.arc(this.x, this.y, this.s, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
         }
     }
-    for(let i=0; i<120; i++) particles.push(new Particle());
+    for(let i=0; i<300; i++) particles.push(new Particle()); // Plus de points
     function anim(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         particles.forEach(p => { p.update(); p.draw() });
         requestAnimationFrame(anim);
     } anim();
 
-    // UTILS
+    // MODIF 2: Fonction utilitaire pour le popup de confirmation
+    window.customConfirm = (text, onYes) => {
+        document.getElementById('confirm-text').innerText = text;
+        document.getElementById('pop-confirm').style.display = 'flex';
+        document.getElementById('btn-confirm-yes').onclick = () => { onYes(); closePopups(); };
+    };
+
     window.showPopupAlert = (msg) => { document.getElementById('alert-text').innerText = msg; document.getElementById('pop-alert').style.display = 'flex'; };
     window.closePopups = () => { document.querySelectorAll('.popup-overlay').forEach(p=>p.style.display='none'); document.getElementById('main-menu').style.display = 'none'; };
     window.toggleMenu = () => { const m = document.getElementById('main-menu'); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; };
     window.logout = () => { localStorage.clear(); location.reload(); };
 
-    // DELETE ACCOUNT & CLEANUP
-    window.deleteMyAccount = async () => {
-        if(confirm("Action irréversible : supprimer ton compte et tes salons ?")) {
-            try {
-                const batch = writeBatch(db);
-                const userQuery = query(collection(db, "users"), where("pseudo", "==", currentUser));
-                const userSnap = await getDocs(userQuery);
-                userSnap.forEach(d => batch.delete(d.ref));
+    document.getElementById('trigger-delete-account').onclick = () => {
+        customConfirm("Action irréversible : supprimer ton compte et tes salons ?", deleteMyAccount);
+    };
 
-                const roomQuery = query(collection(db, "rooms"), where("creator", "==", currentUser));
-                const roomSnap = await getDocs(roomQuery);
-                roomSnap.forEach(d => batch.delete(d.ref));
-
-                await batch.commit();
-                logout();
-            } catch (e) { showPopupAlert("Erreur lors de la suppression."); }
-        }
+    const deleteMyAccount = async () => {
+        try {
+            const batch = writeBatch(db);
+            const userQuery = query(collection(db, "users"), where("pseudo", "==", currentUser));
+            const userSnap = await getDocs(userQuery);
+            userSnap.forEach(d => batch.delete(d.ref));
+            const roomQuery = query(collection(db, "rooms"), where("creator", "==", currentUser));
+            const roomSnap = await getDocs(roomQuery);
+            roomSnap.forEach(d => batch.delete(d.ref));
+            await batch.commit();
+            logout();
+        } catch (e) { showPopupAlert("Erreur lors de la suppression."); }
     };
 
     window.onload = () => {
@@ -261,14 +278,14 @@
                 div.className = "msg-block" + (m.sender === currentUser ? " own" : "");
                 const content = isImg ? `<img src="${m.text}" class="msg-img">` : (m.text || "");
                 div.innerHTML = `<div style="font-size:10px; color:var(--accent); margin-bottom:2px">${m.sender}</div><div class="msg-content-wrapper"><div class="msg-text">${content}</div><div class="msg-info">${timeStr}</div></div>`;
+                
+                // BUG 3 FIX: Gestion propre de selectedMsgId
                 let pressTimer;
-                let isLongPress = false;
-                const startPress = () => { isLongPress = false; pressTimer = setTimeout(() => { if(m.sender === currentUser) { isLongPress = true; selectedMsgId = d.id; document.getElementById('pop-msg-options').style.display = 'flex'; if(navigator.vibrate) navigator.vibrate(50); } }, 700); };
+                const startPress = () => { pressTimer = setTimeout(() => { if(m.sender === currentUser) { selectedMsgId = d.id; document.getElementById('pop-msg-options').style.display = 'flex'; if(navigator.vibrate) navigator.vibrate(50); } }, 700); };
                 const endPress = () => clearTimeout(pressTimer);
                 div.onmousedown = div.ontouchstart = startPress;
                 div.onmouseup = div.onmouseleave = div.ontouchend = endPress;
                 div.onclick = (e) => {
-                    if(isLongPress) return;
                     selectedMsgId = d.id;
                     if(isImg) {
                         targetX = e.clientX; targetY = e.clientY;
@@ -284,81 +301,84 @@
         });
     };
 
-    // SEND LOGIC
     const sendMessage = async (val) => {
         if(!val.trim() || !currentUser) return;
         try { await addDoc(collection(db, "messages"), { text: val, room: curRoom, sender: currentUser, timestamp: serverTimestamp() }); } catch(e) { console.error(e); }
     };
 
-    const sendImage = (file) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const img = new Image();
-            img.onload = () => {
-                const cvs = document.createElement('canvas');
-                const max = 500;
-                let w = img.width, h = img.height;
-                if (w > h && w > max) { h *= max / w; w = max; } else if (h > max) { w *= max / h; h = max; }
-                cvs.width = w; cvs.height = h;
-                cvs.getContext('2d').drawImage(img, 0, 0, w, h);
-                sendMessage(cvs.toDataURL("image/jpeg", 0.6));
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
-
     document.getElementById('attach-btn').onclick = () => document.getElementById('file-input').click();
-    document.getElementById('file-input').onchange = (e) => { if(e.target.files[0]) sendImage(e.target.files[0]); };
+    document.getElementById('file-input').onchange = (e) => { 
+        if(e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const cvs = document.createElement('canvas');
+                    const max = 500;
+                    let w = img.width, h = img.height;
+                    if (w > h && w > max) { h *= max / w; w = max; } else if (h > max) { w *= max / h; h = max; }
+                    cvs.width = w; cvs.height = h;
+                    cvs.getContext('2d').drawImage(img, 0, 0, w, h);
+                    sendMessage(cvs.toDataURL("image/jpeg", 0.6));
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    };
     document.getElementById('send-btn').onclick = () => { const i = document.getElementById('chat-input'); if(i.value.trim()){ sendMessage(i.value); i.value = ""; } };
 
-    // ROOMS LOGIC
-    document.getElementById('btn-confirm-create').onclick = async () => {
-        const n = document.getElementById('new-room-name').value.trim();
-        const c = document.getElementById('new-room-code').value.trim();
-        if(n) { try { await addDoc(collection(db, "rooms"), { name: n, code: c || null, creator: currentUser }); closePopups(); document.getElementById('new-room-name').value = ""; document.getElementById('new-room-code').value = ""; } catch(e) { showPopupAlert("Erreur."); } }
-    };
-
+    // MODIF 1: Logique de recherche des salons
+    let allRooms = [];
     onSnapshot(collection(db, "rooms"), (snap) => {
-        const grid = document.getElementById('rooms-grid'); grid.innerHTML = "";
-        snap.forEach(d => {
-            const r = d.data();
-            const tile = document.createElement('div'); tile.className = "tile tile-1x1"; 
-            let delBtn = r.creator === currentUser ? `<button class="btn-del-room" onclick="deleteRoom('${d.id}', event)">X</button>` : "";
-            tile.innerHTML = `${delBtn}<span># ${r.name} ${r.code ? '🔒' : ''}</span>`;
-            tile.onclick = () => { if(r.code) { document.getElementById('pop-room-auth').style.display = 'flex'; document.getElementById('btn-room-enter').onclick = () => { if(document.getElementById('room-auth-input').value === r.code) { enterRoom(r.name); closePopups(); } else alert("Code incorrect"); }; } else enterRoom(r.name); };
-            grid.appendChild(tile);
-        });
+        allRooms = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderRooms(allRooms);
     });
 
-    window.deleteRoom = async (id, e) => { e.stopPropagation(); if(confirm("Supprimer ce salon ?")) { try { await deleteDoc(doc(db, "rooms", id)); } catch(e) { showPopupAlert("Interdit."); } } };
+    const renderRooms = (rooms) => {
+        const grid = document.getElementById('rooms-grid'); grid.innerHTML = "";
+        rooms.forEach(r => {
+            const tile = document.createElement('div'); tile.className = "tile"; 
+            let delBtn = r.creator === currentUser ? `<button class="btn-del-room" onclick="deleteRoomTrigger('${r.id}', event)">X</button>` : "";
+            tile.innerHTML = `${delBtn}<span># ${r.name} ${r.code ? '🔒' : ''}</span>`;
+            tile.onclick = () => { if(r.code) { document.getElementById('pop-room-auth').style.display = 'flex'; document.getElementById('btn-room-enter').onclick = () => { if(document.getElementById('room-auth-input').value === r.code) { enterRoom(r.name); closePopups(); } else showPopupAlert("Code incorrect"); }; } else enterRoom(r.name); };
+            grid.appendChild(tile);
+        });
+    };
+
+    document.getElementById('rooms-search').oninput = (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allRooms.filter(r => r.name.toLowerCase().includes(term));
+        renderRooms(filtered);
+    };
+
+    window.deleteRoomTrigger = (id, e) => {
+        e.stopPropagation();
+        customConfirm("Supprimer ce salon ?", async () => {
+            try { await deleteDoc(doc(db, "rooms", id)); } catch(e) { showPopupAlert("Erreur."); }
+        });
+    };
 
     // MESSAGE OPTIONS
-    document.getElementById('btn-msg-del').onclick = async () => { if(selectedMsgId) { try { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } catch(e) { alert("Erreur"); } } };
+    document.getElementById('btn-msg-del').onclick = () => {
+        if(selectedMsgId) customConfirm("Supprimer ce message ?", async () => {
+            try { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } catch(e) { showPopupAlert("Erreur"); }
+        });
+    };
     document.getElementById('btn-msg-edit').onclick = () => { document.getElementById('pop-msg-options').style.display='none'; document.getElementById('pop-edit-msg').style.display='flex'; };
-    document.getElementById('btn-save-edit').onclick = async () => { const n = document.getElementById('edit-msg-input').value.trim(); if(n && selectedMsgId) { try { await updateDoc(doc(db, "messages", selectedMsgId), { text: n }); closePopups(); } catch(e) { alert("Erreur"); } } };
+    document.getElementById('btn-save-edit').onclick = async () => { const n = document.getElementById('edit-msg-input').value.trim(); if(n && selectedMsgId) { try { await updateDoc(doc(db, "messages", selectedMsgId), { text: n }); closePopups(); } catch(e) { showPopupAlert("Erreur"); } } };
 
-    // CONTACTS LOGIC (NOUVEAU)
+    // CONTACTS
     document.getElementById('add-contact-now').onclick = async () => {
-        const nameInput = document.getElementById('contact-name-input');
-        const name = nameInput.value.trim();
-        if (name && currentUser) {
+        const ni = document.getElementById('contact-name-input');
+        const n = ni.value.trim();
+        if (n && currentUser) {
             try {
-                // Vérifier si le contact existe déjà pour cet utilisateur
-                const qCheck = query(collection(db, "contacts"), where("owner", "==", currentUser), where("name", "==", name));
-                const snapCheck = await getDocs(qCheck);
-                
-                if (snapCheck.empty) {
-                    await addDoc(collection(db, "contacts"), {
-                        name: name,
-                        owner: currentUser,
-                        timestamp: serverTimestamp()
-                    });
-                    nameInput.value = "";
-                } else {
-                    showPopupAlert("Contact déjà présent.");
-                }
-            } catch (e) { showPopupAlert("Erreur lors de l'ajout."); }
+                const q = query(collection(db, "contacts"), where("owner", "==", currentUser), where("name", "==", n));
+                const s = await getDocs(q);
+                if (s.empty) { await addDoc(collection(db, "contacts"), { name: n, owner: currentUser, timestamp: serverTimestamp() }); ni.value = ""; }
+                else { showPopupAlert("Contact déjà présent."); }
+            } catch (e) { showPopupAlert("Erreur."); }
         }
     };
 
@@ -374,22 +394,20 @@
         onSnapshot(query(collection(db, "contacts"), where("owner", "==", currentUser), orderBy("timestamp", "desc")), (snap) => {
             const grid = document.getElementById('contacts-grid'); grid.innerHTML = "";
             snap.forEach(d => {
-                const contactData = d.data();
-                const tile = document.createElement('div'); 
-                tile.className = "tile tile-1x1";
-                // On peut supprimer un contact en restant appuyé (ou en cliquant sur une petite croix)
-                tile.innerHTML = `<button class="btn-del-room" onclick="deleteContact('${d.id}', event)">X</button><span>@ ${contactData.name}</span>`;
-                tile.onclick = () => enterRoom(contactData.name); 
+                const c = d.data();
+                const tile = document.createElement('div'); tile.className = "tile";
+                tile.innerHTML = `<button class="btn-del-room" onclick="deleteContactTrigger('${d.id}', event)">X</button><span>@ ${c.name}</span>`;
+                tile.onclick = () => enterRoom(c.name); 
                 grid.appendChild(tile);
             });
         });
     }
 
-    window.deleteContact = async (id, e) => {
+    window.deleteContactTrigger = (id, e) => {
         e.stopPropagation();
-        if(confirm("Supprimer ce contact ?")) {
+        customConfirm("Supprimer ce contact ?", async () => {
             try { await deleteDoc(doc(db, "contacts", id)); } catch(e) { showPopupAlert("Erreur."); }
-        }
+        });
     };
 </script>
 </body>
