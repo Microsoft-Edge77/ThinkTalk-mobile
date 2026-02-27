@@ -2,221 +2,226 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>ThinkTalk</title>
+    <title>ThinkTalk | Particle Engine</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         :root { --accent: #0078d7; --bg: #000; --text: #fff; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Segoe UI", sans-serif; }
         body { background: var(--bg); color: var(--text); overflow: hidden; height: 100svh; position: fixed; width: 100%; }
+        
         #canvas-dust { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
-        #auth-screen { position: fixed; inset: 0; z-index: 5000; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .app-root { position: relative; z-index: 1; height: 100%; display: none; flex-direction: column; }
+
+        /* 1) Glissement + Flou */
+        .app-root { 
+            position: relative; z-index: 1; height: 100%; display: none; flex-direction: column; 
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.6s;
+        }
+        .view-blur { filter: blur(20px); transform: translateX(-50px); }
+
+        /* 2) Expansion des Tuiles */
+        .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; transition: all 0.5s; }
+        .tile { 
+            position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 15px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; 
+            cursor: pointer; backdrop-filter: blur(10px);
+            transition: transform 0.4s ease, opacity 0.4s;
+        }
+        .tile.expanding { position: fixed; inset: 0; z-index: 100; height: 100vh; width: 100vw; transform: scale(1.2); opacity: 0; pointer-events: none; }
+        .tile.pushed { transform: scale(0.8); opacity: 0; }
+
+        /* 3) Matérialisation des messages */
+        .msg-block { opacity: 0; transform: translateY(10px); transition: opacity 0.5s 0.8s, transform 0.5s 0.8s; }
+        .msg-block.visible { opacity: 1; transform: translateY(0); }
+        .msg-text { background: rgba(0,120,215,0.1); padding: 12px; border: 1px solid rgba(0,120,215,0.3); }
+
+        /* Popups */
+        .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(0px); transition: backdrop-filter 0.5s; }
+        .popup-card { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 320px; padding: 25px; opacity: 0; transition: opacity 0.5s 0.8s; }
+        
+        /* Rest of Interface */
         .auth-logo { font-size: 3.5rem; font-weight: 100; color: var(--accent); margin-bottom: 40px; }
         .top-bar { padding: 15px; display: flex; justify-content: space-between; align-items: center; height: 70px; }
-        .top-title { font-size: 2.2rem; font-weight: 100; color: var(--accent); }
-        .hamburger { cursor: pointer; display: flex; flex-direction: column; gap: 5px; padding: 10px; }
-        .hamburger span { display: block; width: 25px; height: 2px; background: #fff; }
-        .dropdown-menu { display: none; position: absolute; top: 60px; right: 10px; background: #000; border: 1px solid var(--accent); width: 180px; z-index: 2000; }
-        .dropdown-item { padding: 15px; font-size: 0.9rem; cursor: pointer; border-bottom: 1px solid #222; }
-        .view-container { flex: 1; overflow-y: auto; padding: 10px 10px 120px 10px; }
-        .view-section { display: none; }
-        .view-section.active { display: block; }
-        .action-row { display: flex; gap: 10px; margin-bottom: 20px; }
-        .search-box, .input-box { flex: 1; background: rgba(255,255,255,0.08); border: 1px solid #333; padding: 12px; color: #fff; outline: none; }
-        .btn-add { background: var(--accent); border: none; color: #fff; padding: 0 20px; font-size: 1.5rem; cursor: pointer; }
-        .tiles-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .tile { position: relative; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); padding: 15px; height: 110px; display: flex; flex-direction: column; justify-content: flex-end; cursor: pointer; backdrop-filter: blur(10px); transition: 0.1s; }
-        .tile:active { transform: scale(0.98); }
-        .btn-del-room { position: absolute; top: 5px; right: 5px; background: rgba(255,0,0,0.6); color: #fff; border: none; width: 24px; height: 24px; cursor: pointer; }
-        #chat-messages { display: flex; flex-direction: column; gap: 12px; }
-        .msg-block { align-self: flex-start; max-width: 85%; }
-        .msg-block.own { align-self: flex-end; }
-        .msg-text { background: rgba(255,255,255,0.1); padding: 12px; border-left: 3px solid var(--accent); word-break: break-word; }
-        .msg-block.own .msg-text { border-left: none; border-right: 3px solid #666; background: rgba(0,120,215,0.2); }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 60px; display: flex; background: #000; border-top: 1px solid #222; }
         .nav-btn { flex: 1; display: flex; align-items: center; justify-content: center; color: #666; cursor: pointer; font-size: 0.8rem; }
-        .nav-btn.active { color: #fff; border-top: 3px solid var(--accent); font-weight: bold; }
-        .popup-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9000; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
-        .popup-card { background: #000; border: 2px solid var(--accent); width: 100%; max-width: 320px; padding: 25px; }
-        .btn-full { width: 100%; padding: 15px; background: var(--accent); border: none; color: #fff; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        .nav-btn.active { color: #fff; border-top: 3px solid var(--accent); }
     </style>
 </head>
 <body>
 
 <canvas id="canvas-dust"></canvas>
 
-<div class="popup-overlay" id="pop-alert"><div class="popup-card"><p id="alert-text"></p><button class="btn-full" onclick="closePopups()">OK</button></div></div>
-<div class="popup-overlay" id="pop-confirm"><div class="popup-card"><h3>CONFIRMATION</h3><p id="confirm-text" style="margin:15px 0"></p><button class="btn-full" id="btn-confirm-yes">OUI</button><button class="btn-full" style="background:#222" onclick="closePopups()">NON</button></div></div>
-<div class="popup-overlay" id="pop-create"><div class="popup-card"><h3>NOUVEAU SALON</h3><input type="text" id="new-room-name" placeholder="Nom..." class="input-box" style="margin-top:15px"><button class="btn-full" id="btn-do-create">CRÉER</button><button class="btn-full" style="background:#222" onclick="closePopups()">ANNULER</button></div></div>
-<div class="popup-overlay" id="pop-options"><div class="popup-card"><h3>MESSAGE</h3><button class="btn-full" style="background:#800" id="btn-msg-del">SUPPRIMER</button><button class="btn-full" style="background:#222" onclick="closePopups()">RETOUR</button></div></div>
-
 <div id="auth-screen">
     <div class="auth-logo">thinktalk</div>
-    <div style="width:100%; max-width:300px">
-        <input type="text" id="auth-pseudo" class="input-box" placeholder="Pseudo">
-        <input type="password" id="auth-code" class="input-box" placeholder="Code" style="margin-top:10px">
-        <button class="btn-full" id="btn-login">CONNEXION</button>
-        <button class="btn-full" style="background:#222" id="btn-register">S'INSCRIRE</button>
+    <div style="width:300px">
+        <input type="text" id="auth-pseudo" style="width:100%;padding:12px;margin-bottom:10px;background:#111;border:1px solid #333;color:#fff" placeholder="Pseudo">
+        <button id="btn-login" style="width:100%;padding:15px;background:var(--accent);border:none;color:#fff;font-weight:bold">ENTRER</button>
     </div>
 </div>
 
 <div class="app-root" id="main-app">
-    <div class="top-bar">
-        <div class="top-title">thinktalk</div>
-        <div class="hamburger" onclick="toggleMenu()"><span></span><span style="margin:5px 0"></span><span></span></div>
-        <div class="dropdown-menu" id="main-menu"><div class="dropdown-item" onclick="logout()">Déconnexion</div></div>
-    </div>
-    <div class="view-container">
+    <div class="top-bar"><div style="font-size:2rem;color:var(--accent)">thinktalk</div></div>
+    <div class="view-container" style="padding:10px">
         <section id="view-home" class="view-section active">
-            <div class="action-row"><input type="text" id="rooms-search" class="search-box" placeholder="Chercher un salon..."><button class="btn-add" onclick="document.getElementById('pop-create').style.display='flex'">+</button></div>
-            <div class="tiles-grid" id="rooms-grid"></div>
+            <div class="tiles-grid" id="rooms-grid">
+                </div>
         </section>
         <section id="view-chat" class="view-section">
-            <div id="chat-header" style="color:var(--accent); margin-bottom:15px; font-weight:bold"># général</div>
             <div id="chat-messages"></div>
-            <div style="position:fixed; bottom:60px; left:0; right:0; display:flex; background:#000; padding:10px; gap:8px; border-top:1px solid #222">
-                <input type="text" id="chat-input" class="input-box" placeholder="Message...">
-                <button id="send-btn" style="background:var(--accent); color:#fff; border:none; padding:0 20px; font-weight:bold">OK</button>
-            </div>
-        </section>
-        <section id="view-contacts" class="view-section">
-            <div class="action-row"><input type="text" id="contact-name-input" class="search-box" placeholder="Pseudo de l'ami..."><button class="btn-add" id="btn-add-contact">+</button></div>
-            <div class="tiles-grid" id="contacts-grid"></div>
+            <div style="height:80px"></div>
         </section>
     </div>
     <nav class="bottom-nav">
-        <div class="nav-btn active" onclick="switchTab('home')">ACCUEIL</div>
+        <div class="nav-btn active" onclick="switchTab('home')">HOME</div>
         <div class="nav-btn" onclick="switchTab('chat')">CHAT</div>
-        <div class="nav-btn" onclick="switchTab('contacts')">CONTACTS</div>
     </nav>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-    const cfg = { apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M", authDomain: "thinktalk-b3c85.firebaseapp.com", projectId: "thinktalk-b3c85", storageBucket: "thinktalk-b3c85.firebasestorage.app", messagingSenderId: "752141817301", appId: "1:752141817301:web:28fecaf81db27eb51d595c" };
-    const app = initializeApp(cfg); const db = getFirestore(app);
-
-    let currentUser = localStorage.getItem('tt_user');
-    let curRoom = "général", unsubChat = null, selectedMsgId = null;
-
-    // POUSSIÈRE BLEUE (MAGIQUE)
+    // --- MOTEUR DE PARTICULES AVANCÉ ---
     const canvas = document.getElementById('canvas-dust'), ctx = canvas.getContext('2d');
-    let pts = []; const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    let pts = [], mouse = {x: -100, y: -100};
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     window.onresize = resize; resize();
-    class Particle { constructor(){this.init()} init(){this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height; this.vx=(Math.random()-0.5)*3; this.vy=(Math.random()-0.5)*3; this.s=Math.random()*2+1} update(){this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.init()} draw(){ctx.fillStyle="#0078d7cc"; ctx.shadowBlur=12; ctx.shadowColor="#0078d7"; ctx.beginPath(); ctx.arc(this.x,this.y,this.s,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0}}
-    for(let i=0;i<300;i++)pts.push(new Particle());
-    function anim(){ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{p.update();p.draw()}); requestAnimationFrame(anim)} anim();
 
-    // TOOLS
-    window.closePopups = () => document.querySelectorAll('.popup-overlay').forEach(p=>p.style.display='none');
-    window.showPopupAlert = (t) => { document.getElementById('alert-text').innerText=t; document.getElementById('pop-alert').style.display='flex' };
-    window.customConfirm = (t, cb) => { document.getElementById('confirm-text').innerText=t; document.getElementById('pop-confirm').style.display='flex'; document.getElementById('btn-confirm-yes').onclick=()=>{cb();closePopups()} };
-    window.toggleMenu = () => { const m=document.getElementById('main-menu'); m.style.display=m.style.display==='block'?'none':'block' };
-    window.logout = () => { localStorage.clear(); location.reload() };
+    window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-    // AUTH
-    document.getElementById('btn-register').onclick = async () => {
-        const p=document.getElementById('auth-pseudo').value.trim(), c=document.getElementById('auth-code').value.trim();
-        if(!p||!c) return showPopupAlert("Champs vides.");
-        const s = await getDocs(query(collection(db,"users"),where("pseudo","==",p)));
-        if(!s.empty) return showPopupAlert("Pseudo pris.");
-        await addDoc(collection(db,"users"),{pseudo:p,code:c}); showPopupAlert("Compte créé !");
-    };
-    document.getElementById('btn-login').onclick = async () => {
-        const p=document.getElementById('auth-pseudo').value.trim(), c=document.getElementById('auth-code').value.trim();
-        const s = await getDocs(query(collection(db,"users"),where("pseudo","==",p),where("code","==",c)));
-        if(!s.empty){localStorage.setItem('tt_user',p); location.reload()} else showPopupAlert("Erreur.");
-    };
+    class Particle {
+        constructor() {
+            this.init();
+            this.target = null; // Position cible pour matérialisation
+        }
+        init() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.baseX = this.x; this.baseY = this.y;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = (Math.random() - 0.5) * 2;
+            this.s = Math.random() * 2 + 1;
+        }
+        update() {
+            if (this.target) {
+                // Attraction vers la cible (Matérialisation)
+                this.x += (this.target.x - this.x) * 0.12;
+                this.y += (this.target.y - this.y) * 0.12;
+            } else {
+                // Vol libre + impulsion souris
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 100) {
+                    this.vx += dx * 0.01; // Impulsion vers la souris
+                    this.vy += dy * 0.01;
+                }
+                this.x += this.vx; this.y += this.vy;
+                this.vx *= 0.98; this.vy *= 0.98; // Friction
 
-    // CHAT (ID UNIQUE TRIÉ)
-    window.enterRoom = (target, isPrivate=false) => {
-        curRoom = isPrivate ? [currentUser, target].sort().join("_") : target;
-        document.getElementById('chat-header').innerText = isPrivate ? "@ " + target : "# " + target;
-        switchTab('chat');
-        if(unsubChat) unsubChat();
-        const q = query(collection(db,"messages"), where("room","==",curRoom), orderBy("timestamp","asc"));
-        unsubChat = onSnapshot(q, (snap) => {
-            const box = document.getElementById('chat-messages'); box.innerHTML="";
-            snap.forEach(d => {
-                const m = d.data();
-                const div = document.createElement('div'); div.className = "msg-block" + (m.sender === currentUser ? " own" : "");
-                div.innerHTML = `<div style="font-size:10px; color:var(--accent)">${m.sender}</div><div class="msg-text">${m.text}</div>`;
-                div.onclick = () => { selectedMsgId=d.id; if(m.sender===currentUser)document.getElementById('pop-options').style.display='flex' };
-                box.appendChild(div);
-            });
-            box.parentElement.scrollTop = box.parentElement.scrollHeight;
+                if(this.x<0||this.x>canvas.width) this.vx *= -1;
+                if(this.y<0||this.y>canvas.height) this.vy *= -1;
+            }
+        }
+        draw() {
+            ctx.fillStyle = "#0078d7";
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.s, 0, Math.PI*2); ctx.fill();
+        }
+    }
+
+    for(let i=0; i<600; i++) pts.push(new Particle());
+
+    function animateParticles() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        pts.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateParticles);
+    } animateParticles();
+
+    // --- LOGIQUE ANIMATION UI ---
+
+    // 1) Matérialisation
+    window.materialize = (element) => {
+        const rect = element.getBoundingClientRect();
+        const pointsPerEdge = 40;
+        let targets = [];
+
+        // Créer un rectangle de points cibles
+        for(let i=0; i<pointsPerEdge; i++) {
+            targets.push({x: rect.left + (rect.width/pointsPerEdge)*i, y: rect.top}); // Top
+            targets.push({x: rect.left + (rect.width/pointsPerEdge)*i, y: rect.bottom}); // Bottom
+            targets.push({x: rect.left, y: rect.top + (rect.height/pointsPerEdge)*i}); // Left
+            targets.push({x: rect.right, y: rect.top + (rect.height/pointsPerEdge)*i}); // Right
+        }
+
+        // Assigner les cibles aux particules
+        pts.forEach((p, index) => {
+            if (targets[index]) p.target = targets[index];
         });
+
+        // Après 800ms, les particules repartent et le bloc devient solide
+        setTimeout(() => {
+            pts.forEach(p => p.target = null);
+            element.classList.add('visible');
+        }, 800);
     };
 
-    document.getElementById('send-btn').onclick = async () => {
-        const i = document.getElementById('chat-input');
-        if(i.value.trim()){ await addDoc(collection(db,"messages"),{text:i.value, room:curRoom, sender:currentUser, timestamp:serverTimestamp()}); i.value="" }
-    };
-
-    // ROOMS
-    onSnapshot(collection(db,"rooms"), (snap) => {
-        const g = document.getElementById('rooms-grid'); g.innerHTML="";
-        snap.forEach(d => {
-            const r = d.data(); const t = document.createElement('div'); t.className="tile";
-            t.innerHTML = `${r.creator===currentUser?`<button class="btn-del-room" onclick="event.stopPropagation();window.delR('${d.id}')">X</button>`:''}<span># ${r.name}</span>`;
-            t.onclick = () => enterRoom(r.name); g.appendChild(t);
-        });
-    });
-    document.getElementById('btn-do-create').onclick = async () => {
-        const n = document.getElementById('new-room-name').value.trim();
-        if(n){ await addDoc(collection(db,"rooms"),{name:n, creator:currentUser}); closePopups() }
-    };
-    window.delR = (id) => customConfirm("Supprimer ?", async() => await deleteDoc(doc(db,"rooms",id)));
-
-    // CONTACTS RÉCIPROQUES (CORRECTION LOGIQUE)
-    document.getElementById('btn-add-contact').onclick = async () => {
-        const n = document.getElementById('contact-name-input').value.trim();
-        if(!n || n === currentUser) return;
+    // 2) Navigation Floue + Glissement
+    window.switchTab = (tab) => {
+        const app = document.getElementById('main-app');
+        app.classList.add('view-blur');
         
-        // 1. On vérifie si le compte existe vraiment
-        const userExists = await getDocs(query(collection(db,"users"), where("pseudo","==",n)));
-        if(userExists.empty) return showPopupAlert("L'utilisateur '" + n + "' n'existe pas !");
-
-        // 2. On vérifie si déjà ajouté
-        const already = await getDocs(query(collection(db,"contacts"), where("owner","==",currentUser), where("name","==",n)));
-        if(!already.empty) return showPopupAlert("Déjà dans tes contacts.");
-
-        await addDoc(collection(db,"contacts"), {name:n, owner:currentUser});
-        document.getElementById('contact-name-input').value="";
+        setTimeout(() => {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('view-' + tab).classList.add('active');
+            app.classList.remove('view-blur');
+        }, 300);
     };
 
-    // ON ÉCOUTE LES CONTACTS DANS LES DEUX SENS
-    onSnapshot(collection(db,"contacts"), (snap) => {
-        const g = document.getElementById('contacts-grid'); g.innerHTML="";
-        let uniqueList = new Set();
+    // 3) Expansion Tuiles
+    window.expandTile = (el, roomName) => {
+        const tiles = document.querySelectorAll('.tile');
+        tiles.forEach(t => {
+            if (t !== el) t.classList.add('pushed');
+        });
+        el.classList.add('expanding');
         
-        snap.forEach(d => {
-            const c = d.data();
-            // Si c'est Alice qui a ajouté Jean OU Jean qui a ajouté Alice
-            if(c.owner === currentUser) uniqueList.add(c.name);
-            if(c.name === currentUser) uniqueList.add(c.owner);
-        });
-
-        uniqueList.forEach(name => {
-            const t = document.createElement('div'); t.className="tile";
-            t.innerHTML = `<span>@ ${name}</span>`;
-            t.onclick = () => enterRoom(name, true);
-            g.appendChild(t);
-        });
-    });
-
-    document.getElementById('btn-msg-del').onclick = async () => { if(selectedMsgId) await deleteDoc(doc(db,"messages",selectedMsgId)); closePopups() };
-
-    window.switchTab = (t) => {
-        document.querySelectorAll('.view-section').forEach(s=>s.classList.remove('active'));
-        document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-        document.getElementById('view-'+t).classList.add('active');
-        document.querySelector(`[onclick="switchTab('${t}')"]`).classList.add('active');
+        setTimeout(() => {
+            switchTab('chat');
+            // Reset tiles après transition
+            setTimeout(() => {
+                el.classList.remove('expanding');
+                tiles.forEach(t => t.classList.remove('pushed'));
+            }, 600);
+        }, 400);
     };
 
-    if(currentUser){ document.getElementById('auth-screen').style.display='none'; document.getElementById('main-app').style.display='flex'; enterRoom("général") }
+    // Simulation Auth
+    document.getElementById('btn-login').onclick = () => {
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        renderFakeRooms();
+    };
+
+    function renderFakeRooms() {
+        const grid = document.getElementById('rooms-grid');
+        ["Général", "Design", "Dev", "Jeux"].forEach(name => {
+            const t = document.createElement('div');
+            t.className = 'tile';
+            t.innerHTML = `<span># ${name}</span>`;
+            t.onclick = () => expandTile(t, name);
+            grid.appendChild(t);
+        });
+    }
+
+    // Exemple de message qui se matérialise
+    window.addMessage = (text) => {
+        const container = document.getElementById('chat-messages');
+        const m = document.createElement('div');
+        m.className = 'msg-block';
+        m.innerHTML = `<div class="msg-text">${text}</div>`;
+        container.appendChild(m);
+        materialize(m);
+    };
+    
+    // Test : ajouter un message auto après 2s
+    setTimeout(() => { if(document.getElementById('main-app').style.display !== 'none') addMessage("Bienvenue sur ThinkTalk !"); }, 3000);
+
 </script>
 </body>
 </html>
