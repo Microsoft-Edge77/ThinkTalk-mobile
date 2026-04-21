@@ -47,8 +47,18 @@
 
 <canvas id="canvas-dust"></canvas>
 
-<div class="popup-overlay" id="pop-logout"><div class="popup-card" id="card-logout"><h3>DÉCONNEXION ?</h3><p style="margin:15px 0">Voulez-vous quitter la session ?</p><button class="btn-full" onclick="confirmLogout()">OUI, QUITTER</button><button class="btn-full" style="background:#222;margin-top:10px" onclick="closePopups()">ANNULER</button></div></div>
+<!-- POPUP SESSION / PROFIL -->
+<div class="popup-overlay" id="pop-logout">
+    <div class="popup-card" id="card-logout">
+        <h3>SESSION</h3>
+        <p style="margin:15px 0">Que voulez-vous faire ?</p>
+        <button class="btn-full" onclick="confirmLogout()">SE DÉCONNECTER</button>
+        <button class="btn-full" style="background:#800;margin-top:10px" onclick="confirmDeleteProfile()">SUPPRIMER LE PROFIL</button>
+        <button class="btn-full" style="background:#222;margin-top:10px" onclick="closePopups()">ANNULER</button>
+    </div>
+</div>
 
+<!-- POPUP CRÉATION SALON -->
 <div class="popup-overlay" id="pop-create">
     <div class="popup-card" id="card-create">
         <h3>NOUVEAU SALON</h3>
@@ -59,8 +69,16 @@
     </div>
 </div>
 
-<div class="popup-overlay" id="pop-options"><div class="popup-card" id="card-options"><h3>OPTIONS</h3><button class="btn-full" style="background:#800;margin-top:20px" id="btn-msg-del">SUPPRIMER</button><button class="btn-full" style="background:#222;margin-top:10px" onclick="closePopups()">ANNULER</button></div></div>
+<!-- POPUP OPTIONS MESSAGE -->
+<div class="popup-overlay" id="pop-options">
+    <div class="popup-card" id="card-options">
+        <h3>OPTIONS</h3>
+        <button class="btn-full" style="background:#800;margin-top:20px" id="btn-msg-del">SUPPRIMER</button>
+        <button class="btn-full" style="background:#222;margin-top:10px" onclick="closePopups()">ANNULER</button>
+    </div>
+</div>
 
+<!-- ÉCRAN AUTH -->
 <div id="auth-screen" style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; position:relative; z-index:10;">
     <div style="font-size:3rem; color:var(--accent); text-align:center; margin-bottom:30px; font-weight:100;">thinktalk</div>
     <div style="width:300px; margin:0 auto;">
@@ -70,9 +88,13 @@
     </div>
 </div>
 
+<!-- APP PRINCIPALE -->
 <div class="app-root" id="main-app">
-    <div class="top-bar"><div class="top-title" onclick="openPopup('pop-logout', 'card-logout')">thinktalk</div></div>
+    <div class="top-bar">
+        <div class="top-title" onclick="openPopup('pop-logout', 'card-logout')">thinktalk</div>
+    </div>
     <div class="view-container">
+        <!-- HOME / ROOMS -->
         <section id="view-home" class="view-section active">
             <div style="display:flex;gap:10px;margin-bottom:20px">
                 <input type="text" id="rooms-search" class="input-box" style="margin:0" placeholder="Chercher...">
@@ -81,6 +103,7 @@
             <div class="tiles-grid" id="rooms-grid"></div>
         </section>
 
+        <!-- CHAT -->
         <section id="view-chat" class="view-section">
             <div id="chat-header" style="color:var(--accent);margin-bottom:15px;font-weight:bold"># général</div>
             <div id="chat-messages"></div>
@@ -92,6 +115,7 @@
             </div>
         </section>
 
+        <!-- CONTACTS -->
         <section id="view-contacts" class="view-section">
             <div style="display:flex;gap:10px;margin-bottom:20px">
                 <input type="text" id="contact-name-input" class="input-box" style="margin:0" placeholder="Pseudo de l'ami...">
@@ -100,6 +124,7 @@
             <div class="tiles-grid" id="contacts-grid"></div>
         </section>
     </div>
+
     <nav class="bottom-nav">
         <div class="nav-btn active" onclick="switchTab('home')">HOME</div>
         <div class="nav-btn" onclick="switchTab('chat')">CHAT</div>
@@ -108,11 +133,25 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, serverTimestamp, getDocs, deleteDoc, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+        initializeApp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+        getFirestore, collection, addDoc, onSnapshot, query, orderBy, where, 
+        serverTimestamp, getDocs, deleteDoc, doc, getDoc, setDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const cfg = { apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M", authDomain: "thinktalk-b3c85.firebaseapp.com", projectId: "thinktalk-b3c85", storageBucket: "thinktalk-b3c85.firebasestorage.app", messagingSenderId: "752141817301", appId: "1:752141817301:web:28fecaf81db27eb51d595c" };
-    const app = initializeApp(cfg); const db = getFirestore(app);
+    const cfg = { 
+        apiKey: "AIzaSyCv4nD9Nyez5ERGvW47q-6O-TA96zWJn0M",
+        authDomain: "thinktalk-b3c85.firebaseapp.com",
+        projectId: "thinktalk-b3c85",
+        storageBucket: "thinktalk-b3c85.firebasestorage.app",
+        messagingSenderId: "752141817301",
+        appId: "1:752141817301:web:28fecaf81db27eb51d595c" 
+    };
+
+    const app = initializeApp(cfg);
+    const db = getFirestore(app);
 
     let currentUser = localStorage.getItem('tt_user');
     let curRoom = "général", unsubChat = null, selectedMsgId = null;
@@ -126,28 +165,56 @@
 
     class Particle {
         constructor() { this.init(); this.target = null; }
-        init() { this.x = Math.random()*canvas.width; this.y = Math.random()*canvas.height; this.vx = (Math.random()-0.5)*1.5; this.vy = (Math.random()-0.5)*1.5; this.s = Math.random()*2+1; }
+        init() { 
+            this.x = Math.random()*canvas.width; 
+            this.y = Math.random()*canvas.height; 
+            this.vx = (Math.random()-0.5)*1.5; 
+            this.vy = (Math.random()-0.5)*1.5; 
+            this.s = Math.random()*2+1; 
+        }
         update() {
-            if(this.target) { this.x += (this.target.x - this.x) * 0.15; this.y += (this.target.y - this.y) * 0.15; }
-            else {
+            if(this.target) { 
+                this.x += (this.target.x - this.x) * 0.15; 
+                this.y += (this.target.y - this.y) * 0.15; 
+            } else {
                 let dx = mouse.x - this.x, dy = mouse.y - this.y, d = Math.sqrt(dx*dx+dy*dy);
                 if(d < 180) { this.vx += dx*0.002; this.vy += dy*0.002; }
                 this.x += this.vx; this.y += this.vy; this.vx *= 0.99; this.vy *= 0.99;
-                if(this.x<0||this.x>canvas.width) this.vx *= -1; if(this.y<0||this.y>canvas.height) this.vy *= -1;
+                if(this.x<0||this.x>canvas.width) this.vx *= -1; 
+                if(this.y<0||this.y>canvas.height) this.vy *= -1;
             }
         }
-        draw() { ctx.fillStyle = "#0078d7cc"; ctx.shadowBlur = 8; ctx.shadowColor = "#0078d7"; ctx.beginPath(); ctx.arc(this.x,this.y,this.s,0,Math.PI*2); ctx.fill(); ctx.shadowBlur = 0; }
+        draw() { 
+            ctx.fillStyle = "#0078d7cc"; 
+            ctx.shadowBlur = 8; 
+            ctx.shadowColor = "#0078d7"; 
+            ctx.beginPath(); 
+            ctx.arc(this.x,this.y,this.s,0,Math.PI*2); 
+            ctx.fill(); 
+            ctx.shadowBlur = 0; 
+        }
     }
     for(let i=0; i<400; i++) pts.push(new Particle());
-    function anim() { ctx.clearRect(0,0,canvas.width,canvas.height); pts.forEach(p=>{p.update();p.draw()}); requestAnimationFrame(anim); } anim();
+    function anim() { 
+        ctx.clearRect(0,0,canvas.width,canvas.height); 
+        pts.forEach(p=>{p.update();p.draw()}); 
+        requestAnimationFrame(anim); 
+    } 
+    anim();
 
     window.materialize = (el, delay = 0) => {
         setTimeout(() => {
             const r = el.getBoundingClientRect();
             const pCount = 30; let targets = [];
-            for(let i=0; i<pCount; i++) { targets.push({x: r.left + (r.width/pCount)*i, y: r.top}); targets.push({x: r.left + (r.width/pCount)*i, y: r.bottom}); }
+            for(let i=0; i<pCount; i++) { 
+                targets.push({x: r.left + (r.width/pCount)*i, y: r.top}); 
+                targets.push({x: r.left + (r.width/pCount)*i, y: r.bottom}); 
+            }
             pts.forEach((p, index) => { if(targets[index]) p.target = targets[index]; });
-            setTimeout(() => { pts.forEach(p => p.target = null); el.classList.add('visible'); }, 800);
+            setTimeout(() => { 
+                pts.forEach(p => p.target = null); 
+                el.classList.add('visible'); 
+            }, 800);
         }, delay);
     };
 
@@ -160,10 +227,46 @@
         document.querySelectorAll('.popup-card').forEach(c=>c.classList.remove('visible')); 
     };
 
-    window.confirmLogout = () => { localStorage.removeItem('tt_user'); location.reload(); };
+    // --- DÉCONNEXION SIMPLE ---
+    window.confirmLogout = () => { 
+        localStorage.removeItem('tt_user'); 
+        location.reload(); 
+    };
+
+    // --- SUPPRESSION DE PROFIL ---
+    window.confirmDeleteProfile = async () => {
+        if(!currentUser) return;
+        const ok = confirm("Supprimer définitivement le profil et les contacts liés ?");
+        if(!ok) return;
+
+        try {
+            // Supprimer le document user
+            await deleteDoc(doc(db, "users", currentUser));
+
+            // Supprimer les contacts où il est owner ou name
+            const contactsRef = collection(db, "contacts");
+            const q1 = query(contactsRef, where("owner", "==", currentUser));
+            const q2 = query(contactsRef, where("name", "==", currentUser));
+
+            const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+            snap1.forEach(d => deleteDoc(doc(db, "contacts", d.id)));
+            snap2.forEach(d => deleteDoc(doc(db, "contacts", d.id)));
+
+            // On pourrait aussi supprimer ses messages, mais ça peut être lourd.
+            // Ici on laisse les messages pour l'historique.
+
+            localStorage.removeItem('tt_user');
+            alert("Profil supprimé.");
+            location.reload();
+        } catch (e) {
+            console.error(e);
+            alert("Erreur lors de la suppression du profil.");
+        }
+    };
 
     window.switchTab = (tab) => {
-        const appRoot = document.getElementById('main-app'); appRoot.classList.add('view-blur');
+        const appRoot = document.getElementById('main-app'); 
+        appRoot.classList.add('view-blur');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         const btn = document.querySelector(`[onclick="switchTab('${tab}')"]`);
         if(btn) btn.classList.add('active');
@@ -171,7 +274,12 @@
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
             document.getElementById('view-' + tab).classList.add('active');
             appRoot.classList.remove('view-blur');
-            if(tab === 'chat') { document.querySelectorAll('.msg-block').forEach((m, i) => { m.classList.remove('visible'); materialize(m, i * 100); }); }
+            if(tab === 'chat') { 
+                document.querySelectorAll('.msg-block').forEach((m, i) => { 
+                    m.classList.remove('visible'); 
+                    materialize(m, i * 100); 
+                }); 
+            }
         }, 400);
     };
 
@@ -184,11 +292,15 @@
         const uDoc = await getDoc(doc(db, "users", p));
         if(uDoc.exists()) {
             if(uDoc.data().code === c) { 
-                localStorage.setItem('tt_user', p); location.reload(); 
-            } else { alert("Code secret incorrect !"); }
+                localStorage.setItem('tt_user', p); 
+                location.reload(); 
+            } else { 
+                alert("Code secret incorrect !"); 
+            }
         } else {
             await setDoc(doc(db, "users", p), { code: c });
-            localStorage.setItem('tt_user', p); location.reload();
+            localStorage.setItem('tt_user', p); 
+            location.reload();
         }
     };
 
@@ -208,10 +320,16 @@
         curRoom = isPrivateChat ? [currentUser, name].sort().join("_") : name;
         document.getElementById('chat-header').innerText = isPrivateChat ? "@ " + name : "# " + name;
         switchTab('chat');
+
         if(unsubChat) unsubChat();
-        const q = query(collection(db,"messages"), where("room","==",curRoom), orderBy("timestamp","asc"));
+        const q = query(
+            collection(db,"messages"), 
+            where("room","==",curRoom), 
+            orderBy("timestamp","asc")
+        );
         unsubChat = onSnapshot(q, (snap) => {
-            const box = document.getElementById('chat-messages'); box.innerHTML="";
+            const box = document.getElementById('chat-messages'); 
+            box.innerHTML="";
             snap.forEach(d => {
                 const m = d.data();
                 const date = m.timestamp ? new Date(m.timestamp.seconds * 1000) : new Date();
@@ -220,7 +338,13 @@
                 div.className = "msg-block" + (m.sender === currentUser ? " own" : "");
                 let content = m.image ? `<img src="${m.image}" class="msg-img">` : m.text;
                 div.innerHTML = `<div class="msg-info"><span>${m.sender}</span><span>${timeStr}</span></div><div class="msg-text">${content}</div>`;
-                div.onclick = () => { if(m.sender === currentUser) { selectedMsgId = d.id; openPopup('pop-options', 'card-options'); } };
+                // Suppression possible uniquement pour ses propres messages côté UI
+                div.onclick = () => { 
+                    if(m.sender === currentUser) { 
+                        selectedMsgId = d.id; 
+                        openPopup('pop-options', 'card-options'); 
+                    } 
+                };
                 box.appendChild(div);
                 div.classList.add('visible');
             });
@@ -228,6 +352,7 @@
         });
     };
 
+    // CRÉATION SALON
     document.getElementById('btn-do-create').onclick = async () => {
         const name = document.getElementById('new-room-name').value.trim();
         const pass = document.getElementById('new-room-pass').value.trim();
@@ -239,19 +364,49 @@
         }
     };
 
+    // ENVOI MESSAGE TEXTE
     document.getElementById('send-btn').onclick = async () => {
         const i = document.getElementById('chat-input');
-        if(i.value.trim()){ await addDoc(collection(db,"messages"),{text: i.value, room: curRoom, sender: currentUser, timestamp: serverTimestamp()}); i.value=""; }
+        if(i.value.trim()){ 
+            await addDoc(collection(db,"messages"),{
+                text: i.value, 
+                room: curRoom, 
+                sender: currentUser, 
+                timestamp: serverTimestamp()
+            }); 
+            i.value=""; 
+        }
     };
 
+    // ENVOI IMAGE
     document.getElementById('file-input').onchange = (e) => {
-        const file = e.target.files[0]; if(!file) return;
+        const file = e.target.files[0]; 
+        if(!file) return;
         const reader = new FileReader();
-        reader.onload = async (ev) => { await addDoc(collection(db,"messages"), { image: ev.target.result, room: curRoom, sender: currentUser, timestamp: serverTimestamp() }); };
+        reader.onload = async (ev) => { 
+            await addDoc(collection(db,"messages"), { 
+                image: ev.target.result, 
+                room: curRoom, 
+                sender: currentUser, 
+                timestamp: serverTimestamp() 
+            }); 
+        };
         reader.readAsDataURL(file);
     };
 
-    document.getElementById('btn-msg-del').onclick = async () => { if(selectedMsgId) { await deleteDoc(doc(db, "messages", selectedMsgId)); closePopups(); } };
+    // SUPPRESSION MESSAGE
+    document.getElementById('btn-msg-del').onclick = async () => { 
+        if(selectedMsgId) { 
+            try {
+                await deleteDoc(doc(db, "messages", selectedMsgId)); 
+            } catch(e) {
+                console.error(e);
+                alert("Impossible de supprimer le message (vérifie les règles Firestore).");
+            }
+            closePopups(); 
+            selectedMsgId = null;
+        }
+    };
 
     // --- CONTACTS ---
     document.getElementById('btn-add-contact').onclick = async () => {
@@ -264,27 +419,37 @@
 
     // --- SNAPSHOTS (SALONS & CONTACTS) ---
     onSnapshot(collection(db,"rooms"), (snap) => {
-        const g = document.getElementById('rooms-grid'); g.innerHTML="";
+        const g = document.getElementById('rooms-grid'); 
+        g.innerHTML="";
         snap.forEach(d => {
-            const r = d.data(); const t = document.createElement('div'); t.className="tile";
+            const r = d.data(); 
+            const t = document.createElement('div'); 
+            t.className="tile";
             t.innerHTML = `<span># ${r.name}</span> ${r.pass ? '<span class="lock-badge">🔒</span>' : ''}`;
-            t.onclick = () => enterRoom(r.name); g.appendChild(t);
+            t.onclick = () => enterRoom(r.name); 
+            g.appendChild(t);
         });
     });
 
     onSnapshot(collection(db,"contacts"), (snap) => {
-        const g = document.getElementById('contacts-grid'); g.innerHTML=""; let list = new Set();
+        const g = document.getElementById('contacts-grid'); 
+        g.innerHTML=""; 
+        let list = new Set();
         snap.forEach(d => { 
             const c = d.data(); 
             if(c.owner === currentUser) list.add(c.name); 
             if(c.name === currentUser) list.add(c.owner); 
         });
         list.forEach(name => {
-            const t = document.createElement('div'); t.className="tile"; t.innerHTML=`<span>@ ${name}</span>`;
-            t.onclick = () => enterRoom(name, true); g.appendChild(t);
+            const t = document.createElement('div'); 
+            t.className="tile"; 
+            t.innerHTML=`<span>@ ${name}</span>`;
+            t.onclick = () => enterRoom(name, true); 
+            g.appendChild(t);
         });
     });
 
+    // --- INIT APP ---
     if(currentUser){ 
         document.getElementById('auth-screen').style.display='none'; 
         document.getElementById('main-app').style.display='flex'; 
